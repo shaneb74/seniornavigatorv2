@@ -13,14 +13,14 @@ def inject_css(path: str):
     else:
         st.warning(f"Missing CSS: {path}")
 
-# Load CSS (ensure static/style.css in repo root)
+# Load CSS
 inject_css("static/style.css")
 
 # Initialize session state
 if "step" not in st.session_state:
     st.session_state.step = 1
-if "care_option" not in st.session_state:
-    st.session_state.care_option = None
+if "selected_option" not in st.session_state:
+    st.session_state.selected_option = None
 
 # Sidebar for page navigation
 with st.sidebar:
@@ -57,13 +57,13 @@ if page == "Home":
     with col1:
         if st.button("Reset", key="reset", type="secondary"):
             st.session_state.step = 1
-            st.session_state.care_option = None
+            st.session_state.selected_option = None
             st.rerun()
     with col2:
         if st.button("Next", key="next", type="primary"):
             if care_option:
                 st.session_state.step = 2
-                st.session_state.care_option = care_option
+                st.session_state.selected_option = care_option  # Use separate variable
                 st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -72,7 +72,7 @@ elif page == "Details":
     st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
     st.title("Care Details")
     st.markdown("<h2>Your Plan</h2>", unsafe_allow_html=True)
-    st.markdown(f"<p>Selected: {st.session_state.get('care_option', 'None')}</p>", unsafe_allow_html=True)
+    st.markdown(f"<p>Selected: {st.session_state.get('selected_option', 'None')}</p>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
     # Display sample radio group
