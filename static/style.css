@@ -196,6 +196,12 @@ button[kind="secondary"]:hover {
   .scn-nav-row button {
     min-width: 100px; /* Slightly smaller buttons on mobile */
   }
+  div[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important; /* Force single column on mobile */
+  }
+  div[style*="min-height: 250px"] {
+    min-height: 200px !important; /* Adjust for mobile height */
+  }
 }
 
 /* === Accessibility Enhancements for Cloud === */
