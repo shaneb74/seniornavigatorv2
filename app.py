@@ -20,13 +20,15 @@ inject_css("static/style.css")
 welcome = st.Page("pages/welcome.py", title="Welcome", icon="👋")
 hub = st.Page("pages/hub.py", title="Hub", icon="🏠")
 gcp = st.Page("pages/gcp.py", title="Guided Care Plan", icon="🗺️")
-cost_planner = st.Page("pages/cost_planner.py", title="Cost Planner", icon="💰")
-smart_review = st.Page("pages/smart_review.py", title="Smart Review", icon="🔍")
+cost_planner_mode = st.Page("pages/cost_planner.py", title="Cost Planner: Mode", icon="💰")
+cost_planner_modules = st.Page("pages/cost_planner_modules.py", title="Cost Planner: Modules", icon="📊")
+cost_planner_evaluation = st.Page("pages/cost_planner_evaluation.py", title="Cost Planner: Evaluation", icon="🔍")
+cost_planner_skipped = st.Page("pages/cost_planner_skipped.py", title="Cost Planner: Skipped", icon="⚠️")
 pfma = st.Page("pages/pfma.py", title="Plan for My Advisor", icon="📅")
 exports = st.Page("pages/exports.py", title="Exports", icon="📤")
 
 # Configure navigation
-pages = [welcome, hub, gcp, cost_planner, smart_review, pfma, exports]
+pages = [welcome, hub, gcp, cost_planner_mode, cost_planner_modules, cost_planner_evaluation, cost_planner_skipped, pfma, exports]
 pg = st.navigation(pages)
 
 # Run the selected page
@@ -37,5 +39,5 @@ with st.sidebar:
     st.subheader("AI Advisor")
     st.write("Ask me anything about your plan...")
     st.text_input("Your question", key="ai_question")
-    if st.button("Ask", type="primary"):
+    if st.button("Ask", key="ai_ask", type="primary"):
         st.info("Placeholder response: Here's some advice...")
