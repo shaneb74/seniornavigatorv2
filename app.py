@@ -2,7 +2,7 @@ import streamlit as st
 from pathlib import Path
 
 # Set page config for centered layout
-st.set_page_config(page_title="Senior Care Navigator Demo", layout="centered")
+st.set_page_config(page_title="CCA Senior Navigator", layout="centered")
 
 # CSS Injection for Streamlit Cloud
 def inject_css(path: str):
@@ -16,82 +16,26 @@ def inject_css(path: str):
 # Load CSS
 inject_css("static/style.css")
 
-# Initialize session state
-if "step" not in st.session_state:
-    st.session_state.step = 1
-if "selected_option" not in st.session_state:
-    st.session_state.selected_option = None
+# Define pages
+welcome = st.Page("pages/welcome.py", title="Welcome", icon="👋")
+hub = st.Page("pages/hub.py", title="Hub", icon="🏠")
+gcp = st.Page("pages/gcp.py", title="Guided Care Plan", icon="🗺️")
+cost_planner = st.Page("pages/cost_planner.py", title="Cost Planner", icon="💰")
+smart_review = st.Page("pages/smart_review.py", title="Smart Review", icon="🔍")
+pfma = st.Page("pages/pfma.py", title="Plan for My Advisor", icon="📅")
+exports = st.Page("pages/exports.py", title="Exports", icon="📤")
 
-# Sidebar for page navigation
+# Configure navigation
+pages = [welcome, hub, gcp, cost_planner, smart_review, pfma, exports]
+pg = st.navigation(pages)
+
+# Run the selected page
+pg.run()
+
+# Common elements: AI Advisor in sidebar
 with st.sidebar:
-    page = st.radio("Navigate", ["Home", "Details"], key="nav_radio")
-
-# Progress rail (for both pages)
-total_steps = 5
-step = st.session_state.step
-segs = ''.join(
-    f'<div class="seg{" active" if i < step else ""}"></div>'
-    for i in range(total_steps)
-)
-rail = f'<div class="progress-rail">{segs}</div>'
-st.markdown(rail, unsafe_allow_html=True)
-
-# Page: Home
-if page == "Home":
-    st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-    st.title("Senior Care Navigator Demo")
-    st.markdown("<h2>Welcome</h2>", unsafe_allow_html=True)
-    st.markdown("<p>Select a care option to begin planning.</p>", unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # Radio buttons styled as pills
-    care_option = st.radio(
-        "Choose a care option",
-        ["In-Home Care", "Assisted Living", "Memory Care"],
-        key="care_option"
-    )
-
-    # Navigation buttons
-    st.markdown('<div class="scn-nav-row">', unsafe_allow_html=True)
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        if st.button("Reset", key="reset", type="secondary"):
-            st.session_state.step = 1
-            st.session_state.selected_option = None
-            st.rerun()
-    with col2:
-        if st.button("Next", key="next", type="primary"):
-            if care_option:
-                st.session_state.step = 2
-                st.session_state.selected_option = care_option  # Use separate variable
-                st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# Page: Details
-elif page == "Details":
-    st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-    st.title("Care Details")
-    st.markdown("<h2>Your Plan</h2>", unsafe_allow_html=True)
-    st.markdown(f"<p>Selected: {st.session_state.get('selected_option', 'None')}</p>", unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # Display sample radio group
-    st.write("Care Type")
-    care_type = st.radio(
-        "Refine care type",
-        ["Basic", "Advanced", "Specialized"],
-        key="care_type"
-    )
-
-    # Navigation buttons
-    st.markdown('<div class="scn-nav-row">', unsafe_allow_html=True)
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        if st.button("Back", key="back", type="secondary"):
-            st.session_state.step = 1
-            st.rerun()
-    with col2:
-        if st.button("Finish", key="finish", type="primary"):
-            st.session_state.step = 3
-            st.success("Plan completed!")
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.subheader("AI Advisor")
+    st.write("Ask me anything about your plan...")
+    st.text_input("Your question", key="ai_question")
+    if st.button("Ask", type="primary"):
+        st.info("Placeholder response: Here's some advice...")
