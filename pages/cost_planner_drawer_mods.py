@@ -1,42 +1,21 @@
 import streamlit as st
 
-# Cost Planner: Home Modifications Drawer
+# Age-in-Place Upgrades Detail
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-st.title("Age-in-Place Upgrades")
-st.markdown("<h2>Modify your home for safety.</h2>", unsafe_allow_html=True)
-st.markdown("<p>Select options below.</p>", unsafe_allow_html=True)
+st.title("Age-in-Place Upgrades for John")
+st.markdown("<h2>Make home safer to stay.</h2>", unsafe_allow_html=True)
+st.markdown("<p>Pick upgrades to fit John’s needs.</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Modification toggles
-st.markdown('<div style="display: grid; gap: 1rem;">', unsafe_allow_html=True)
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; text-align: center;">', unsafe_allow_html=True)
-st.write("Grab bars in bath")
-st.button("Add", key="grab_bars", type="primary")
-st.write("+$500")
-st.markdown('</div>', unsafe_allow_html=True)
-
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; text-align: center;">', unsafe_allow_html=True)
-st.write("Stair lift")
-st.button("Add", key="stair_lift", type="primary")
-st.write("+$1,200")
-st.markdown('</div>', unsafe_allow_html=True)
-
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; text-align: center;">', unsafe_allow_html=True)
-st.write("Widened doorways")
-st.button("Add", key="widened_doors", type="primary")
-st.write("+$1,000")
-st.markdown('</div>', unsafe_allow_html=True)
-
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; text-align: center;">', unsafe_allow_html=True)
-st.write("Smart sensors")
-st.button("Add", key="smart_sensors", type="primary")
-st.write("+$900")
-st.markdown('</div>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
-
-st.write("$3,800 total - one-time cost")
-st.markdown('<div style="margin-top: 1rem;">', unsafe_allow_html=True)
-st.write("Tax credit? Up to $2k if...")
+# Mockup modification toggles
+st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left;">', unsafe_allow_html=True)
+st.write("Upgrade options for John’s home:")
+st.button("Grab bars in bath ($500)", key="grab_bars", type="primary")
+st.button("Stair lift ($1,200)", key="stair_lift", type="primary")
+st.button("Widened doorways ($1,000)", key="widened_doors", type="primary")
+st.button("Smart sensors ($900)", key="smart_sensors", type="primary")
+st.write("Total est.: $3,800 - one-time cost")
+st.write("Tax credit? Up to $2,000 if eligible")
 st.button("Learn More", key="tax_credit", type="secondary")
 st.markdown('</div>', unsafe_allow_html=True)
 
