@@ -1,6 +1,16 @@
 
 import streamlit as st
 
+# Debug: non-visual logger
+def _debug_log(msg: str):
+    try:
+        print(f"[SNAV] {msg}")
+    except Exception:
+        pass
+
+_debug_log('LOADED: tell_us_about_john.py')
+
+
 # Guard: ensure session state keys exist across cold restarts
 if 'care_context' not in st.session_state:
     st.session_state.care_context = {

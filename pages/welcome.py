@@ -1,5 +1,15 @@
 import streamlit as st
 from ui.ux_enhancements import apply_global_ux, render_stepper
+
+# Debug: non-visual logger
+def _debug_log(msg: str):
+    try:
+        print(f"[SNAV] {msg}")
+    except Exception:
+        pass
+
+_debug_log('LOADED: welcome.py')
+
 apply_global_ux()
 render_stepper('main')
 
