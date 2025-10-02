@@ -1,84 +1,121 @@
 
 import streamlit as st
 
-# Debug: non-visual logger
-def _debug_log(msg: str):
-    try:
-        print(f"[SNAV] {msg}")
-    except Exception:
-        pass
-
-_debug_log('LOADED: cost_planner_modules.py')
-
-
-# Guard: ensure session state keys exist across cold restarts
+# Session-state guard
 if 'care_context' not in st.session_state:
     st.session_state.care_context = {
         'gcp_answers': {},
         'decision_trace': [],
-        'planning_mode': 'exploring',
-        'care_flags': {}
+        'planning_mode': 'estimating',
+        'care_flags': {},
+        'person_name': 'Your Loved One',
+        'cost_estimate': {}
     }
+
 ctx = st.session_state.care_context
+person_name = ctx.get('person_name', 'Your Loved One')
+estimate = ctx.get('cost_estimate', {})
+est_completed = bool(estimate.get('completed'))
+est_setting = estimate.get('setting_label') or estimate.get('setting') or ''
+est_zip = estimate.get('zip', '')
+est_monthly = estimate.get('estimate_monthly')
 
+st.title(f"Recommended Cost Modules for {person_name}")
+st.caption("Work through the modules below. You can return to any module at any time.")
 
-# Cost Planner: Recommended Modules
-st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-st.title("Recommended Cost Modules")
-st.markdown("<h2>Adjust your care options for your loved one.</h2>", unsafe_allow_html=True)
-st.markdown("<p>Each module helps you understand costs and options—no pressure, just clarity.</p>", unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown('---')
 
-# Tile grid - each self-explanatory with importance content
-st.markdown('<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; justify-items: center; padding: 1rem;">', unsafe_allow_html=True)
+# ===== New: Cost of Care Planner (Quick Estimate) tile =====
+with st.container(border=True):
+    cols = st.columns([4, 2, 2])
+    with cols[0]:
+        st.subheader("Cost of Care Planner")
+        if est_completed and est_monthly:
+            summary = f"{est_setting or 'In-home care'} • ${est_monthly:,}/mo"
+            if est_zip:
+                summary += f" • ZIP {est_zip}"
+            st.caption(summary)
+        else:
+            st.caption("Get a quick monthly estimate based on setting, ZIP, and a few simple details.")
+    with cols[1]:
+        if st.button("Open", key="open_quick_estimate"):
+            st.switch_page("pages/cost_planner_estimate.py")
+    with cols[2]:
+        if est_completed:
+            st.success("Completed", icon="✅")
+        else:
+            st.info("Not started", icon="🛈")
 
+st.markdown('---')
+
+# ===== Existing module tiles (kept consistent with prior wiring) =====
 # Home Care Support
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
-st.markdown("### Home Care Support", unsafe_allow_html=True)
-st.markdown("<p>Many seniors prefer staying home—home care keeps them safe and independent with help for meds, meals, or companionship. It's essential when daily tasks get harder, allowing your loved one to age in place without major changes.</p>", unsafe_allow_html=True)
-if st.button("Explore Home Care", key="explore_home_care", type="primary"):
-    st.switch_page("pages/cost_planner_home_care.py")
-st.markdown('</div>', unsafe_allow_html=True)
+with st.container(border=True):
+    cols = st.columns([4, 2, 2])
+    with cols[0]:
+        st.subheader("Home Care Support")
+        st.caption("Hourly in‑home caregiving and companion support.")
+    with cols[1]:
+        if st.button("Open", key="open_home_care"):
+            st.switch_page("pages/cost_planner_home_care.py")
+    with cols[2]:
+        st.caption(" ")
 
 # Daily Living Aids
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
-st.markdown("### Daily Living Aids", unsafe_allow_html=True)
-st.markdown("<p>Small tools make big differences—like bath chairs for safety or pill dispensers for routine. For your loved one, these aids prevent falls and ensure meds are taken right, adding comfort without full-time help.</p>", unsafe_allow_html=True)
-if st.button("Explore Daily Aids", key="explore_daily_aids", type="primary"):
-    st.switch_page("pages/cost_planner_daily_aids.py")
-st.markdown('</div>', unsafe_allow_html=True)
+with st.container(border=True):
+    cols = st.columns([4, 2, 2])
+    with cols[0]:
+        st.subheader("Daily Living Aids")
+        st.caption("Equipment and supplies that support daily safety and independence.")
+    with cols[1]:
+        if st.button("Open", key="open_daily_aids"):
+            st.switch_page("pages/cost_planner_daily_aids.py")
+    with cols[2]:
+        st.caption(" ")
 
 # Housing Path
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
-st.markdown("### Housing Path", unsafe_allow_html=True)
-st.markdown("<p>Deciding to keep or sell the family home is emotional—factor in mortgage, upkeep, and taxes if staying, or equity from selling for new options like assisted living. Explore how each path affects your loved one's budget and lifestyle.</p>", unsafe_allow_html=True)
-if st.button("Explore Housing", key="explore_housing", type="primary"):
-    st.switch_page("pages/cost_planner_housing.py")
-st.markdown('</div>', unsafe_allow_html=True)
+with st.container(border=True):
+    cols = st.columns([4, 2, 2])
+    with cols[0]:
+        st.subheader("Housing Path")
+        st.caption("Assisted living, memory care, or other residential options.")
+    with cols[1]:
+        if st.button("Open", key="open_housing"):
+            st.switch_page("pages/cost_planner_housing.py")
+    with cols[2]:
+        st.caption(" ")
 
 # Benefits Check
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
-st.markdown("### Benefits Check", unsafe_allow_html=True)
-st.markdown("<p>Veterans like your loved one may qualify for VA aid, while Medicaid covers long-term care gaps. Unlocking these can save thousands yearly—check eligibility to ease the financial load without cutting corners on care.</p>", unsafe_allow_html=True)
-if st.button("Explore Benefits", key="explore_benefits", type="primary"):
-    st.switch_page("pages/cost_planner_benefits.py")
-st.markdown('</div>', unsafe_allow_html=True)
+with st.container(border=True):
+    cols = st.columns([4, 2, 2])
+    with cols[0]:
+        st.subheader("Benefits Check")
+        st.caption("VA, Medicaid, LTC insurance, and other offsets.")
+    with cols[1]:
+        if st.button("Open", key="open_benefits"):
+            st.switch_page("pages/cost_planner_benefits.py")
+    with cols[2]:
+        st.caption(" ")
 
 # Age-in-Place Upgrades
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
-st.markdown("### Age-in-Place Upgrades", unsafe_allow_html=True)
-st.markdown("<p>Simple home changes like grab bars or stair lifts help your loved one stay safe longer, avoiding moves to facilities. These one-time investments promote independence and reduce risks like falls in familiar surroundings.</p>", unsafe_allow_html=True)
-if st.button("Explore Upgrades", key="explore_upgrades", type="primary"):
-    st.switch_page("pages/cost_planner_mods.py")
-st.markdown('</div>', unsafe_allow_html=True)
+with st.container(border=True):
+    cols = st.columns([4, 2, 2])
+    with cols[0]:
+        st.subheader("Age-in-Place Upgrades")
+        st.caption("Home safety modifications and accessibility improvements.")
+    with cols[1]:
+        if st.button("Open", key="open_mods"):
+            st.switch_page("pages/cost_planner_mods.py")
+    with cols[2]:
+        st.caption(" ")
 
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown('---')
 
-# Navigation
-st.markdown('<div class="scn-nav-row">', unsafe_allow_html=True)
-col1, col2 = st.columns([1, 1])
+# Footer nav
+col1, col2 = st.columns(2)
 with col1:
-    st.button("Back to Mode", key="back_to_mode", type="secondary")
+    if st.button("Back to Mode", key="mods_back_mode"):
+        st.switch_page("pages/cost_planner.py")
 with col2:
-    st.button("Next: Expert Review", key="next_review", type="primary")
-st.markdown('</div>', unsafe_allow_html=True)
+    if st.button("Next: Expert Review", key="mods_next_review"):
+        st.switch_page("pages/cost_planner_evaluation.py")
