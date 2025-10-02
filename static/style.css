@@ -287,3 +287,8 @@ button[kind="secondary"]:hover {
   font-size: 16px;
   padding: 0.5rem;
 }
+
+.stButton > button[kind="primary"] {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+}
