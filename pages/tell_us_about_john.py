@@ -3,17 +3,19 @@ import streamlit as st
 # Tell Us About John - Initial Audienceing
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
 st.title("Tell Us About John")
-st.markdown("<h2>Quick questions to guide your journey.</h2>", unsafe_allow_html=True)
-st.markdown("<p>Just a few taps—takes less than a minute!</p>", unsafe_allow_html=True)
+st.markdown("<h2>A few quick taps to start.</h2>", unsafe_allow_html=True)
+st.markdown("<p>Help us guide John’s care in under a minute.</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Simple qualifying questions
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left;">', unsafe_allow_html=True)
+# Simple qualifying questions with tile style
+st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
+st.markdown("### About John", unsafe_allow_html=True)
+st.markdown("<p>These questions help us tailor John’s options—simple and private.</p>", unsafe_allow_html=True)
 st.write("Did John serve in the military?")
 st.button("Yes", key="military_yes", type="primary")
 st.button("No", key="military_no", type="primary")
 
-st.write("Is John currently on Medicaid?")
+st.write("Is John on Medicaid now?")
 st.button("Yes", key="medicaid_yes", type="primary")
 st.button("No", key="medicaid_no", type="primary")
 
@@ -22,10 +24,12 @@ st.button("Yes", key="home_yes", type="primary")
 st.button("No", key="home_no", type="primary")
 
 # Conditional alerts (mockup text)
-if st.button("Yes", key="medicaid_yes_alert", type="primary", help="Hidden trigger"):
-    st.warning("Heads up: Medicaid is federal. Visit benefits.gov for details. We’ll handle the rest!")
-if st.button("Yes", key="military_yes_alert", type="primary", help="Hidden trigger"):
-    st.info("Great! We’ll flag VA options for John later.")
+st.markdown('<div style="margin-top: 1rem;">', unsafe_allow_html=True)
+if st.button("Yes (Medicaid)", key="medicaid_yes_alert", type="primary", help="Hidden trigger"):
+    st.warning("Note: Medicaid is federal. Check benefits.gov for details. We’ll cover the rest!")
+if st.button("Yes (Military)", key="military_yes_alert", type="primary", help="Hidden trigger"):
+    st.info("Great! We’ll highlight VA options for John ahead.")
+st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)
 
