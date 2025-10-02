@@ -1,74 +1,70 @@
 import streamlit as st
 
-if "care_context" not in st.session_state:
-    st.session_state.care_context = {"gcp_answers": {}}
-answers = st.session_state.care_context.setdefault("gcp_answers", {})
+if 'care_context' not in st.session_state:
+    st.session_state.care_context = {
+        'gcp_answers': {},
+        'decision_trace': [],
+        'planning_mode': 'exploring',
+        'care_flags': {}
+    }
+ctx = st.session_state.care_context
+answers = ctx.setdefault('gcp_answers', {})
 
-st.title("Guided Care Plan — Health & Safety")
-st.caption("Step 2 of 3")
-st.markdown("---")
+st.title('Guided Care Plan — Health & Safety')
+st.caption('Step 2 of 3')
 
-def idx_or_default(val, options, default=0):
-    try:
-        return val if isinstance(val, int) and 0 <= val < len(options) else default
-    except Exception:
-        return default
+st.markdown('---')
 
-def set_idx_from_choice(key, choice, options):
-    answers[key] = options.index(choice)
-
-opt_cog = ["Sharp", "Sometimes forgetful", "Frequent memory issues", "Serious confusion"]
-cog_idx = idx_or_default(answers.get("cognition_level_idx", 0), opt_cog, 0)
-cog_choice = st.segmented_control(
-    "How would you rate your memory and thinking in daily life?",
-    options=opt_cog,
-    default=opt_cog[cog_idx],
-    label_visibility="visible",
-    key="gcp_seg_cognition",
+cog_opts = ['Sharp','Sometimes forgetful','Frequent memory issues','Serious confusion']
+answers['cognition_level'] = st.radio(
+    'How would you rate your memory and thinking in daily life?',
+    cog_opts,
+    index=cog_opts.index(answers.get('cognition_level', cog_opts[0])),
+    key='q_cognition'
 )
-set_idx_from_choice("cognition_level_idx", cog_choice, opt_cog)
 st.caption("We'll pair this with medications and safety to gauge supervision needs.")
 
-opt_mob = ["I walk easily", "I use a cane", "I use a walker", "I use a wheelchair"]
-mob_idx = idx_or_default(answers.get("mobility_idx", 0), opt_mob, 0)
-mob_choice = st.segmented_control(
-    "How do you usually get around?",
-    options=opt_mob,
-    default=opt_mob[mob_idx],
-    label_visibility="visible",
-    key="gcp_seg_mobility",
+mob_opts = ['I walk easily','I use a cane','I use a walker','I use a wheelchair']
+answers['mobility'] = st.radio(
+    'How do you usually get around?',
+    mob_opts,
+    index=mob_opts.index(answers.get('mobility', mob_opts[0])),
+    key='q_mobility'
 )
-set_idx_from_choice("mobility_idx", mob_choice, opt_mob)
-st.caption("We mean typical movement at home and outside.")
+st.caption('We mean typical movement at home and outside.')
 
-opt_home = ["Well-prepared", "Mostly safe", "Needs modifications", "Not suitable"]
-home_idx = idx_or_default(answers.get("home_setup_safety_idx", 0), opt_home, 0)
-home_choice = st.segmented_control(
-    "How safe and manageable is your home for daily living as you age?",
-    options=opt_home,
-    default=opt_home[home_idx],
-    label_visibility="visible",
-    key="gcp_seg_home",
+cond_opts = ['Diabetes','Hypertension','Dementia',"Parkinson's",'Stroke','CHF','COPD','Arthritis']
+answers['chronic_conditions'] = st.multiselect(
+    'Do you have any ongoing health conditions? Select all that apply.',
+    cond_opts,
+    default=answers.get('chronic_conditions', []),
+    key='q_chronic_conditions'
 )
-set_idx_from_choice("home_setup_safety_idx", home_choice, opt_home)
-st.caption("Think stairs, bathrooms, lighting, grab bars, and trip hazards.")
+st.caption('Select all that apply. Dementia strongly influences recommendations.')
 
-opt_fall = ["Yes", "No", "Not sure"]
-fall_idx = idx_or_default(answers.get("recent_fall_idx", 1), opt_fall, 1)
-fall_choice = st.segmented_control(
-    "Has there been a fall in the last 6 months?",
-    options=opt_fall,
-    default=opt_fall[fall_idx],
-    label_visibility="visible",
-    key="gcp_seg_fall",
+fall_opts = ['Yes','No','Not sure']
+answers['recent_fall'] = st.radio(
+    'Has there been a fall in the last 6 months?',
+    fall_opts,
+    index=fall_opts.index(answers.get('recent_fall', 'No')),
+    key='q_recent_fall'
 )
-set_idx_from_choice("recent_fall_idx", fall_choice, opt_fall)
-st.caption("Recent falls increase the need for supervision or home changes.")
+st.caption('Recent falls increase the need for supervision or home changes.')
 
-st.markdown("<div class='row-actions'><div class='left'>", unsafe_allow_html=True)
-if st.button("Back", key="gcp_hs_back"):
-    st.switch_page("pages/gcp_daily_life.py")
-st.markdown("</div><div class='right'>", unsafe_allow_html=True)
-if st.button("Next", key="gcp_hs_next"):
-    st.switch_page("pages/gcp_context_prefs.py")
-st.markdown("</div></div>", unsafe_allow_html=True)
+home_opts = ['Well-prepared','Mostly safe','Needs modifications','Not suitable']
+answers['home_setup_safety'] = st.radio(
+    'How safe and manageable is your home for daily living as you age?',
+    home_opts,
+    index=home_opts.index(answers.get('home_setup_safety', home_opts[0])),
+    key='q_home_safety'
+)
+st.caption('Think stairs, bathrooms, lighting, grab bars, and trip hazards.')
+
+st.markdown('---')
+col1, col2 = st.columns(2)
+with col1:
+    if st.button('Back', key='health_back'):
+        st.switch_page('pages/gcp_daily_life.py')
+with col2:
+    if st.button('Next', key='health_next'):
+        st.switch_page('pages/gcp_context_prefs.py')
