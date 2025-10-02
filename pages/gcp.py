@@ -1,7 +1,6 @@
-
 import streamlit as st
 
-# Session-state guard (no visual change)
+# Session-state guard
 if 'care_context' not in st.session_state:
     st.session_state.care_context = {
         'gcp_answers': {},
@@ -10,10 +9,23 @@ if 'care_context' not in st.session_state:
         'care_flags': {}
     }
 ctx = st.session_state.care_context
-answers = ctx.setdefault('gcp_answers', {})
 
 st.title('Guided Care Plan for {PERSON_NAME}')
-st.caption('A brief, structured set of questions in three short sections.')
+st.caption('A simple, expert-led way to see what kind of support could fit best right now.')
+
+st.write(
+    """
+Caring for yourself or someone you love can feel overwhelming. Whether you're thinking about your spouse,
+a parent, or your own future, it's normal to wonder: *What do we need? How do we plan? Can we afford it?*
+
+This Guided Care Plan makes the first step easier. In a few minutes, you'll answer 12 simple questions.
+Your answers create a clear starting point and a personalized recommendation — free, straightforward, and
+designed by experts who've guided thousands of families through the same decisions.
+
+Think of this as a helpful snapshot, not a final decision. You can adjust as things change, and we’ll
+point you to next steps when you’re ready.
+    """
+)
 
 st.markdown('---')
 col1, col2 = st.columns(2)

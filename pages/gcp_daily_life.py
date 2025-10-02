@@ -1,7 +1,5 @@
-
 import streamlit as st
 
-# Session-state guard (no visual change)
 if 'care_context' not in st.session_state:
     st.session_state.care_context = {
         'gcp_answers': {},
