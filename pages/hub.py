@@ -1,50 +1,39 @@
-
 import streamlit as st
 
 # ---------- Session guard ----------
-if 'care_context' not in st.session_state:
+if "care_context" not in st.session_state:
     st.session_state.care_context = {
-        'person_name': 'Your Loved One',
-        'gcp_answers': {},
-        'gcp_recommendation': None,   # e.g., 'In-home care' | 'Assisted living' | 'Memory care' | 'None'
-        'gcp_cost': None,             # e.g., '$5,200/mo'
+        "person_name": "Your Loved One",
+        "gcp_answers": {},
+        "gcp_recommendation": None,
+        "gcp_cost": None,
     }
 
 ctx = st.session_state.care_context
-person_name = ctx.get('person_name', 'Your Loved One')
+person_name = ctx.get("person_name", "Your Loved One")
 
 st.title("Your Concierge Care Hub")
 st.caption("Everything in one place. Start with the Guided Care Plan, then explore costs, or connect with an advisor.")
-
 st.markdown("---")
 
-# ---------- Guided Care Plan tile (with completion + summary) ----------
-gcp_completed = bool(ctx.get('gcp_recommendation')) or bool(ctx.get('gcp_answers'))
-rec_text = ctx.get('gcp_recommendation') or "Recommendation here"
-cost_text = ctx.get('gcp_cost') or "Cost TBD"
+# ---------- Guided Care Plan tile ----------
+gcp_completed = bool(ctx.get("gcp_recommendation")) or bool(ctx.get("gcp_answers"))
+rec_text = ctx.get("gcp_recommendation") or "Recommendation here"
+cost_text = ctx.get("gcp_cost") or "Cost TBD"
 
 with st.container(border=True):
     left, mid, right = st.columns([6, 2, 2])
     with left:
         st.subheader("Guided Care Plan")
-        if gcp_completed:
-            st.caption(f"{rec_text} • {cost_text}")
-        else:
-            st.caption("Answer 12 simple questions to get a personalized recommendation.")
+        st.caption(f"{rec_text} • {cost_text}" if gcp_completed else "Answer 12 simple questions to get a personalized recommendation.")
     with mid:
-        # Primary CTA remains consistent whether complete or not
         if st.button("Start Plan" if not gcp_completed else "Open", key="hub_gcp_start"):
             st.switch_page("pages/gcp.py")
     with right:
-        if gcp_completed:
-            st.success("Completed", icon="✅")
-        else:
-            st.info("Not started", icon="ℹ️")
+        st.success("Completed", icon="✅") if gcp_completed else st.info("Not started", icon="ℹ️")
 
-# ---------- Other tiles (unchanged wiring; minimal placeholders) ----------
+# ---------- Cost Planner ----------
 st.markdown("---")
-
-# Cost Planner
 with st.container(border=True):
     left, mid, right = st.columns([6, 2, 2])
     with left:
@@ -56,7 +45,7 @@ with st.container(border=True):
     with right:
         st.caption(" ")
 
-# Plan for My Advisor
+# ---------- PFMA ----------
 with st.container(border=True):
     left, mid, right = st.columns([6, 2, 2])
     with left:
@@ -68,7 +57,7 @@ with st.container(border=True):
     with right:
         st.caption(" ")
 
-# Medication Management
+# ---------- Medication Management ----------
 with st.container(border=True):
     left, mid, right = st.columns([6, 2, 2])
     with left:
@@ -80,7 +69,7 @@ with st.container(border=True):
     with right:
         st.caption(" ")
 
-# Risk Navigator
+# ---------- Risk Navigator ----------
 with st.container(border=True):
     left, mid, right = st.columns([6, 2, 2])
     with left:
@@ -92,7 +81,7 @@ with st.container(border=True):
     with right:
         st.caption(" ")
 
-# Assessment (placed last per earlier instruction)
+# ---------- Assessment ----------
 st.markdown("---")
 with st.container(border=True):
     left, mid, right = st.columns([6, 2, 2])
