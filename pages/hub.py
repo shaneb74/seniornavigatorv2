@@ -1,50 +1,106 @@
 
 import streamlit as st
 
-# Session-state guard (safe, no visual change)
+# ---------- Session guard ----------
 if 'care_context' not in st.session_state:
     st.session_state.care_context = {
+        'person_name': 'Your Loved One',
         'gcp_answers': {},
-        'decision_trace': [],
-        'planning_mode': 'exploring',
-        'care_flags': {}
+        'gcp_recommendation': None,   # e.g., 'In-home care' | 'Assisted living' | 'Memory care' | 'None'
+        'gcp_cost': None,             # e.g., '$5,200/mo'
     }
 
+ctx = st.session_state.care_context
+person_name = ctx.get('person_name', 'Your Loved One')
+
 st.title("Your Concierge Care Hub")
+st.caption("Everything in one place. Start with the Guided Care Plan, then explore costs, or connect with an advisor.")
 
-# ===== Guided Care Plan tile =====
-st.markdown("### Guided Care Plan")
-st.write("Answer a short set of questions (3 sections) to get a personalized recommendation.")
-# Use a unique key and route explicitly
-if st.button("Start Plan", key="hub_gcp_start"):
-    st.switch_page("pages/gcp.py")
+st.markdown("---")
 
-st.divider()
+# ---------- Guided Care Plan tile (with completion + summary) ----------
+gcp_completed = bool(ctx.get('gcp_recommendation')) or bool(ctx.get('gcp_answers'))
+rec_text = ctx.get('gcp_recommendation') or "Recommendation here"
+cost_text = ctx.get('gcp_cost') or "Cost TBD"
 
-# ===== Cost Planner tile =====
-st.markdown("### Cost Planner")
-st.write("Explore costs or do full planning.")
-if st.button("Start Cost Planner", key="hub_cost_start"):
-    st.switch_page("pages/cost_planner.py")
+with st.container(border=True):
+    left, mid, right = st.columns([6, 2, 2])
+    with left:
+        st.subheader("Guided Care Plan")
+        if gcp_completed:
+            st.caption(f"{rec_text} • {cost_text}")
+        else:
+            st.caption("Answer 12 simple questions to get a personalized recommendation.")
+    with mid:
+        # Primary CTA remains consistent whether complete or not
+        if st.button("Start Plan" if not gcp_completed else "Open", key="hub_gcp_start"):
+            st.switch_page("pages/gcp.py")
+    with right:
+        if gcp_completed:
+            st.success("Completed", icon="✅")
+        else:
+            st.info("Not started", icon="ℹ️")
 
-st.divider()
+# ---------- Other tiles (unchanged wiring; minimal placeholders) ----------
+st.markdown("---")
 
-# ===== Plan for My Advisor tile =====
-st.markdown("### Plan for My Advisor")
-st.write("Quick intake so an advisor can review before your call.")
-if st.button("Get Connected", key="hub_pfma_start"):
-    st.switch_page("pages/pfma.py")
+# Cost Planner
+with st.container(border=True):
+    left, mid, right = st.columns([6, 2, 2])
+    with left:
+        st.subheader("Cost Planner")
+        st.caption("Estimate costs quickly, or build a detailed plan with modules.")
+    with mid:
+        if st.button("Open Planner", key="hub_open_cp"):
+            st.switch_page("pages/cost_planner.py")
+    with right:
+        st.caption(" ")
 
-st.divider()
+# Plan for My Advisor
+with st.container(border=True):
+    left, mid, right = st.columns([6, 2, 2])
+    with left:
+        st.subheader("Plan for My Advisor")
+        st.caption("Book time with a concierge advisor and share your plan.")
+    with mid:
+        if st.button("Get Connected", key="hub_pfma"):
+            st.switch_page("pages/pfma.py")
+    with right:
+        st.caption(" ")
 
-# ===== Medication Management tile =====
-st.markdown("### Medication Management")
-if st.button("Start Review", key="hub_med_start"):
-    st.switch_page("pages/medication_management.py")
+# Medication Management
+with st.container(border=True):
+    left, mid, right = st.columns([6, 2, 2])
+    with left:
+        st.subheader("Medication Management")
+        st.caption("Keep meds on track with simple reminders and checks.")
+    with mid:
+        if st.button("Open", key="hub_meds"):
+            st.switch_page("pages/medication_management.py")
+    with right:
+        st.caption(" ")
 
-st.divider()
+# Risk Navigator
+with st.container(border=True):
+    left, mid, right = st.columns([6, 2, 2])
+    with left:
+        st.subheader("Risk Navigator")
+        st.caption("Quick safety check to reduce avoidable risks at home.")
+    with mid:
+        if st.button("Run Check", key="hub_risk"):
+            st.switch_page("pages/risk_navigator.py")
+    with right:
+        st.caption(" ")
 
-# ===== Risk Navigator tile =====
-st.markdown("### Risk Navigator")
-if st.button("Run Check", key="hub_risk_start"):
-    st.switch_page("pages/risk_navigator.py")
+# Assessment (placed last per earlier instruction)
+st.markdown("---")
+with st.container(border=True):
+    left, mid, right = st.columns([6, 2, 2])
+    with left:
+        st.subheader("Assessment")
+        st.caption("Additional screening tools and forms.")
+    with mid:
+        if st.button("Open Assessment", key="hub_assess"):
+            st.switch_page("pages/care_plan_confirm.py")
+    with right:
+        st.caption(" ")
