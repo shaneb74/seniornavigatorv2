@@ -15,9 +15,11 @@ st.markdown("<p>Your call is set! Prep the Plan for My Advisor now (2 min) to gi
 col1, col2 = st.columns([1, 1])
 with col1:
     if st.button("Do Prep Now (Recommended)", key="prep_now", type="primary"):
+        st.switch_page('pages/pfma.py')
         st.switch_page("pages/pfma.py")
 with col2:
     if st.button("Skip & Remind Me", key="skip_prep", type="secondary"):
+        st.switch_page('pages/hub.py')
         st.switch_page("pages/hub.py")
 st.markdown('</div>', unsafe_allow_html=True)
 

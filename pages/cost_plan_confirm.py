@@ -23,5 +23,6 @@ with col1:
     st.button("Back to Care Plan", key="back_cpc", type="secondary")
 with col2:
     if st.button("Next: Care Needs", key="next_cpc", type="primary"):
+        st.switch_page('pages/care_needs.py')
         st.switch_page("pages/care_needs.py")
 st.markdown('</div>', unsafe_allow_html=True)
