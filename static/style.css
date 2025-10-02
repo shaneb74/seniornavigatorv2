@@ -292,3 +292,9 @@ button[kind="secondary"]:hover {
   margin-top: 0.5rem;
   padding: 0.5rem 1rem;
 }
+
+/* === Welcome Page Button Fix === */
+.stButton > button[kind="primary"] {
+  background: var(--btn-primary) !important;
+  box-shadow: 0 2px 8px rgba(46, 110, 255, 0.25) !important;
+}
