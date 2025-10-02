@@ -1,0 +1,41 @@
+import streamlit as st
+
+# Waiting Room Page
+st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
+st.title("Your Waiting Room")
+st.markdown("<h2>Relax, explore, get ready.</h2>", unsafe_allow_html=True)
+st.markdown("<p>While you wait for your call, check out these options.</p>", unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
+
+# Content cards
+st.markdown('<div style="display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; padding: 1.5rem;">', unsafe_allow_html=True)
+
+# Trivia Card
+st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; min-height: 200px; width: 300px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">', unsafe_allow_html=True)
+st.markdown("### Trivia Time")
+st.markdown("<p>Fun fact: Did you know 1 in 5 seniors miss a med dose? Click for a tip!</p>", unsafe_allow_html=True)
+st.button("Get Tip", key="trivia_tip", type="secondary")
+st.markdown('</div>', unsafe_allow_html=True)
+
+# Partner Spot Card
+st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; min-height: 200px; width: 300px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">', unsafe_allow_html=True)
+st.markdown("### Partner Spotlight")
+st.markdown("<p>Need Medicare help? Explore our trusted partner—no sales pressure.</p>", unsafe_allow_html=True)
+st.button("Learn More", key="partner_more", type="secondary")
+st.markdown('</div>', unsafe_allow_html=True)
+
+# Second Opinion Card
+st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; min-height: 200px; width: 300px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">', unsafe_allow_html=True)
+st.markdown("### Second Opinion")
+st.markdown("<p>Get a quick geriatrics review before your call—no cost.</p>", unsafe_allow_html=True)
+st.button("Chat Now", key="second_opinion", type="secondary")
+st.markdown('</div>', unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# Navigation
+st.markdown('<div class="scn-nav-row">', unsafe_allow_html=True)
+col1, col2 = st.columns([1, 1])
+with col1:
+    st.button("Back to Hub", key="back_wait", type="secondary")
+st.markdown('</div>', unsafe_allow_html=True)
