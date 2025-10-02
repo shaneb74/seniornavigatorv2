@@ -1,5 +1,9 @@
+from ui.ux_enhancements import apply_global_ux, render_stepper
 import streamlit as st
 from pathlib import Path
+apply_global_ux()
+render_stepper()
+
 
 # Set page config for centered layout
 st.set_page_config(page_title="CCA Senior Navigator", layout="centered")

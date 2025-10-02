@@ -1,5 +1,9 @@
+from ui.ux_enhancements import apply_global_ux, render_stepper
 
 import streamlit as st
+apply_global_ux()
+render_stepper()
+
 
 # Cost Planner: Housing Path
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)

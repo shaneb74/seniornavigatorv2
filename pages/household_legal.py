@@ -1,5 +1,9 @@
+from ui.ux_enhancements import apply_global_ux, render_stepper
 
 import streamlit as st
+apply_global_ux()
+render_stepper()
+
 
 # Household & Legal Basics
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
