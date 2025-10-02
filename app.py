@@ -1,9 +1,5 @@
-from ui.ux_enhancements import apply_global_ux, render_stepper
 import streamlit as st
 from pathlib import Path
-apply_global_ux()
-render_stepper()
-
 
 # Set page config for centered layout
 st.set_page_config(page_title="CCA Senior Navigator", layout="centered")
@@ -22,7 +18,7 @@ inject_css("static/style.css")
 
 # Define pages
 welcome = st.Page("pages/welcome.py", title="Welcome", icon="👋")
-tell_us = st.Page("pages/tell_us_about_you.py", title="Tell Us About your loved one", icon="ℹ️")
+tell_us = st.Page("pages/tell_us_about_john.py", title="Tell Us About your loved one", icon="ℹ️")
 hub = st.Page("pages/hub.py", title="Hub", icon="🏠")
 gcp = st.Page("pages/gcp.py", title="Guided Care Plan", icon="🗺️")
 cost_planner_mode = st.Page("pages/cost_planner.py", title="Cost Planner: Mode", icon="💰")
@@ -53,7 +49,7 @@ my_documents = st.Page("pages/my_documents.py", title="My Documents", icon="📁
 my_account = st.Page("pages/my_account.py", title="My Account", icon="👤")
 
 # Configure navigation
-pages = [welcome, tell_us, hub, gcp, cost_planner_mode, cost_planner_modules, cost_planner_home_care, cost_planner_daily_aids, cost_planner_housing, cost_planner_benefits, cost_planner_mods, cost_planner_evaluation, cost_planner_skipped, appointment_booking, care_plan_confirm, cost_plan_confirm, care_needs, care_prefs, household_legal, benefits_coverage, personal_info, appointment_interstitial, ai_advisor, waiting_room, risk_navigator, medication_management, trusted_partners, export_results, my_documents, my_account, st.Page('pages/audiencing.py', title='Audiencing'), st.Page('pages/tell_us_about_loved_one.py', title='Tell Us About Loved One'), st.Page('pages/professional_discharge.py', title='Discharge Planner'), st.Page('pages/professional_referral.py', title='Referral Intake'), st.Page('pages/smart_review.py', title='Smart Review'), st.Page('pages/exports.py', title='Exports'), st.Page('pages/professional_mode.py', title='Professional Mode')]
+pages = [welcome, tell_us, hub, gcp, cost_planner_mode, cost_planner_modules, cost_planner_home_care, cost_planner_daily_aids, cost_planner_housing, cost_planner_benefits, cost_planner_mods, cost_planner_evaluation, cost_planner_skipped, appointment_booking, care_plan_confirm, cost_plan_confirm, care_needs, care_prefs, household_legal, benefits_coverage, personal_info, appointment_interstitial, ai_advisor, waiting_room, risk_navigator, medication_management, trusted_partners, export_results, my_documents, my_account, st.Page('pages/tell_us_about_loved_one.py', title='Tell Us About Loved One'), st.Page('pages/tell_us_about_you.py', title='Tell Us About You'), st.Page('pages/pfma.py', title='Plan for My Advisor')]
 pg = st.navigation(pages)
 
 # Run the selected page

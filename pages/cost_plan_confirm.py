@@ -1,24 +1,28 @@
+
 import streamlit as st
-from ui.ux_enhancements import apply_global_ux, render_stepper
-if 'care_context' not in st.session_state:
-    st.session_state.care_context = {
-        'audience_type': None,
-        'person_name': None,
-        'care_flags': {},
-        'plan': {}
-    }
-ctx = st.session_state.care_context
 
-apply_global_ux(); render_stepper('main')
+# Cost Plan Confirmation
+st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
+st.title("Confirm Cost Plan for your loved one")
+st.markdown("<h2>Does this fit his budget?</h2>", unsafe_allow_html=True)
+st.markdown("<p>Review and lock in the cost summary.</p>", unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
-st.header("Cost Plan Confirmation")
-st.write("Summary: $1,500/month (10 hrs home care + aids). (placeholder)")
-ok = st.checkbox("This looks right?", key="cost_ok")
+# Confirmation tile
+st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
+st.markdown("### Cost Plan Summary", unsafe_allow_html=True)
+st.markdown("<p>Total: $1,500/month (10 hrs home care + aids). Covers your loved one’s needs—adjust if needed later.</p>", unsafe_allow_html=True)
+st.checkbox("This looks right?", key="cost_plan_confirm")
+st.button("Save Confirmation", key="save_cost_plan", type="primary")
+st.markdown('</div>', unsafe_allow_html=True)
 
-col1,col2 = st.columns(2)
+# Navigation
+st.markdown('<div class="scn-nav-row">', unsafe_allow_html=True)
+col1, col2 = st.columns([1, 1])
 with col1:
-    if st.button("Back to Care Plan"):
-        st.switch_page('pages/care_plan_confirm.py')
+    st.button("Back to Care Plan", key="back_cpc", type="secondary")
 with col2:
-    if st.button("Next: Care Needs"):
+    if st.button("Next: Care Needs", key="next_cpc", type="primary"):
         st.switch_page('pages/care_needs.py')
+        st.switch_page("pages/care_needs.py")
+st.markdown('</div>', unsafe_allow_html=True)

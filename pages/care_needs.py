@@ -1,24 +1,28 @@
+
 import streamlit as st
-from ui.ux_enhancements import apply_global_ux, render_stepper
-if 'care_context' not in st.session_state:
-    st.session_state.care_context = {
-        'audience_type': None,
-        'person_name': None,
-        'care_flags': {},
-        'plan': {}
-    }
-ctx = st.session_state.care_context
 
-apply_global_ux(); render_stepper('main')
+# Care Needs & Daily Support
+st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
+st.title("Care Needs & Support for your loved one")
+st.markdown("<h2>Tailor his daily care.</h2>", unsafe_allow_html=True)
+st.markdown("<p>Share details to match his needs.</p>", unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
-st.header("Care Needs & Daily Support")
-st.write("Details: e.g., Behavioral: Wandering, mild confusion. Diet: Low salt. (placeholder)")
-ok = st.checkbox("This looks right?")
+# Confirmation tile
+st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
+st.markdown("### Care Needs & Daily Support", unsafe_allow_html=True)
+st.markdown("<p>Behavioral notes: Wandering, mild confusion. Diet: Low salt. Cognition: Moderate. Mental health: Stable.</p>", unsafe_allow_html=True)
+st.checkbox("This looks right?", key="care_needs_confirm")
+st.button("Save Needs", key="save_care_needs", type="primary")
+st.markdown('</div>', unsafe_allow_html=True)
 
-col1,col2 = st.columns(2)
+# Navigation
+st.markdown('<div class="scn-nav-row">', unsafe_allow_html=True)
+col1, col2 = st.columns([1, 1])
 with col1:
-    if st.button("Back to Cost Plan"):
-        st.switch_page('pages/cost_plan_confirm.py')
+    st.button("Back to Cost Plan", key="back_cn", type="secondary")
 with col2:
-    if st.button("Next: Care Preferences"):
+    if st.button("Next: Care Preferences", key="next_cn", type="primary"):
         st.switch_page('pages/care_prefs.py')
+        st.switch_page("pages/care_prefs.py")
+st.markdown('</div>', unsafe_allow_html=True)
