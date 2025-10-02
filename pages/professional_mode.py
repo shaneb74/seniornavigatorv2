@@ -1,7 +1,7 @@
 
 import streamlit as st
 
-# Auth guard
+# Auth guard for professional-only space
 if "is_authenticated" not in st.session_state:
     st.session_state.is_authenticated = False
 
