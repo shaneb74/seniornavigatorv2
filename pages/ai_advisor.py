@@ -32,7 +32,7 @@ st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding:
 st.markdown("### Ask Me Anything", unsafe_allow_html=True)
 st.markdown("<p>Type your question about John’s care below.</p>", unsafe_allow_html=True)
 st.text_input("Your question...", key="ai_input", placeholder="e.g., How can I afford home care?")
-st.button("Send", key="ai_send", type="primary", style="margin-top: 0.5rem; padding: 0.5rem 1rem;")
+st.button("Send", key="ai_send", type="primary")
 st.markdown('<div style="margin-top: 1rem; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">', unsafe_allow_html=True)
 st.write("**Response:** I’m here to help! Tell me more about John’s situation...")
 st.markdown('</div>', unsafe_allow_html=True)
