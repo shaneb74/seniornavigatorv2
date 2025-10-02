@@ -1,60 +1,71 @@
 import streamlit as st
 
-if 'care_context' not in st.session_state:
-    st.session_state.care_context = {
-        'gcp_answers': {},
-        'decision_trace': [],
-        'planning_mode': 'exploring',
-        'care_flags': {}
-    }
-ctx = st.session_state.care_context
-answers = ctx.setdefault('gcp_answers', {})
+# Guard
+if "care_context" not in st.session_state:
+    st.session_state.care_context = {"gcp_answers": {}}
+answers = st.session_state.care_context.setdefault("gcp_answers", {})
 
-st.title('Guided Care Plan — Daily Life & Support')
-st.caption('Step 1 of 3')
+st.title("Guided Care Plan — Daily Life & Support")
+st.caption("Step 1 of 3")
+st.markdown("---")
 
-st.markdown('---')
-
-adl_opts = ['Independent', 'Occasional reminders', 'Help with some tasks', 'Rely on help for most tasks']
-answers['adl_dependency'] = st.radio(
-    'How well can you manage everyday activities like bathing, dressing, or preparing meals on your own?',
-    adl_opts,
-    index=adl_opts.index(answers.get('adl_dependency', adl_opts[0])),
-    key='q_adl_dependency'
+# ADL dependency
+opt_adl = ["Independent", "Occasional reminders", "Help with some tasks", "Rely on help for most tasks"]
+adl_idx = answers.get("adl_dependency_idx", 0)
+adl = st.radio(
+    "How well can you manage everyday activities like bathing, dressing, or preparing meals on your own?",
+    opt_adl,
+    index=adl_idx if 0 <= adl_idx < len(opt_adl) else 0,
+    key="gcp_q_adl",
 )
-st.caption('ADLs include bathing, dressing, meals, and chores. This tells us the level of daily support.')
+answers["adl_dependency_idx"] = opt_adl.index(adl)
+st.caption("ADLs include bathing, dressing, meals, and chores. This tells us the level of daily support.")
 
-cg_opts = ['I have support most of the time','I have support a few days a week','I have support occasionally','I don’t have regular support']
-answers['caregiver_support_level'] = st.radio(
-    'How much regular support do you have from a caregiver or family member?',
-    cg_opts,
-    index=cg_opts.index(answers.get('caregiver_support_level', cg_opts[0])),
-    key='q_caregiver_support'
+# Caregiver support
+opt_support = [
+    "I have support most of the time",
+    "I have support a few days a week",
+    "I have support occasionally",
+    "I don’t have regular support",
+]
+sup_idx = answers.get("caregiver_support_level_idx", 0)
+sup = st.radio(
+    "How much regular support do you have from a caregiver or family member?",
+    opt_support,
+    index=sup_idx if 0 <= sup_idx < len(opt_support) else 0,
+    key="gcp_q_support",
 )
-st.caption('Strong support can offset higher daily needs.')
+answers["caregiver_support_level_idx"] = opt_support.index(sup)
+st.caption("Strong support can offset higher daily needs.")
 
-med_opts = ['None','A few, easy to manage','Several, harder to manage','Not sure']
-answers['meds_complexity'] = st.radio(
-    'Do you take medications, and how manageable is the routine?',
-    med_opts,
-    index=med_opts.index(answers.get('meds_complexity', med_opts[0])),
-    key='q_meds_complexity'
+# Meds complexity
+opt_meds = ["None", "A few, easy to manage", "Several, harder to manage", "Not sure"]
+med_idx = answers.get("meds_complexity_idx", 0)
+med = st.radio(
+    "Do you take medications, and how manageable is the routine?",
+    opt_meds,
+    index=med_idx if 0 <= med_idx < len(opt_meds) else 0,
+    key="gcp_q_meds",
 )
-st.caption('This helps us understand missed‑med risk when combined with cognition.')
+answers["meds_complexity_idx"] = opt_meds.index(med)
+st.caption("This helps us understand missed-med risk when combined with cognition.")
 
-soc_opts = ['Frequent contact','Occasional contact','Rarely see others','Often alone']
-answers['social_isolation'] = st.radio(
-    'How often do you connect with friends, family, or activities?',
-    soc_opts,
-    index=soc_opts.index(answers.get('social_isolation', soc_opts[0])),
-    key='q_social_isolation'
+# Social isolation
+opt_social = ["Frequent contact", "Occasional contact", "Rarely see others", "Often alone"]
+soc_idx = answers.get("social_isolation_idx", 0)
+soc = st.radio(
+    "How often do you connect with friends, family, or activities?",
+    opt_social,
+    index=soc_idx if 0 <= soc_idx < len(opt_social) else 0,
+    key="gcp_q_social",
 )
+answers["social_isolation_idx"] = opt_social.index(soc)
 
-st.markdown('---')
-col1, col2 = st.columns(2)
-with col1:
-    if st.button('Back', key='daily_back'):
-        st.switch_page('pages/gcp.py')
-with col2:
-    if st.button('Next', key='daily_next'):
-        st.switch_page('pages/gcp_health_safety.py')
+# Actions row (works with your CSS if present)
+st.markdown("<div class='row-actions'><div class='left'>", unsafe_allow_html=True)
+if st.button("Back", key="gcp_dl_back"):
+    st.switch_page("pages/gcp.py")
+st.markdown("</div><div class='right'>", unsafe_allow_html=True)
+if st.button("Next", key="gcp_dl_next"):
+    st.switch_page("pages/gcp_health_safety.py")
+st.markdown("</div></div>", unsafe_allow_html=True)
