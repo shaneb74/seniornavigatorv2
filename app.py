@@ -1,82 +1,38 @@
-
 import streamlit as st
 from pathlib import Path
 
 st.set_page_config(page_title="CCA Senior Navigator", layout="centered")
 
-# ============== Global CSS ==============
-STYLES = """
-<style>
-:root {
-  --cca-blue: #0B5CD8;
-  --cca-black: #000000;
-}
+# ---------- Load CSS from static/style.css with cache-busting ----------
+def inject_css(path: str):
+    p = Path(path)
+    if p.exists():
+        mtime = int(p.stat().st_mtime)
+        st.markdown(
+            f"<style>{p.read_text()}</style><!-- v:{mtime} -->",
+            unsafe_allow_html=True,
+        )
+    else:
+        st.warning(f"Missing CSS: {path}")
 
-/* Primary CTA button: Blue */
-div.stButton > button:first-child {
-  background-color: var(--cca-blue);
-  color: #fff;
-  font-size: 20px;
-  font-weight: 600;
-  border-radius: 12px;
-  padding: 0.6rem 1.2rem;
-  border: none;
-}
+inject_css("static/style.css")
 
-/* Secondary button: Black */
-div.stButton.secondary > button:first-child {
-  background-color: var(--cca-black);
-  color: #fff;
-  font-size: 20px;
-  font-weight: 600;
-  border-radius: 12px;
-  padding: 0.6rem 1.2rem;
-  border: none;
-}
-
-/* Hover effect */
-div.stButton > button:first-child:hover {
-  opacity: 0.92;
-}
-
-/* Radios & checkboxes accent color */
-input[type="radio"], input[type="checkbox"] {
-  accent-color: var(--cca-blue);
-}
-
-/* Segmented control: pill buttons */
-div[data-testid="stSegmentedControl"] > div {
-  gap: 10px;
-}
-div[data-testid="stSegmentedControl"] button {
-  border-radius: 9999px !important;
-  padding: 10px 16px !important;
-  font-weight: 600 !important;
-  border: 1px solid rgba(0,0,0,0.08) !important;
-  background: #f8fafc !important;
-  color: #1f2937 !important;
-}
-div[data-testid="stSegmentedControl"] button[aria-checked="true"] {
-  background: var(--cca-blue) !important;
-  color: #fff !important;
-  border-color: var(--cca-blue) !important;
-}
-</style>
-"""
-st.markdown(STYLES, unsafe_allow_html=True)
-
-# Simple prototype auth flag
+# ---------- Auth flag ----------
 if "is_authenticated" not in st.session_state:
     st.session_state.is_authenticated = False
 
-def ensure_page(path: str, title: str, icon: str, default: bool=False):
+# ---------- Page registration helper ----------
+def ensure_page(path: str, title: str, icon: str, default: bool = False):
     p = Path(path)
     if not p.exists():
         return None, path
-    page = st.Page(path, title=title, icon=icon, default=bool(default)) if default else st.Page(path, title=title, icon=icon)
-    return page, None
+    return (
+        st.Page(path, title=title, icon=icon, default=bool(default))
+        if default
+        else st.Page(path, title=title, icon=icon)
+    ), None
 
-# Register broad set so nav isn't truncated
+# ---------- Pages to register ----------
 INTENDED = [
     # Entry & Hub
     ("pages/welcome.py", "Welcome", "👋", True),
@@ -92,7 +48,7 @@ INTENDED = [
     ("pages/gcp_daily_life.py", "GCP — Daily Life & Support", "🗺️", False),
     ("pages/gcp_health_safety.py", "GCP — Health & Safety", "🗺️", False),
     ("pages/gcp_context_prefs.py", "GCP — Context & Preferences", "🗺️", False),
-    ("pages/gcp_recommendation.py", "GCP Recommendation", "🗺️", False),
+    ("pages/gcp_recommendation.py", "GCP Recommendation", "✅", False),
 
     # Cost Planner
     ("pages/cost_planner.py", "Cost Planner: Mode", "💰", False),
@@ -104,9 +60,9 @@ INTENDED = [
     ("pages/cost_planner_housing.py", "Housing Path", "🏡", False),
     ("pages/cost_planner_benefits.py", "Benefits Check", "💳", False),
     ("pages/cost_planner_mods.py", "Age-in-Place Upgrades", "🔧", False),
-    ("pages/expert_review.py", "Expert Review", "🔎", False),
     ("pages/cost_planner_evaluation.py", "Cost Planner: Evaluation", "🔍", False),
     ("pages/cost_planner_skipped.py", "Cost Planner: Skipped", "⚠️", False),
+    ("pages/expert_review.py", "Expert Review", "🔎", False),
 
     # PFMA + booking
     ("pages/pfma.py", "Plan for My Advisor", "🧭", False),
@@ -133,11 +89,13 @@ INTENDED = [
 pages, missing = [], []
 for args in INTENDED:
     page, miss = ensure_page(*args)
-    if page: pages.append(page)
-    if miss: missing.append(miss)
+    if page:
+        pages.append(page)
+    if miss:
+        missing.append(miss)
 
 if missing:
-    st.sidebar.warning("Missing pages detected:\n" + "\n".join(f"- " + m for m in missing))
+    st.sidebar.warning("Missing pages detected:\n" + "\n".join(f"- {m}" for m in missing))
 
 if pages:
     pg = st.navigation(pages)
@@ -145,7 +103,7 @@ if pages:
 else:
     st.error("No pages available. Check file paths in app.py.")
 
-# Sidebar login toggle
+# ---------- Sidebar auth toggle ----------
 with st.sidebar:
     st.markdown("---")
     st.caption("Authentication")
