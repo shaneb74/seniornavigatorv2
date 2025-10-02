@@ -20,6 +20,7 @@ INTENDED = [
     ("pages/hub.py", "Hub", "🏠", False),
     ("pages/tell_us_about_you.py", "Tell Us About You", "ℹ️", False),
     ("pages/tell_us_about_loved_one.py", "Tell Us About Loved One", "ℹ️", False),
+    ("pages/professional_mode.py", "Professional Mode", "🧑‍⚕️", False),
 ]
 
 pages = []
@@ -40,9 +41,10 @@ else:
     pg = st.navigation(pages)
     pg.run()
 
-# Sidebar auth toggle
+# Sidebar auth toggle at the bottom
 with st.sidebar:
     st.markdown("---")
+    st.caption("Authentication")
     if st.session_state.is_authenticated:
         st.success("Signed in")
         if st.button("Log out", key="sidebar_logout"):

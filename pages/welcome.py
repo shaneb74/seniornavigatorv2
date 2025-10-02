@@ -2,10 +2,12 @@
 import streamlit as st
 from pathlib import Path
 
+# Prototype auth flag init
 if "is_authenticated" not in st.session_state:
     st.session_state.is_authenticated = False
 
 def safe_nav(target: str, fallback: str = "pages/hub.py"):
+    # Existence check first
     if not Path(target).exists():
         target = fallback if Path(fallback).exists() else None
     try:
@@ -14,6 +16,7 @@ def safe_nav(target: str, fallback: str = "pages/hub.py"):
         else:
             st.error("Navigation target is unavailable in this build.")
     except Exception:
+        # Likely not registered in st.navigation. Try fallback.
         if Path(fallback).exists():
             try:
                 st.switch_page(fallback)

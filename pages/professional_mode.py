@@ -1,17 +1,16 @@
+
 import streamlit as st
-from ui.ux_enhancements import apply_global_ux, render_stepper
-if 'care_context' not in st.session_state:
-    st.session_state.care_context = {
-        'audience_type': None,
-        'person_name': None,
-        'care_flags': {},
-        'plan': {}
-    }
-ctx = st.session_state.care_context
 
-apply_global_ux(); render_stepper('main')
+# Auth guard
+if "is_authenticated" not in st.session_state:
+    st.session_state.is_authenticated = False
 
-st.header("Professional Mode")
-st.write("This is a placeholder screen for professional users. Route to contact form or static info later.")
-if st.button("Back to Hub"):
-    st.switch_page('pages/hub.py')
+if not st.session_state.is_authenticated:
+    st.warning("Please log in to access Professional Mode.")
+    st.stop()
+
+st.title("Professional Mode")
+st.write("You are signed in as a professional user. Future workflow will go here.")
+
+if st.button("Back to Hub", key="prof_back_hub"):
+    st.switch_page("pages/hub.py")
