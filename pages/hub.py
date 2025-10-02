@@ -40,9 +40,28 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Additional options
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 150px; margin-top: 1.5rem;">', unsafe_allow_html=True)
-st.markdown("### Exports")
-st.markdown("<p>Download John’s plan summary—PDF or CSV.</p>", unsafe_allow_html=True)
-st.button("View Exports", key="view_exports", type="primary")
+# Additional decision support tools - lower section
+st.markdown('<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; justify-items: center; padding: 1rem; margin-top: 2rem;">', unsafe_allow_html=True)
+
+# Medication Management
+st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
+st.markdown("### Medication Management", unsafe_allow_html=True)
+st.markdown("<p>Check John’s meds—polypharmacy alerts, dose timing, interactions.</p>", unsafe_allow_html=True)
+st.button("Start Review", key="start_med", type="primary")
+st.markdown('</div>', unsafe_allow_html=True)
+
+# Risk Navigator
+st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
+st.markdown("### Risk Navigator", unsafe_allow_html=True)
+st.markdown("<p>See if John’s at risk for ER trips again—prevent it early.</p>", unsafe_allow_html=True)
+st.button("Run Check", key="start_risk", type="primary")
+st.markdown('</div>', unsafe_allow_html=True)
+
+st.markdown('</div>', unsafe_allow_html=True)
+
+# Navigation
+st.markdown('<div class="scn-nav-row">', unsafe_allow_html=True)
+col1, col2 = st.columns([1, 1])
+with col1:
+    st.button("Back to Tell Us", key="back_hub", type="secondary")
 st.markdown('</div>', unsafe_allow_html=True)
