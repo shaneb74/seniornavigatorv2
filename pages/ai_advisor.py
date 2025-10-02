@@ -6,9 +6,9 @@ render_stepper()
 
 
 # AI Advisor Page
-st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
+st.markdown(r'''<div class="scn-hero">', unsafe_allow_html=True)
 st.title("AI Advisor")
-st.markdown("<h2>I'm Navi—your expert advisor.</h2>", unsafe_allow_html=True)
+st.markdown(r'''<h2>I'm Navi—your expert advisor.</h2>", unsafe_allow_html=True)
 st.markdown("<p>I help you see the whole map: care paths, hidden costs, decisions no one talks about. For John.</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -26,7 +26,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 # GPT Chat Interface
 st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px; background: #f0f0f0;">', unsafe_allow_html=True)
 st.markdown("### Ask Me Anything", unsafe_allow_html=True)
-st.markdown("<p>Type your question about John’s care below, or click a question above.</p>", unsafe_allow_html=True)
+st.markdown("<p>Type your question about John’s care below, or click a question above.</p>''', unsafe_allow_html=True)
 st.text_input("Your question...", key="ai_input", placeholder="e.g., How can I afford home care?")
 st.button("Send", key="ai_send", type="primary")
 st.markdown('<div style="margin-top: 1rem; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">', unsafe_allow_html=True)
@@ -40,4 +40,4 @@ st.markdown('<div class="scn-nav-row">', unsafe_allow_html=True)
 col1, col2 = st.columns([1, 1])
 with col1:
     st.button("Back to Hub", key="back_ai", type="secondary")
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown('</div>''', unsafe_allow_html=True)

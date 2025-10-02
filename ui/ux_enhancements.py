@@ -7,8 +7,8 @@ CSS = '''<style>
 a:focus, button:focus { outline: 3px solid rgba(0,0,0,0.35) !important; }
 
 /* Stepper container */
-.sn-stepper { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin: 8px 0 16px 0; }
-.sn-step { padding:4px 10px; border-radius: 999px; background: #eef2ff; color:#1e3a8a; font-size: 13px; }
+.sn-stepper { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin: 8px 0 16px 0; }
+.sn-step { padding:4px 10px; border-radius: 999px; background: #eef2ff; color:#1e3a8a; font-size: 13px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sn-step.sn-active { background:#1e3a8a; color:#fff; }
 .sn-step.sn-done { background:#c7d2fe; color:#1e3a8a; opacity:0.95; }
 
