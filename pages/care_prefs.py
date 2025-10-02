@@ -7,7 +7,7 @@ render_stepper()
 
 # Care Preferences
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-st.title("Care Preferences for John")
+st.title("Care Preferences for your loved one")
 st.markdown("<h2>Choose what suits him best.</h2>", unsafe_allow_html=True)
 st.markdown("<p>Personalize his care settings.</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)

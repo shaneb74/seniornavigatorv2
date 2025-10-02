@@ -7,7 +7,7 @@ render_stepper()
 
 # Medication Management
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-st.title("Medication Management for John")
+st.title("Medication Management for your loved one")
 st.markdown("<h2>Simplify his meds, avoid risks.</h2>", unsafe_allow_html=True)
 st.markdown("<p>Review doses and interactions.</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)

@@ -9,7 +9,7 @@ render_stepper()
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
 st.title("Senior Care Navigator")
 st.markdown("<h2>Find the right care, step by step.</h2>", unsafe_allow_html=True)
-st.markdown("<p>Let’s start with a few basics about John.</p>", unsafe_allow_html=True)
+st.markdown("<p>Let’s start with a few basics about your loved one.</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
 # Navigation buttons

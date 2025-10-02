@@ -9,7 +9,7 @@ render_stepper()
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
 st.title("My Account")
 st.markdown("<h2>Your profile & access</h2>", unsafe_allow_html=True)
-st.markdown("<p>Manage your details and resources for John.</p>", unsafe_allow_html=True)
+st.markdown("<p>Manage your details and resources for your loved one.</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
 # Account tiles
@@ -25,7 +25,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 # My Documents
 st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 2rem; text-align: left; min-height: 200px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">', unsafe_allow_html=True)
 st.markdown("### My Documents")
-st.markdown("<p>View and manage John’s stored documents.</p>", unsafe_allow_html=True)
+st.markdown("<p>View and manage your loved one’s stored documents.</p>", unsafe_allow_html=True)
 if st.button("Go to Documents", key="go_docs", type="primary"):
     st.switch_page("pages/my_documents.py")
 st.markdown('</div>', unsafe_allow_html=True)

@@ -7,7 +7,7 @@ render_stepper()
 
 # Personal Info
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-st.title("Personal Info for John")
+st.title("Personal Info for your loved one")
 st.markdown("<h2>Confirm contact details.</h2>", unsafe_allow_html=True)
 st.markdown("<p>Ensure your advisor can reach you.</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
@@ -15,7 +15,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 # Confirmation tile
 st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
 st.markdown("### Personal Info", unsafe_allow_html=True)
-st.markdown("<p>Name: John Doe. Phone: 123-456-7890. Email: john@example.com. Confirmed.</p>", unsafe_allow_html=True)
+st.markdown("<p>Name: your loved one Doe. Phone: 123-456-7890. Email: john@example.com. Confirmed.</p>", unsafe_allow_html=True)
 st.checkbox("This looks right?", key="personal_info_confirm")
 st.button("Save Info", key="save_personal_info", type="primary")
 st.markdown('</div>', unsafe_allow_html=True)

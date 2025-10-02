@@ -7,7 +7,7 @@ render_stepper()
 
 # Household & Legal Basics
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-st.title("Household & Legal Basics for John")
+st.title("Household & Legal Basics for your loved one")
 st.markdown("<h2>Confirm his living details.</h2>", unsafe_allow_html=True)
 st.markdown("<p>Lock in key info for his plan.</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)

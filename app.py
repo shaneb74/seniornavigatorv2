@@ -22,7 +22,7 @@ inject_css("static/style.css")
 
 # Define pages
 welcome = st.Page("pages/welcome.py", title="Welcome", icon="👋")
-tell_us = st.Page("pages/tell_us_about_john.py", title="Tell Us About John", icon="ℹ️")
+tell_us = st.Page("pages/tell_us_about_you.py", title="Tell Us About your loved one", icon="ℹ️")
 hub = st.Page("pages/hub.py", title="Hub", icon="🏠")
 gcp = st.Page("pages/gcp.py", title="Guided Care Plan", icon="🗺️")
 cost_planner_mode = st.Page("pages/cost_planner.py", title="Cost Planner: Mode", icon="💰")

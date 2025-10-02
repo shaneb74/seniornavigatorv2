@@ -29,7 +29,7 @@ def apply_global_ux():
 
 # Ordered flows. File stems must match your pages/*.py filenames.
 FLOW_MAIN = [
-  'tell_us_about_john', 'care_needs', 'care_prefs',
+  'audiencing', 'care_needs', 'care_prefs',
   'household_legal', 'benefits_coverage', 'personal_info',
   'care_plan_confirm', 'appointment_booking', 'pfma',
   'hub'

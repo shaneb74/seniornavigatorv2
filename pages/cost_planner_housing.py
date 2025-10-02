@@ -7,7 +7,7 @@ render_stepper()
 
 # Cost Planner: Housing Path
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-st.title("Housing Path for John")
+st.title("Housing Path for your loved one")
 st.markdown("<h2>Plan his living options.</h2>", unsafe_allow_html=True)
 st.markdown("<p>Decide to stay or explore new paths.</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
@@ -15,7 +15,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 # Housing options with tile style
 st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
 st.markdown("### Housing Choices")
-st.markdown("<p>Select John’s living preference.</p>", unsafe_allow_html=True)
+st.markdown("<p>Select your loved one’s living preference.</p>", unsafe_allow_html=True)
 st.write("Stay home?")
 st.button("Yes", key="hp_stay_yes", type="primary")
 st.button("No", key="hp_stay_no", type="primary")

@@ -7,7 +7,7 @@ render_stepper()
 
 # Risk Navigator
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-st.title("Risk Navigator for John")
+st.title("Risk Navigator for your loved one")
 st.markdown("<h2>Spot risks before they happen.</h2>", unsafe_allow_html=True)
 st.markdown("<p>Check his safety and prevent ER trips.</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)

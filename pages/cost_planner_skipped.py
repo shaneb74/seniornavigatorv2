@@ -7,7 +7,7 @@ render_stepper()
 
 # Cost Planner: Skipped
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-st.title("Skipped Modules for John")
+st.title("Skipped Modules for your loved one")
 st.markdown("<h2>Review what you missed.</h2>", unsafe_allow_html=True)
 st.markdown("<p>Add these later if needed.</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)

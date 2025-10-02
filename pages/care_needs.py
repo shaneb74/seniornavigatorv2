@@ -7,7 +7,7 @@ render_stepper()
 
 # Care Needs & Daily Support
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-st.title("Care Needs & Support for John")
+st.title("Care Needs & Support for your loved one")
 st.markdown("<h2>Tailor his daily care.</h2>", unsafe_allow_html=True)
 st.markdown("<p>Share details to match his needs.</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)

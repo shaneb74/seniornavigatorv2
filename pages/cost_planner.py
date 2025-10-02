@@ -7,7 +7,7 @@ render_stepper()
 
 # Cost Planner: Mode
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-st.title("Cost Planner for John")
+st.title("Cost Planner for your loved one")
 st.markdown("<h2>Choose your planning style.</h2>", unsafe_allow_html=True)
 st.markdown("<p>Step-by-step or freeform—your call.</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)

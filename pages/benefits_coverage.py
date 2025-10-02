@@ -7,7 +7,7 @@ render_stepper()
 
 # Benefits & Coverage
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-st.title("Benefits & Coverage for John")
+st.title("Benefits & Coverage for your loved one")
 st.markdown("<h2>Unlock savings for his care.</h2>", unsafe_allow_html=True)
 st.markdown("<p>Confirm eligibility details.</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
