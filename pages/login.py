@@ -7,28 +7,36 @@ if 'care_context' not in st.session_state:
     st.session_state.care_context = {}
 ctx = st.session_state.care_context
 
-# Candidate targets we conceptually support
+# Build runtime allowlist from a conceptual list that also checks file existence
 _CANDIDATES = [
     "pages/pfma.py",
     "pages/hub.py",
     "pages/cost_planner_modules.py",
     "pages/pfma_confirm_care_plan.py",
 ]
-
-# Build a runtime-validated allowlist: must be in our conceptual list AND exist on disk
 ALLOWED_TARGETS = {t for t in _CANDIDATES if Path(t).exists()}
 
 def safe_go(target: str):
-    # If target isn't in the validated allowlist, drop to a safe default
+    # If target invalid or unregistered, fallback to hub if present
     fallback = "pages/hub.py" if Path("pages/hub.py").exists() else None
     if target not in ALLOWED_TARGETS:
         target = fallback
-    if target is None:
-        st.error("Navigation target is unavailable.")
-    else:
-        st.switch_page(target)
+    try:
+        if target is None:
+            st.error("Navigation target is unavailable in this build.")
+        else:
+            st.switch_page(target)
+    except Exception:
+        # Target likely not registered in st.navigation; fall back to hub
+        if fallback and target != fallback:
+            try:
+                st.switch_page(fallback)
+                return
+            except Exception:
+                pass
+        st.error("Could not navigate to the requested page. Please use the Hub.")
 
-# Pick return target: context -> pfma if it exists -> hub
+# Intended return: context-specified -> PFMA (if present) -> Hub
 preferred = ctx.get("after_login_target")
 if preferred not in ALLOWED_TARGETS:
     preferred = "pages/pfma.py" if "pages/pfma.py" in ALLOWED_TARGETS else "pages/hub.py"
@@ -41,7 +49,6 @@ st.caption(
     "- Connect with our advisor for a personalized consultation\n"
 )
 
-# Toggle between OAuth and Email
 choice = st.radio(
     "Choose a sign-in method",
     ["Continue with...", "Use email"],
@@ -94,7 +101,7 @@ with st.container(border=True):
 
 st.markdown("---")
 if st.button("Back to Hub", key="login_back_hub"):
-    # Even this checks existence; if hub missing, show a soft error.
+    # Guard hub existence
     if Path("pages/hub.py").exists():
         st.switch_page("pages/hub.py")
     else:
