@@ -17,8 +17,8 @@ def inject_css(path: str):
 inject_css("static/style.css")
 
 # Define pages
-tell_us = st.Page("pages/tell_us_about_john.py", title="Tell Us About John", icon="ℹ️")
 welcome = st.Page("pages/welcome.py", title="Welcome", icon="👋")
+tell_us = st.Page("pages/tell_us_about_john.py", title="Tell Us About John", icon="ℹ️")
 hub = st.Page("pages/hub.py", title="Hub", icon="🏠")
 gcp = st.Page("pages/gcp.py", title="Guided Care Plan", icon="🗺️")
 cost_planner_mode = st.Page("pages/cost_planner.py", title="Cost Planner: Mode", icon="💰")
@@ -34,7 +34,7 @@ pfma = st.Page("pages/pfma.py", title="Plan for My Advisor", icon="📅")
 exports = st.Page("pages/exports.py", title="Exports", icon="📤")
 
 # Configure navigation
-pages = [tell_us, welcome, hub, gcp, cost_planner_mode, cost_planner_modules, cost_planner_home_care, cost_planner_daily_aids, cost_planner_housing, cost_planner_benefits, cost_planner_mods, cost_planner_evaluation, cost_planner_skipped, pfma, exports]
+pages = [welcome, tell_us, hub, gcp, cost_planner_mode, cost_planner_modules, cost_planner_home_care, cost_planner_daily_aids, cost_planner_housing, cost_planner_benefits, cost_planner_mods, cost_planner_evaluation, cost_planner_skipped, pfma, exports]
 pg = st.navigation(pages)
 
 # Run the selected page
