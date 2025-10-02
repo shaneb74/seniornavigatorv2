@@ -1,3 +1,4 @@
+
 import streamlit as st
 
 # Risk Navigator
@@ -9,7 +10,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 # Risk assessment tile
 st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
-st.markdown("### Risk Check", unsafe_allow_html=True)
+st.markdown("### Risk Check")
 st.markdown("<p>Fall risk: Moderate (stairs). ER visits: 1 last year. Action: Add grab bars.</p>", unsafe_allow_html=True)
 st.checkbox("This looks right?", key="risk_nav_confirm")
 st.button("Save Risk Plan", key="save_risk_nav", type="primary")

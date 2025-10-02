@@ -1,3 +1,4 @@
+
 import streamlit as st
 
 # Medication Management
@@ -9,7 +10,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 # Medication review tile
 st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
-st.markdown("### Med Review", unsafe_allow_html=True)
+st.markdown("### Med Review")
 st.markdown("<p>Pills: 5 daily. Polypharmacy risk: Medium. Suggestion: Consolidate doses.</p>", unsafe_allow_html=True)
 st.checkbox("This looks right?", key="med_man_confirm")
 st.button("Save Med Plan", key="save_med_man", type="primary")

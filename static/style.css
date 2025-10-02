@@ -1,3 +1,4 @@
+
 /* Senior Care Navigator CSS - Optimized for Streamlit Cloud */
 
 /* === CSS Variables === */
@@ -231,7 +232,7 @@ button[kind="secondary"]:hover {
   --background-color: #FFFFFF;
   --secondary-background-color: #F9F9F9;
   --text-color: #111827;
-  --font: "Segoe UI", sans-serif;
+    --font: "Segoe UI", sans-serif;
 }
 
 .stApp {
