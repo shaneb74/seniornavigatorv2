@@ -1,35 +1,39 @@
 import streamlit as st
-from ui.ux_enhancements import apply_global_ux, render_stepper
+from pathlib import Path
 
-# Debug: non-visual logger
-def _debug_log(msg: str):
+# ---------- Safe navigation helper ----------
+def safe_switch(target: str, fallback: str = "pages/hub.py"):
+    """Navigate if the target page exists and is registered, otherwise fall back."""
     try:
-        print(f"[SNAV] {msg}")
+        if Path(target).exists():
+            st.switch_page(target)
+        else:
+            st.switch_page(fallback)
     except Exception:
-        pass
+        st.switch_page(fallback)
 
-_debug_log('LOADED: welcome.py')
+# ---------- UI ----------
+st.title("Welcome to the CCA Senior Navigator")
+st.caption("Let’s get started by telling us who you’re planning for.")
 
-apply_global_ux()
-render_stepper('main')
+choice = st.radio(
+    "Who are you planning for?",
+    ["Myself", "Someone Else", "As a Professional"],
+    label_visibility="collapsed",
+    key="welcome_choice"
+)
 
-if 'care_context' not in st.session_state:
-    st.session_state.care_context = {'audience_type': None, 'person_name': None, 'care_flags': {}, 'plan': {}}
-ctx = st.session_state.care_context
-# Guard: ensure expected keys exist
-if 'gcp_answers' not in ctx: ctx['gcp_answers'] = {}
-if 'decision_trace' not in ctx: ctx['decision_trace'] = []
-if 'planning_mode' not in ctx: ctx['planning_mode'] = 'exploring'
-if 'care_flags' not in ctx: ctx['care_flags'] = {}
+st.markdown("---")
 
-
-st.title("Entry – Who Are We Planning For?")
-choice = st.radio("Who are we planning for?", ["Myself", "Someone Else", "I'm a professional"], index=0, horizontal=True, key="welcome_choice", label_visibility='collapsed')
-
-if st.button("Continue"):
+if st.button("Continue", key="welcome_continue", use_container_width=True):
     if choice == "Myself":
-        st.switch_page('pages/tell_us_about_you.py')
+        safe_switch("pages/tell_us_about_you.py")
     elif choice == "Someone Else":
-        st.switch_page('pages/tell_us_about_loved_one.py')
+        safe_switch("pages/tell_us_about_loved_one.py")
     else:
-        st.switch_page('pages/professional_mode.py')
+        safe_switch("pages/professional_mode.py")
+
+st.markdown("---")
+st.caption("Already have a plan? Jump back to your Hub anytime.")
+if st.button("Go to Hub", key="welcome_hub", use_container_width=True):
+    safe_switch("pages/hub.py")
