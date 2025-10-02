@@ -1,22 +1,29 @@
-
 import streamlit as st
 
+# Guard: ensure session state keys exist across cold restarts
 if 'care_context' not in st.session_state:
     st.session_state.care_context = {
-        'person_name': 'Your Loved One',
         'gcp_answers': {},
         'decision_trace': [],
+        'planning_mode': 'exploring',
+        'care_flags': {}
     }
+ctx = st.session_state.care_context
 
-name = st.session_state.care_context.get('person_name', 'Your Loved One')
+st.title('Your Care Recommendation')
 
-st.title(f"Guided Care Plan Recommendation for {name}")
-st.write("This is a placeholder so navigation doesn't break. The real recommendation view is wired elsewhere.")
+# Recommendation summary (variable placeholder shown literally for design fidelity)
+st.subheader('{RECOMMENDATION}')  # One of: none | in-home care | assisted living | memory care
+
+# Conversational blurb (variable placeholder; dev will populate from copy library)
+st.write('{RECO_BLURB}')
+
+st.markdown('---')
 
 col1, col2 = st.columns(2)
 with col1:
-    if st.button("Back to Hub", key="gcp_rec_back"):
-        st.switch_page("pages/hub.py")
+    if st.button('Back to Hub', key='reco_back_hub'):
+        st.switch_page('pages/hub.py')
 with col2:
-    if st.button("Open Cost Planner", key="gcp_rec_open_cp"):
-        st.switch_page("pages/cost_planner.py")
+    if st.button('Open Cost Planner', key='reco_open_cost'):
+        st.switch_page('pages/cost_planner.py')
