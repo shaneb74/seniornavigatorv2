@@ -1,48 +1,19 @@
-from ui.ux_enhancements import apply_global_ux, render_stepper
-
 import streamlit as st
+from ui.ux_enhancements import apply_global_ux, render_stepper
+apply_global_ux(); render_stepper('main')
+
 if 'care_context' not in st.session_state:
-    st.session_state.care_context = {
-        'audience_type': None,
-        'professional_role': None,
-        'person_name': None,
-        'care_flags': {},
-        'derived_flags': {}
-    }
+    st.session_state.care_context = {'audience_type': 'self', 'person_name': None, 'care_flags': {}, 'plan': {}}
 ctx = st.session_state.care_context
+ctx['audience_type'] = 'self'
 
-apply_global_ux()
-render_stepper()
+st.header("Tell Us About You")
+name = st.text_input("Your name", value=ctx.get('person_name') or "", key="name_self")
+is_vet = st.radio("Served in the military?", ["No","Yes"], index=0, horizontal=True) == "Yes"
+on_med = st.radio("On Medicaid now?", ["No","Yes"], index=0, horizontal=True) == "Yes"
+owns_home = st.radio("Own a home?", ["No","Yes"], index=0, horizontal=True) == "Yes"
 
-
-# Tell Us About You - Initial Audienceing
-st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-st.title("Tell Us About You")
-st.markdown("<h2>A few quick taps to start.</h2>", unsafe_allow_html=True)
-st.markdown("<p>Help us guide your loved one’s care in under a minute.</p>", unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Simple qualifying questions with tile style
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
-st.markdown("### About your loved one", unsafe_allow_html=True)
-st.markdown("<p>These questions help us tailor your loved one’s options—simple and private.</p>", unsafe_allow_html=True)
-st.write("Did your loved one serve in the military?")
-st.button("Yes", key="military_yes", type="primary")
-st.button("No", key="military_no", type="primary")
-
-st.write("Is your loved one on Medicaid now?")
-st.button("Yes", key="medicaid_yes", type="primary")
-st.button("No", key="medicaid_no", type="primary")
-
-st.write("Does your loved one own a home?")
-st.button("Yes", key="home_yes", type="primary")
-st.button("No", key="home_no", type="primary")
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Navigation
-st.markdown('<div class="scn-nav-row">', unsafe_allow_html=True)
-col1, col2 = st.columns([1, 1])
-with col2:
-    st.button("Next: Hub", key="next_hub", type="primary")
-st.markdown('</div>', unsafe_allow_html=True)
+if st.button("Next: Build Care Plan", disabled=(not name.strip())):
+    ctx['person_name'] = name.strip()
+    ctx['care_flags'].update({'is_veteran': is_vet, 'on_medicaid': on_med, 'owns_home': owns_home})
+    st.switch_page('pages/hub.py')

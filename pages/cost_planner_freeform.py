@@ -8,5 +8,6 @@ if 'care_context' not in st.session_state:
     }
 ctx = st.session_state.care_context
 
-st.header('Risk Navigator.Py')
-st.write('Placeholder page.')
+st.header('Cost Planner Freeform.Py')
+st.write('Placeholder module.')
+if st.button('Back to Modules'): st.switch_page('pages/cost_planner_modules.py')

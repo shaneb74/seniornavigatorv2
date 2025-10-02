@@ -11,14 +11,7 @@ ctx = st.session_state.care_context
 
 apply_global_ux(); render_stepper('main')
 
-st.header("Personal Info")
-st.write("Details: e.g., Name, Phone, etc. (placeholder)")
-ok = st.checkbox("This looks right?")
-
-col1,col2 = st.columns(2)
-with col1:
-    if st.button("Back to Benefits"):
-        st.switch_page('pages/benefits_coverage.py')
-with col2:
-    if st.button("Finish Prep"):
-        st.switch_page('pages/hub.py')
+st.header("Professional Mode")
+st.write("This is a placeholder screen for professional users. Route to contact form or static info later.")
+if st.button("Back to Hub"):
+    st.switch_page('pages/hub.py')
