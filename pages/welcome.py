@@ -1,23 +1,44 @@
 
 import streamlit as st
+from pathlib import Path
 
-st.title("Entry – Who Are We Planning For?")
+# Prototype auth flag init
+if "is_authenticated" not in st.session_state:
+    st.session_state.is_authenticated = False
 
-# Use segmented control instead of radio, keep label hidden for a11y warning
-choice = st.segmented_control(
-    "Select who you are planning for",
-    options=["Myself", "Someone Else", "I'm a professional"],
-    selection_mode="single",
-    default="Myself",
+def safe_nav(target: str, fallback: str = "pages/hub.py"):
+    # Existence check first
+    if not Path(target).exists():
+        target = fallback if Path(fallback).exists() else None
+    try:
+        if target:
+            st.switch_page(target)
+        else:
+            st.error("Navigation target is unavailable in this build.")
+    except Exception:
+        # Likely not registered in st.navigation. Try fallback.
+        if Path(fallback).exists():
+            try:
+                st.switch_page(fallback)
+                return
+            except Exception:
+                pass
+        st.error("Could not navigate. Use the sidebar to reach the Hub.")
+
+st.title("Who are we planning for?")
+
+choice = st.radio(
+    "Select an option",
+    ["Myself", "Someone Else", "I'm a professional"],
+    horizontal=True,
     label_visibility="collapsed",
-    key="welcome_choice_seg",
+    key="welcome_choice",
 )
 
-if st.button("Continue", key="welcome_continue"):
+if st.button("Continue", key="welcome_continue", type="primary"):
     if choice == "Myself":
-        st.switch_page("pages/tell_us_about_you.py")
+        safe_nav("pages/tell_us_about_you.py")
     elif choice == "Someone Else":
-        st.switch_page("pages/tell_us_about_loved_one.py")
+        safe_nav("pages/tell_us_about_loved_one.py")
     else:
-        # Professional requires login in your flow; go to professional mode page
-        st.switch_page("pages/professional_mode.py")
+        safe_nav("pages/professional_mode.py", fallback="pages/hub.py")
