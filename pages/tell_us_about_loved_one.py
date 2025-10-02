@@ -29,7 +29,8 @@ is_vet = st.radio("Served in the military?", ["No","Yes"], index=0, horizontal=T
 on_med = st.radio("On Medicaid now?", ["No","Yes"], index=0, horizontal=True) == "Yes"
 owns_home = st.radio("Own a home?", ["No","Yes"], index=0, horizontal=True) == "Yes"
 
-if st.button("Next: Build Care Plan", disabled=(not name.strip())):
+if st.button('Care Hub', key='loved_one_to_hub', disabled=(not name.strip())):
+    st.switch_page('pages/hub.py')
     ctx['person_name'] = name.strip()
     ctx['care_flags'].update({'is_veteran': is_vet, 'on_medicaid': on_med, 'owns_home': owns_home})
     st.switch_page('pages/hub.py')
