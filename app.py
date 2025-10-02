@@ -9,42 +9,35 @@ def inject_css(path: str):
     if css_path.exists():
         mtime = int(css_path.stat().st_mtime)
         st.markdown(f"<style>{css_path.read_text()}</style><!-- v:{mtime} -->", unsafe_allow_html=True)
-    else:
-        st.warning(f"Missing CSS: {path}")
 
 inject_css("static/style.css")
 
-# Minimal set shown here for clarity; keep your broader list if you have one.
-welcome = st.Page("pages/welcome.py", title="Welcome", icon="👋")
-tell_us_loved = st.Page("pages/tell_us_about_loved_one.py", title="Tell Us About Loved One", icon="ℹ️")
-tell_us_you = st.Page("pages/tell_us_about_you.py", title="Tell Us About You", icon="ℹ️")
-hub = st.Page("pages/hub.py", title="Hub", icon="🏠")
-
-# Guided Care Plan
-gcp = st.Page("pages/gcp.py", title="Guided Care Plan", icon="🗺️")
-gcp_daily = st.Page("pages/gcp_daily_life.py", title="GCP — Daily Life & Support", icon="🗺️")
-gcp_health = st.Page("pages/gcp_health_safety.py", title="GCP — Health & Safety", icon="🗺️")
-gcp_context = st.Page("pages/gcp_context_prefs.py", title="GCP — Context & Preferences", icon="🗺️")
-gcp_reco = st.Page("pages/gcp_recommendation.py", title="GCP Recommendation", icon="🗺️")
-
-# Cost Planner
-cost_planner_mode = st.Page("pages/cost_planner.py", title="Cost Planner: Mode", icon="💰")
-cost_planner_estimate = st.Page("pages/cost_planner_estimate.py", title="Cost Planner: Estimate", icon="💰")
-cost_planner_estimate_summary = st.Page("pages/cost_planner_estimate_summary.py", title="Cost Planner: Quick Summary", icon="💰")
-cost_planner_modules = st.Page("pages/cost_planner_modules.py", title="Cost Planner: Modules", icon="📊")
-cost_planner_evaluation = st.Page("pages/cost_planner_evaluation.py", title="Cost Planner: Evaluation", icon="🔍")
-
-# Extras
-pfma = st.Page("pages/pfma.py", title="Plan for My Advisor", icon="🧭")
-ai_advisor = st.Page("pages/ai_advisor.py", title="AI Advisor", icon="🤖")
+def safe_page(path: str, title: str, icon: str):
+    p = Path(path)
+    if not p.exists():
+        return None
+    return st.Page(path, title=title, icon=icon)
 
 pages = [
-    welcome, tell_us_loved, tell_us_you, hub,
-    gcp, gcp_daily, gcp_health, gcp_context, gcp_reco,
-    cost_planner_mode, cost_planner_estimate, cost_planner_estimate_summary, cost_planner_modules, cost_planner_evaluation,
-    pfma, ai_advisor
+    safe_page("pages/welcome.py", "Welcome", "👋"),
+    safe_page("pages/tell_us_about_loved_one.py", "Tell Us About Loved One", "ℹ️"),
+    safe_page("pages/tell_us_about_you.py", "Tell Us About You", "ℹ️"),
+    safe_page("pages/hub.py", "Hub", "🏠"),
+    safe_page("pages/gcp.py", "Guided Care Plan", "🗺️"),
+    safe_page("pages/gcp_daily_life.py", "GCP — Daily Life & Support", "🗺️"),
+    safe_page("pages/gcp_health_safety.py", "GCP — Health & Safety", "🗺️"),
+    safe_page("pages/gcp_context_prefs.py", "GCP — Context & Preferences", "🗺️"),
+    safe_page("pages/gcp_recommendation.py", "GCP Recommendation", "🗺️"),
+    safe_page("pages/cost_planner.py", "Cost Planner: Mode", "💰"),
+    safe_page("pages/cost_planner_estimate.py", "Cost Planner: Estimate", "💰"),
+    safe_page("pages/cost_planner_estimate_summary.py", "Cost Planner: Quick Summary", "💰"),
+    safe_page("pages/cost_planner_modules.py", "Cost Planner: Modules", "📊"),
+    safe_page("pages/cost_planner_evaluation.py", "Cost Planner: Evaluation", "🔍"),
+    safe_page("pages/pfma.py", "Plan for My Advisor", "🧭"),
+    safe_page("pages/ai_advisor.py", "AI Advisor", "🤖"),
 ]
 
+pages = [p for p in pages if p is not None]
 pg = st.navigation(pages)
 pg.run()
 
