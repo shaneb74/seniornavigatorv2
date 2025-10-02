@@ -1,47 +1,17 @@
 
 import streamlit as st
 
-# Debug: non-visual logger
-def _debug_log(msg: str):
-    try:
-        print(f"[SNAV] {msg}")
-    except Exception:
-        pass
-
-_debug_log('LOADED: appointment_interstitial.py')
-
-
-# Guard: ensure session state keys exist across cold restarts
 if 'care_context' not in st.session_state:
-    st.session_state.care_context = {
-        'gcp_answers': {},
-        'decision_trace': [],
-        'planning_mode': 'exploring',
-        'care_flags': {}
-    }
-ctx = st.session_state.care_context
+    st.session_state.care_context = {}
 
+st.title("Call scheduled")
+st.caption("Thanks — your call is on the calendar. You can get a head start while you wait.")
 
-# Appointment Interstitial
-st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-st.title("Call Scheduled!")
-st.markdown("<h2>Your advisor will call tomorrow.</h2>", unsafe_allow_html=True)
-st.markdown("<p>Let’s make it awesome—prep now or later.</p>", unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Interstitial message with tile style
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
-st.markdown("### Next Steps for your loved one", unsafe_allow_html=True)
-st.markdown("<p>Your call is set! Prep the Plan for My Advisor now (2 min) to give your advisor a head start. More details = faster, better help. Skip now? We’ll remind you.</p>", unsafe_allow_html=True)
-col1, col2 = st.columns([1, 1])
+st.markdown('---')
+col1, col2 = st.columns(2)
 with col1:
-    if st.button("Do Prep Now (Recommended)", key="prep_now", type="primary"):
-        st.switch_page('pages/pfma.py')
-        st.switch_page("pages/pfma.py")
+    if st.button("Do Prep Now (Recommended)", key="ai_do_prep", type="primary"):
+        st.switch_page("pages/pfma_confirm_care_plan.py")
 with col2:
-    if st.button("Skip & Remind Me", key="skip_prep", type="secondary"):
-        st.switch_page('pages/hub.py')
+    if st.button("Skip & Remind Me", key="ai_skip_prep"):
         st.switch_page("pages/hub.py")
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Navigation (handled by buttons)
