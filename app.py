@@ -4,17 +4,9 @@ from pathlib import Path
 
 st.set_page_config(page_title="CCA Senior Navigator", layout="centered")
 
-# Initialize global auth flag
+# Initialize auth flag
 if "is_authenticated" not in st.session_state:
     st.session_state.is_authenticated = False
-
-def inject_css(path: str):
-    p = Path(path)
-    if p.exists():
-        mtime = int(p.stat().st_mtime)
-        st.markdown(f"<style>{p.read_text()}</style><!-- v:{mtime} -->", unsafe_allow_html=True)
-
-inject_css("static/style.css")
 
 def ensure_page(path: str, title: str, icon: str, default: bool=False):
     p = Path(path)
@@ -26,8 +18,8 @@ def ensure_page(path: str, title: str, icon: str, default: bool=False):
 INTENDED = [
     ("pages/welcome.py", "Welcome", "👋", True),
     ("pages/hub.py", "Hub", "🏠", False),
-    ("pages/login.py", "Login", "🔐", False),
-    ("pages/expert_review.py", "Expert Review", "🔎", False),
+    ("pages/tell_us_about_you.py", "Tell Us About You", "ℹ️", False),
+    ("pages/tell_us_about_loved_one.py", "Tell Us About Loved One", "ℹ️", False),
 ]
 
 pages = []
@@ -48,10 +40,9 @@ else:
     pg = st.navigation(pages)
     pg.run()
 
-# Sidebar controls
+# Sidebar auth toggle
 with st.sidebar:
     st.markdown("---")
-    st.caption("Authentication")
     if st.session_state.is_authenticated:
         st.success("Signed in")
         if st.button("Log out", key="sidebar_logout"):

@@ -1,35 +1,41 @@
+
 import streamlit as st
-from ui.ux_enhancements import apply_global_ux, render_stepper
+from pathlib import Path
 
-# Debug: non-visual logger
-def _debug_log(msg: str):
+if "is_authenticated" not in st.session_state:
+    st.session_state.is_authenticated = False
+
+def safe_nav(target: str, fallback: str = "pages/hub.py"):
+    if not Path(target).exists():
+        target = fallback if Path(fallback).exists() else None
     try:
-        print(f"[SNAV] {msg}")
+        if target:
+            st.switch_page(target)
+        else:
+            st.error("Navigation target is unavailable in this build.")
     except Exception:
-        pass
+        if Path(fallback).exists():
+            try:
+                st.switch_page(fallback)
+                return
+            except Exception:
+                pass
+        st.error("Could not navigate. Use the sidebar to reach the Hub.")
 
-_debug_log('LOADED: welcome.py')
+st.title("Who are we planning for?")
 
-apply_global_ux()
-render_stepper('main')
+choice = st.radio(
+    "Select an option",
+    ["Myself", "Someone Else", "I'm a professional"],
+    horizontal=True,
+    label_visibility="collapsed",
+    key="welcome_choice",
+)
 
-if 'care_context' not in st.session_state:
-    st.session_state.care_context = {'audience_type': None, 'person_name': None, 'care_flags': {}, 'plan': {}}
-ctx = st.session_state.care_context
-# Guard: ensure expected keys exist
-if 'gcp_answers' not in ctx: ctx['gcp_answers'] = {}
-if 'decision_trace' not in ctx: ctx['decision_trace'] = []
-if 'planning_mode' not in ctx: ctx['planning_mode'] = 'exploring'
-if 'care_flags' not in ctx: ctx['care_flags'] = {}
-
-
-st.title("Entry – Who Are We Planning For?")
-choice = st.radio("Who are we planning for?", ["Myself", "Someone Else", "I'm a professional"], index=0, horizontal=True, key="welcome_choice", label_visibility='collapsed')
-
-if st.button("Continue"):
+if st.button("Continue", key="welcome_continue", type="primary"):
     if choice == "Myself":
-        st.switch_page('pages/tell_us_about_you.py')
+        safe_nav("pages/tell_us_about_you.py")
     elif choice == "Someone Else":
-        st.switch_page('pages/tell_us_about_loved_one.py')
+        safe_nav("pages/tell_us_about_loved_one.py")
     else:
-        st.switch_page('pages/professional_mode.py')
+        safe_nav("pages/professional_mode.py", fallback="pages/hub.py")
