@@ -8,10 +8,7 @@ def inject_css(path: str):
     p = Path(path)
     if p.exists():
         mtime = int(p.stat().st_mtime)
-        st.markdown(
-            f"<style>{p.read_text()}</style><!-- v:{mtime} -->",
-            unsafe_allow_html=True,
-        )
+        st.markdown(f"<style>{p.read_text()}</style><!-- v:{mtime} -->", unsafe_allow_html=True)
     else:
         st.warning(f"Missing CSS: {path}")
 
@@ -26,11 +23,8 @@ def ensure_page(path: str, title: str, icon: str, default: bool = False):
     p = Path(path)
     if not p.exists():
         return None, path
-    return (
-        st.Page(path, title=title, icon=icon, default=bool(default))
-        if default
-        else st.Page(path, title=title, icon=icon)
-    ), None
+    return (st.Page(path, title=title, icon=icon, default=bool(default))
+            if default else st.Page(path, title=title, icon=icon)), None
 
 # ---------- Pages to register ----------
 INTENDED = [
@@ -95,7 +89,7 @@ for args in INTENDED:
         missing.append(miss)
 
 if missing:
-    st.sidebar.warning("Missing pages detected:\n" + "\n".join(f"- {m}" for m in missing))
+    st.sidebar.warning("Missing pages detected:\\n" + "\\n".join(f"- {m}" for m in missing))
 
 if pages:
     pg = st.navigation(pages)
