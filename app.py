@@ -1,58 +1,46 @@
 import streamlit as st
-from pathlib import Path
 
-# Set page config for centered layout
-st.set_page_config(page_title="CCA Senior Navigator", layout="centered")
+# AI Advisor Page
+st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
+st.title("AI Advisor")
+st.markdown("<h2>I'm your care coach—here for you and John.</h2>", unsafe_allow_html=True)
+st.markdown("<p>No judgment, just clear answers about care, costs, or next steps.</p>", unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
-# CSS Injection for Streamlit Cloud
-def inject_css(path: str):
-    css_path = Path(path)
-    if css_path.exists():
-        mtime = int(css_path.stat().st_mtime)
-        st.markdown(f"<style>{css_path.read_text()}</style><!-- v:{mtime} -->", unsafe_allow_html=True)
-    else:
-        st.warning(f"Missing CSS: {path}")
+# Frequently Asked Questions Section
+st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; margin-bottom: 1.5rem; background: #f9f9f9;">', unsafe_allow_html=True)
+st.markdown("### Top Questions", unsafe_allow_html=True)
+st.markdown("<p>Quick answers to get you started.</p>", unsafe_allow_html=True)
+st.markdown('<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">', unsafe_allow_html=True)
+st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; background: #e6f3ff; transition: all 0.2s;">', unsafe_allow_html=True)
+st.write("**How much does home care cost?**")
+st.write("Varies by hours—about $20-$25/hour for John. Let’s explore!")
+st.markdown('</div>', unsafe_allow_html=True)
+st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; background: #ffe6e6; transition: all 0.2s;">', unsafe_allow_html=True)
+st.write("**Can VA help with costs?**")
+st.write("If John served, yes—up to $2,247/month. Worth a look!")
+st.markdown('</div>', unsafe_allow_html=True)
+st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; background: #e6ffe6; transition: all 0.2s;">', unsafe_allow_html=True)
+st.write("**What’s next after planning?**")
+st.write("Book an advisor call—takes just 2 minutes!")
+st.markdown('</div>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
-# Load CSS
-inject_css("static/style.css")
+# GPT Chat Interface
+st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px; background: #f0f0f0;">', unsafe_allow_html=True)
+st.markdown("### Ask Me Anything", unsafe_allow_html=True)
+st.markdown("<p>Type your question about John’s care below.</p>", unsafe_allow_html=True)
+st.text_input("Your question...", key="ai_input", placeholder="e.g., How can I afford home care?")
+st.button("Send", key="ai_send", type="primary")
+st.markdown('<div style="margin-top: 1rem; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">', unsafe_allow_html=True)
+st.write("**Response:** I’m here to help! Tell me more about John’s situation...")
+st.markdown('</div>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
-# Define pages
-welcome = st.Page("pages/welcome.py", title="Welcome", icon="👋")
-tell_us = st.Page("pages/tell_us_about_john.py", title="Tell Us About John", icon="ℹ️")
-hub = st.Page("pages/hub.py", title="Hub", icon="🏠")
-gcp = st.Page("pages/gcp.py", title="Guided Care Plan", icon="🗺️")
-cost_planner_mode = st.Page("pages/cost_planner.py", title="Cost Planner: Mode", icon="💰")
-cost_planner_modules = st.Page("pages/cost_planner_modules.py", title="Cost Planner: Modules", icon="📊")
-cost_planner_home_care = st.Page("pages/cost_planner_home_care.py", title="Home Care Support", icon="🏠")
-cost_planner_daily_aids = st.Page("pages/cost_planner_daily_aids.py", title="Daily Living Aids", icon="🛠️")
-cost_planner_housing = st.Page("pages/cost_planner_housing.py", title="Housing Path", icon="🏡")
-cost_planner_benefits = st.Page("pages/cost_planner_benefits.py", title="Benefits Check", icon="💳")
-cost_planner_mods = st.Page("pages/cost_planner_mods.py", title="Age-in-Place Upgrades", icon="🔧")
-cost_planner_evaluation = st.Page("pages/cost_planner_evaluation.py", title="Cost Planner: Evaluation", icon="🔍")
-cost_planner_skipped = st.Page("pages/cost_planner_skipped.py", title="Cost Planner: Skipped", icon="⚠️")
-appointment_booking = st.Page("pages/appointment_booking.py", title="Appointment Booking", icon="📞")
-care_plan_confirm = st.Page("pages/care_plan_confirm.py", title="Care Plan Confirmation", icon="✅")
-cost_plan_confirm = st.Page("pages/cost_plan_confirm.py", title="Cost Plan Confirmation", icon="💰")
-care_needs = st.Page("pages/care_needs.py", title="Care Needs & Support", icon="🩺")
-care_prefs = st.Page("pages/care_prefs.py", title="Care Preferences", icon="🎯")
-household_legal = st.Page("pages/household_legal.py", title="Household & Legal", icon="🏠")
-benefits_coverage = st.Page("pages/benefits_coverage.py", title="Benefits & Coverage", icon="💳")
-personal_info = st.Page("pages/personal_info.py", title="Personal Info", icon="👤")
-appointment_interstitial = st.Page("pages/appointment_interstitial.py", title="Call Scheduled", icon="⏰")
-ai_advisor = st.Page("pages/ai_advisor.py", title="AI Advisor", icon="🤖")
-exports = st.Page("pages/exports.py", title="Exports", icon="📤")
-
-# Configure navigation
-pages = [welcome, tell_us, hub, gcp, cost_planner_mode, cost_planner_modules, cost_planner_home_care, cost_planner_daily_aids, cost_planner_housing, cost_planner_benefits, cost_planner_mods, cost_planner_evaluation, cost_planner_skipped, appointment_booking, care_plan_confirm, cost_plan_confirm, care_needs, care_prefs, household_legal, benefits_coverage, personal_info, appointment_interstitial, ai_advisor, exports]
-pg = st.navigation(pages)
-
-# Run the selected page
-pg.run()
-
-# Common elements: AI Advisor in sidebar
-with st.sidebar:
-    st.subheader("AI Advisor")
-    st.write("Ask me anything about your plan...")
-    st.text_input("Your question", key="ai_question")
-    if st.button("Ask", key="ai_ask", type="primary"):
-        st.info("Placeholder response: Here's some advice...")
+# Navigation
+st.markdown('<div class="scn-nav-row">', unsafe_allow_html=True)
+col1, col2 = st.columns([1, 1])
+with col1:
+    st.button("Back to Hub", key="back_ai", type="secondary")
+st.markdown('</div>', unsafe_allow_html=True)
