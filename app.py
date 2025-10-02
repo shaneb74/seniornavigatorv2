@@ -30,7 +30,6 @@ cost_planner_benefits = st.Page("pages/cost_planner_benefits.py", title="Benefit
 cost_planner_mods = st.Page("pages/cost_planner_mods.py", title="Age-in-Place Upgrades", icon="🔧")
 cost_planner_evaluation = st.Page("pages/cost_planner_evaluation.py", title="Cost Planner: Evaluation", icon="🔍")
 cost_planner_skipped = st.Page("pages/cost_planner_skipped.py", title="Cost Planner: Skipped", icon="⚠️")
-pfma = st.Page("pages/appointment_booking.py", title="Plan for My Advisor: Book", icon="📅")
 appointment_booking = st.Page("pages/appointment_booking.py", title="Appointment Booking", icon="📞")
 care_plan_confirm = st.Page("pages/care_plan_confirm.py", title="Care Plan Confirmation", icon="✅")
 cost_plan_confirm = st.Page("pages/cost_plan_confirm.py", title="Cost Plan Confirmation", icon="💰")
@@ -39,10 +38,11 @@ care_prefs = st.Page("pages/care_prefs.py", title="Care Preferences", icon="🎯
 household_legal = st.Page("pages/household_legal.py", title="Household & Legal", icon="🏠")
 benefits_coverage = st.Page("pages/benefits_coverage.py", title="Benefits & Coverage", icon="💳")
 personal_info = st.Page("pages/personal_info.py", title="Personal Info", icon="👤")
+appointment_interstitial = st.Page("pages/appointment_interstitial.py", title="Call Scheduled", icon="⏰")
 exports = st.Page("pages/exports.py", title="Exports", icon="📤")
 
 # Configure navigation
-pages = [welcome, tell_us, hub, gcp, cost_planner_mode, cost_planner_modules, cost_planner_home_care, cost_planner_daily_aids, cost_planner_housing, cost_planner_benefits, cost_planner_mods, cost_planner_evaluation, cost_planner_skipped, appointment_booking, care_plan_confirm, cost_plan_confirm, care_needs, care_prefs, household_legal, benefits_coverage, personal_info, exports]
+pages = [welcome, tell_us, hub, gcp, cost_planner_mode, cost_planner_modules, cost_planner_home_care, cost_planner_daily_aids, cost_planner_housing, cost_planner_benefits, cost_planner_mods, cost_planner_evaluation, cost_planner_skipped, appointment_booking, care_plan_confirm, cost_plan_confirm, care_needs, care_prefs, household_legal, benefits_coverage, personal_info, appointment_interstitial, exports]
 pg = st.navigation(pages)
 
 # Run the selected page
