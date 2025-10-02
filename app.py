@@ -62,3 +62,4 @@ with st.sidebar:
     st.text_input("Your question", key="ai_question")
     if st.button("Ask", key="ai_ask", type="primary"):
         st.info("Placeholder response: Here's some advice...")
+        
