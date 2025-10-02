@@ -30,9 +30,6 @@ if audience == "I'm a professional":
 
 st.markdown('<div class="sn-sticky-bottom">', unsafe_allow_html=True)
 c1, c2 = st.columns([1,1])
-with c1:
-    if st.button("Skip & Remind Me"):
-        st.switch_page('pages/hub.py')
 with c2:
     if st.button("Get Started"):
         choice = st.session_state.get('welcome_aud_choice', "Myself")
