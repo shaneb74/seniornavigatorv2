@@ -1,20 +1,20 @@
 import streamlit as st
 
-# Plan for My Advisor - Refined Design with Badges
+# Plan for My Advisor - Refined Design with Horizontal Badges
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
 st.title("Plan for My Advisor")
 st.markdown("<h2>Get your ducks in a row for John.</h2>", unsafe_allow_html=True)
 st.markdown("<p>Prepare for your concierge call—simple steps to make it smooth.</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Badge Progress Display
+# Badge Progress Display - Horizontal with Icons
 st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; text-align: center; margin-bottom: 1.5rem;">', unsafe_allow_html=True)
 st.markdown("### Your Progress")
-st.markdown('<div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 1rem;">', unsafe_allow_html=True)
-st.markdown('<div style="border: 1px solid #ccc; border-radius: 8px; padding: 0.5rem; width: 80px; background: #e0e0e0;">Guided Plan</div>', unsafe_allow_html=True)
-st.markdown('<div style="border: 1px solid #ccc; border-radius: 8px; padding: 0.5rem; width: 80px; background: #e0e0e0;">Cost Plan</div>', unsafe_allow_html=True)
-st.markdown('<div style="border: 1px solid #ccc; border-radius: 8px; padding: 0.5rem; width: 80px; background: #e0e0e0;">Care Needs</div>', unsafe_allow_html=True)
-st.markdown('<div style="border: 1px solid #ccc; border-radius: 8px; padding: 0.5rem; width: 80px; background: #e0e0e0;">Benefits</div>', unsafe_allow_html=True)
+st.markdown('<div style="display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">', unsafe_allow_html=True)
+st.markdown('<div style="border: 1px solid #ccc; border-radius: 8px; padding: 0.5rem 1rem; background: #e0e0e0; display: flex; align-items: center;"><span>Guided Plan</span><span style="margin-left: 0.5rem;">🟢</span></div>', unsafe_allow_html=True)
+st.markdown('<div style="border: 1px solid #ccc; border-radius: 8px; padding: 0.5rem 1rem; background: #e0e0e0; display: flex; align-items: center;"><span>Cost Plan</span><span style="margin-left: 0.5rem;">🟢</span></div>', unsafe_allow_html=True)
+st.markdown('<div style="border: 1px solid #ccc; border-radius: 8px; padding: 0.5rem 1rem; background: #e0e0e0; display: flex; align-items: center;"><span>Care Needs</span><span style="margin-left: 0.5rem;">🟢</span></div>', unsafe_allow_html=True)
+st.markdown('<div style="border: 1px solid #ccc; border-radius: 8px; padding: 0.5rem 1rem; background: #e0e0e0; display: flex; align-items: center;"><span>Benefits</span><span style="margin-left: 0.5rem;">🟢</span></div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
