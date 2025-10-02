@@ -13,9 +13,11 @@ st.markdown("### Next Steps for John", unsafe_allow_html=True)
 st.markdown("<p>Your call is set! Prep the Plan for My Advisor now (2 min) to give your advisor a head start. More details = faster, better help. Skip now? We’ll remind you.</p>", unsafe_allow_html=True)
 col1, col2 = st.columns([1, 1])
 with col1:
-    st.button("Do Prep Now (Recommended)", key="prep_now", type="primary")
+    if st.button("Do Prep Now (Recommended)", key="prep_now", type="primary"):
+        st.switch_page("pages/pfma.py")
 with col2:
-    st.button("Skip & Remind Me", key="skip_prep", type="secondary")
+    if st.button("Skip & Remind Me", key="skip_prep", type="secondary"):
+        st.switch_page("pages/hub.py")
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Navigation (hidden, handled by buttons)
+# Navigation (handled by buttons)
