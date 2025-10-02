@@ -24,7 +24,7 @@ ctx = st.session_state.care_context
 
 # Hub page mimicking the dashboard design
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-st.title("Your Care Hub")
+st.title("Your Concierge Care Hub")
 st.markdown("<h2>Start or pick up where you left off.</h2>", unsafe_allow_html=True)
 st.markdown("<p>Explore tools tailored for your loved one’s needs.</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
