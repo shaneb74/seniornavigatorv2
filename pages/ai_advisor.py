@@ -3,8 +3,8 @@ import streamlit as st
 # AI Advisor Page
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
 st.title("AI Advisor")
-st.markdown("<h2>I'm your care coach—here for you and John.</h2>", unsafe_allow_html=True)
-st.markdown("<p>No judgment, just clear answers about care, costs, or next steps.</p>", unsafe_allow_html=True)
+st.markdown("<h2>I'm Navi—your expert advisor.</h2>", unsafe_allow_html=True)
+st.markdown("<p>I help you see the whole map: care paths, hidden costs, decisions no one talks about. For John.</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
 # Frequently Asked Questions Section
@@ -26,6 +26,7 @@ st.text_input("Your question...", key="ai_input", placeholder="e.g., How can I a
 st.button("Send", key="ai_send", type="primary")
 st.markdown('<div style="margin-top: 1rem; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">', unsafe_allow_html=True)
 st.write("**Response:** I’m here to help! Tell me more about John’s situation...")
+st.markdown('<div style="text-align: right; margin-top: 0.5rem;"><a href="sms:?body=I’m here to help! Tell me more about John’s situation..." style="color: #2E6EFF; text-decoration: none; font-size: 14px;" onmouseover="this.style.textDecoration=\'underline\'; this.style.cursor=\'pointer\';" onmouseout="this.style.textDecoration=\'none\';">📧 Send via SMS</a></div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
