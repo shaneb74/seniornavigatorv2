@@ -1,329 +1,324 @@
+/* ============================================================================
+   CCA Senior Navigator – Full CSS
+   One file to make things not ugly.
+   Place in: static/style.css
+   ========================================================================== */
 
-/* Senior Care Navigator CSS - Optimized for Streamlit Cloud */
+/* ---------- Root tokens ---------- */
+:root{
+  --bg: #ffffff;
+  --text: #111827;               /* near-black */
+  --muted: #6b7280;              /* slate-500 */
+  --border: #e5e7eb;             /* gray-200 */
+  --divider: #f3f4f6;            /* gray-100 */
+  --accent: #0ea5e9;             /* sky-500 */
+  --accent-600:#0284c7;          /* sky-600 */
+  --accent-700:#0369a1;          /* sky-700 */
+  --success: #16a34a;
+  --warn: #ca8a04;
+  --danger: #dc2626;
 
-/* === CSS Variables === */
-:root {
-  /* Pill (Chip) Styles */
-  --pill-radius: 14px;
-  --pill-pad: 0.70rem 1rem;
-  --pill-gap: 0.75rem;
-  --pill-text: #111827;
-  --pill-bg: #F3F4F6;
-  --pill-brd: #E5E7EB;
-  --pill-hover: #E9EBF0;
-  --pill-selected: #111827;
-  --pill-selected-hover: #000000;
-  --pill-shadow: 0 2px 6px rgba(17, 24, 39, 0.08);
-  --pill-font: 16px;
+  --btn-bg: #111827;             /* black button */
+  --btn-text: #ffffff;
+  --btn-bg-hover: #0f172a;       /* slate-900 */
 
-  /* Button Styles */
-  --btn-primary: #2E6EFF;
-  --btn-primary-hover: #1F5AE6;
-  --btn-secondary-bg: #EAF2FF;
-  --btn-secondary-text: #2E6EFF;
-  --btn-secondary-brd: #D6E4FF;
+  --pill-bg: #f3f4f6;            /* light gray pill */
+  --pill-text: #111827;          /* pill text */
+  --pill-brd: #e5e7eb;           /* pill border */
+  --pill-selected: #111827;      /* black pill selected */
+  --pill-selected-text: #ffffff; /* white text */
+  --pill-hover: #e9eaec;
+  --pill-radius: 10px;
+  --pill-pad-y: 10px;
+  --pill-pad-x: 14px;
+  --pill-gap: 8px;
+
+  --card-bg: #ffffff;
+  --card-brd: #e5e7eb;
+  --card-radius: 14px;
+  --card-shadow: 0 1px 2px rgba(0,0,0,0.04);
+
+  --ring: 0 0 0 3px rgba(17,24,39,.18);
 }
 
-/* === Typography === */
-h1 {
-  letter-spacing: 0.2px;
+/* ---------- Global reset-ish ---------- */
+html, body, [data-testid="stAppViewContainer"]{
+  background: var(--bg) !important;
+  color: var(--text) !important;
+}
+
+*{ box-sizing: border-box; }
+
+/* Centered layout refinements */
+.block-container{
+  padding-top: 2.2rem !important;
+  padding-bottom: 2.5rem !important;
+  max-width: 900px !important;
+}
+
+/* ---------- Typography ---------- */
+h1, h2, h3, h4{
+  letter-spacing: -0.01em;
+  color: var(--text) !important;
+}
+h1{ font-size: 1.875rem !important; font-weight: 700 !important; }
+h2{ font-size: 1.5rem !important; font-weight: 700 !important; }
+h3{ font-size: 1.25rem !important; font-weight: 600 !important; }
+p, .stMarkdown{
+  color: var(--text) !important;
+}
+small, .caption, .stCaption, [data-testid="stCaptionContainer"]{
+  color: var(--muted) !important;
+}
+
+/* ---------- Dividers ---------- */
+hr, .stMarkdown hr, .stHorizontalBlock{
+  border-color: var(--divider) !important;
+}
+
+/* ---------- Buttons (primary & quiet) ---------- */
+.stButton > button{
+  background: var(--btn-bg) !important;
+  color: var(--btn-text) !important;
+  border: 1px solid #0b1220 !important;
+  border-radius: 10px !important;
+  padding: 10px 16px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+  transition: background .15s ease, transform .02s ease;
+}
+.stButton > button:hover{
+  background: var(--btn-bg-hover) !important;
+}
+.stButton > button:active{
+  transform: translateY(1px);
+}
+.stButton > button[kind="secondary"]{
+  background: #f8fafc !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+/* Secondary “quiet” links that still look intentional */
+a.button-link, .button-link{
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #f8fafc; color: var(--text);
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 10px 14px; text-decoration: none;
   font-weight: 600;
 }
+a.button-link:hover{ background: #eff2f6; }
 
-.scn-hero {
-  text-align: center;
-  max-width: 820px;
-  margin: 0 auto 1.25rem;
-  padding: 1rem 0;
-  /* Comment: Hero section - keep this centered */
+/* ---------- Cards / Tiles ---------- */
+.card, .tile, .module-tile, .stContainer{
+  background: var(--card-bg);
+  border: 1px solid var(--card-brd);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
 }
 
-.scn-hero h2 {
-  margin: 0.25rem 0 0.35rem;
+/* Use Streamlit containers with border=True nicely */
+[data-testid="stVerticalBlock"] > div:has(> [data-testid="stContainer"]) {
+  margin-bottom: 14px;
 }
 
-.scn-hero p {
-  margin: 0.25rem auto 0;
-  max-width: 720px;
-  color: #374151;
-}
-
-/* === Progress Rail === */
-.progress-rail {
-  display: flex;
-  gap: 0.5rem;
-  margin: 0.25rem 0 1rem;
-  /* Comment: Progress bar - adjust segments here */
-}
-
-.progress-rail .seg {
-  height: 4px;
-  flex: 1;
-  border-radius: 999px;
-  background: #E5E7EB;
-}
-
-.progress-rail .seg.active {
-  background: var(--btn-primary);
-}
-
-/* === Radio Chips (Streamlit Radio Override) === */
-.stRadio > div > label {
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 0.5rem;
-}
-
-.stRadio [role="radiogroup"] {
+/* ---------- Grid helpers ---------- */
+.hub-grid{
   display: grid;
-  gap: var(--pill-gap);
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 0.5rem 0;
-  /* Comment: Radio group - keep columns clean */
+  grid-template-columns: 1fr;
+  gap: 14px;
 }
-
-.stRadio [role="radiogroup"] > label {
-  margin: 0;
-  padding: 0;
-  display: block;
-  width: 100%;
-}
-
-.stRadio [role="radiogroup"] > label > div:first-child {
-  display: none; /* Hide default radio dot */
-}
-
-.stRadio [role="radiogroup"] input[type="radio"] {
-  position: absolute;
-  opacity: 0;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-}
-
-.stRadio [role="radiogroup"] > label > div:last-child {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--pill-bg);
-  color: var(--pill-text);
-  border: 1.5px solid var(--pill-brd);
-  border-radius: var(--pill-radius);
-  padding: var(--pill-pad);
-  box-shadow: var(--pill-shadow);
-  cursor: pointer;
-  transition: all 0.12s ease-in-out;
-  font-size: var(--pill-font);
-  line-height: 1.3;
-  user-select: none;
-  text-align: center;
-  font-weight: 600;
-  min-height: 56px;
-}
-
-.stRadio [role="radiogroup"] > label > div:last-child:hover {
-  background: var(--pill-hover);
-}
-
-.stRadio [role="radiogroup"] > label:has(input[type="radio"]:checked) > div:last-child,
-.stRadio [role="radiogroup"] [role="radio"][aria-checked="true"] > div:last-child {
-  background: var(--pill-selected);
-  color: #FFFFFF;
-  border-color: var(--pill-selected);
-  box-shadow: 0 3px 12px rgba(17, 24, 39, 0.25);
-  font-weight: 700;
-}
-
-.stRadio [role="radiogroup"] > label:has(input[type="radio"]:checked) > div:last-child:hover,
-.stRadio [role="radiogroup"] [role="radio"][aria-checked="true"] > div:last-child:hover {
-  background: var(--pill-selected-hover);
-}
-
-/* === Navigation Buttons === */
-.scn-nav-row {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: nowrap;
-  margin: 0.5rem 0 0.75rem;
-  /* Comment: Nav row - keep buttons balanced */
-}
-
-.scn-nav-row > div {
-  flex: 0 0 auto;
-}
-
-.stButton > button {
-  padding: 0.7rem 1.1rem;
-  border-radius: 12px;
-  min-width: 120px;
-  margin: 0 auto;
-  /* Comment: Button - ensure consistent size */
-}
-
-button[kind="primary"] {
-  background: var(--btn-primary);
-  color: #FFFFFF;
-  border: 0;
-  box-shadow: 0 2px 8px rgba(46, 110, 255, 0.25);
-}
-
-button[kind="primary"]:hover {
-  background: var(--btn-primary-hover);
-}
-
-button[kind="secondary"] {
-  background: var(--btn-secondary-bg);
-  color: var(--btn-secondary-text);
-  border: 1px solid var(--btn-secondary-brd);
-}
-
-button[kind="secondary"]:hover {
-  background: #D6E4FF;
-}
-
-/* === Miscellaneous === */
-.scn-why-wrap {
-  margin-top: 0.75rem;
-}
-
-/* === Responsive Design === */
-@media (max-width: 480px) {
-  .block-container {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-  .stRadio [role="radiogroup"] {
-    grid-template-columns: 1fr; /* Single column for mobile */
-  }
-  .scn-nav-row button {
-    min-width: 100px; /* Slightly smaller buttons on mobile */
-  }
-  div[style*="grid-template-columns"] {
-    grid-template-columns: 1fr; /* Force single column on mobile */
-  }
-  div[style*="min-height: 250px"] {
-    min-height: 200px; /* Adjust for mobile height */
+@media (min-width: 820px){
+  .hub-grid{
+    grid-template-columns: 1fr 1fr;
   }
 }
+.tile-body{ padding: 18px; }
+.tile-actions{ margin-top: 10px; display: flex; gap: 10px; align-items: center; }
 
-/* === Accessibility Enhancements for Cloud === */
-.stRadio [role="radiogroup"] > label > div:last-child:focus {
-  outline: 2px solid var(--btn-primary);
-  outline-offset: 2px;
+/* Status pills */
+.badge{
+  display:inline-flex; align-items:center; gap:6px;
+  padding: 6px 10px; border-radius: 999px;
+  font-size: .85rem; font-weight: 600;
+  border: 1px solid var(--border);
+  background: #f8fafc; color: var(--text);
+}
+.badge.success{ border-color: #22c55e33; background: #f0fdf4; color: #166534; }
+.badge.info{ border-color: #0ea5e933; background: #f0f9ff; color: #075985; }
+
+/* ---------- Forms ---------- */
+input, textarea, select{
+  border-radius: 10px !important;
+  border: 1px solid var(--border) !important;
+}
+input:focus, textarea:focus, select:focus{
+  outline: none !important; box-shadow: var(--ring) !important;
 }
 
-.stButton > button:focus {
-  outline: 2px solid var(--btn-primary);
-  outline-offset: 2px;
+/* ---------- Sidebar polish + Login stub ---------- */
+[data-testid="stSidebar"]{
+  background: #ffffff !important;
+  border-right: 1px solid var(--divider) !important;
+}
+.sidebar-footer{
+  margin-top: 16px; padding-top: 12px; border-top: 1px dashed var(--border);
+  display: grid; gap: 8px;
+}
+.sidebar-auth{
+  display:flex; align-items:center; justify-content:space-between;
+  font-size:.9rem; color: var(--muted);
 }
 
-/* === Streamlit Theme Overrides - Remove Orange === */
-:root {
-  --primary-color: #2E6EFF;
-  --primary-color-light: #4D9EFF;
-  --primary-color-dark: #1F5AE6;
-  --background-color: #FFFFFF;
-  --secondary-background-color: #F9F9F9;
-  --text-color: #111827;
-    --font: "Segoe UI", sans-serif;
+/* ---------- Alerts (no emoji requirement) ---------- */
+[data-testid="stAlert"]{
+  border-radius: 12px !important;
+  border: 1px solid var(--border) !important;
+}
+[data-testid="stAlert"][class*="success"]{
+  border-color:#22c55e33 !important; background:#f0fdf4 !important; color:#166534 !important;
+}
+[data-testid="stAlert"][class*="warning"]{
+  border-color:#f59e0b33 !important; background:#fffbeb !important; color:#92400e !important;
+}
+[data-testid="stAlert"][class*="info"]{
+  border-color:#0ea5e933 !important; background:#f0f9ff !important; color:#075985 !important;
 }
 
-.stApp {
-  background-color: var(--background-color);
+/* ============================================================================
+   PILL CONTROLS: st.radio + st.segmented_control
+   Gray by default; Black when selected. No red circus.
+   ========================================================================== */
+
+/* Group layout for radios */
+[data-testid="stRadio"] [role="radiogroup"]{
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: var(--pill-gap) !important;
 }
 
-.stButton > button {
-  background-color: var(--btn-primary);
-  color: #FFFFFF;
-  border: none;
-  box-shadow: 0 2px 8px rgba(46, 110, 255, 0.25);
+/* Hide native radio inputs */
+[data-testid="stRadio"] input[type="radio"]{
+  position:absolute !important; opacity:0 !important; pointer-events:none !important;
 }
 
-.stButton > button:hover {
-  background-color: var(--btn-primary-hover);
+/* Streamlit radios render as <label>… or <div role="radio">…; style both */
+[data-testid="stRadio"] [role="radiogroup"] > label,
+[data-testid="stRadio"] [role="radiogroup"] > div[role="radio"]{
+  display:inline-flex !important; align-items:center !important; justify-content:center !important;
+  padding: var(--pill-pad-y) var(--pill-pad-x) !important;
+  border-radius: var(--pill-radius) !important;
+  background: var(--pill-bg) !important;
+  color: var(--pill-text) !important;
+  border: 1.5px solid var(--pill-brd) !important;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.03) !important;
+  cursor: pointer !important;
+  user-select: none !important;
+  transition: background .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease;
+  max-width: 100%;
 }
 
-.stTextInput > div > input {
-  border-color: #E5E7EB;
-  background-color: #FFFFFF;
+/* Trim inner P tag margin and avoid wrapping chaos */
+[data-testid="stRadio"] [role="radiogroup"] > label p,
+[data-testid="stRadio"] [role="radiogroup"] > div[role="radio"] p{
+  margin:0 !important; font-weight:500 !important; white-space:nowrap !important;
 }
 
-.stTextInput > div > input:focus {
-  border-color: var(--btn-primary);
-  box-shadow: 0 0 0 3px rgba(46, 110, 255, 0.1);
+/* Hover state */
+[data-testid="stRadio"] [role="radiogroup"] > label:hover,
+[data-testid="stRadio"] [role="radiogroup"] > div[role="radio"]:hover{
+  background: var(--pill-hover) !important;
 }
 
-.stRadio > div > label > div {
-  background-color: var(--pill-bg);
-  color: var(--pill-text);
-  border: 1.5px solid var(--pill-brd);
-  box-shadow: var(--pill-shadow);
+/* Focus ring when navigating with keyboard */
+[data-testid="stRadio"] [role="radiogroup"] > label:focus-within,
+[data-testid="stRadio"] [role="radiogroup"] > div[role="radio"]:focus{
+  box-shadow: var(--ring) !important; outline:none !important;
 }
 
-.stRadio > div > label > div:checked {
-  background-color: var(--pill-selected);
-  color: #FFFFFF;
-  border-color: var(--pill-selected);
-  box-shadow: 0 3px 12px rgba(17, 24, 39, 0.25);
+/* Selected pill: handle both ARIA and :has() */
+[data-testid="stRadio"] [role="radiogroup"] > div[role="radio"][aria-checked="true"],
+[data-testid="stRadio"] [role="radiogroup"] > label:has(> input[type="radio"]:checked){
+  background: var(--pill-selected) !important;
+  color: var(--pill-selected-text) !important;
+  border-color: var(--pill-selected) !important;
 }
 
-.stCheckbox > label {
-  color: var(--text-color);
+/* Kill any leftover inner icon blobs Streamlit might render */
+[data-testid="stRadio"] [role="radiogroup"] > label > div:first-child,
+[data-testid="stRadio"] [role="radiogroup"] > div[role="radio"] > div:first-child{
+  display:none !important;
 }
 
-.stSelectbox > div > div {
-  background-color: #FFFFFF;
-  border-color: #E5E7EB;
+/* Segmented control shell */
+[data-testid="stSegmentedControl"] > div{
+  background: var(--pill-bg) !important;
+  border-radius: calc(var(--pill-radius) + 2px) !important;
+  border: 1.5px solid var(--pill-brd) !important;
+  padding: 4px !important;
 }
 
-.stSelectbox > div > div:focus {
-  border-color: var(--btn-primary);
+/* Segmented buttons */
+[data-testid="stSegmentedControl"] button{
+  background: transparent !important;
+  color: var(--pill-text) !important;
+  border: none !important;
+  border-radius: var(--pill-radius) !important;
+  padding: var(--pill-pad-y) var(--pill-pad-x) !important;
+  font-weight: 500 !important;
+  transition: background .15s ease, color .15s ease;
+}
+[data-testid="stSegmentedControl"] button:hover{
+  background: var(--pill-hover) !important;
+}
+[data-testid="stSegmentedControl"] button[aria-pressed="true"]{
+  background: var(--pill-selected) !important;
+  color: var(--pill-selected-text) !important;
+}
+[data-testid="stSegmentedControl"] button:focus-visible{
+  box-shadow: var(--ring) !important; outline:none !important;
 }
 
-.section-divider {
-  border-top: 1px solid #E5E7EB;
+/* ---------- Welcome choice group helper (radio pills in a row) ---------- */
+.welcome-choices [data-testid="stRadio"] [role="radiogroup"]{
+  gap: 12px !important;
 }
 
-/* === AI Advisor Styling === */
-.stTextInput > div > input {
-  font-size: 16px;
-  padding: 0.5rem;
+/* ---------- Tick bar (GCP progress dots) ---------- */
+.tickbar{
+  display:flex; gap:8px; align-items:center; margin: 8px 0 18px;
+}
+.tickbar .dot{
+  width:10px; height:10px; border-radius:999px; background:#d1d5db;
+}
+.tickbar .dot.active{ background:#111827; }
+.tickbar .dot.done{ background:#22c55e; }
+
+/* ---------- “Row actions” two-column button bar ---------- */
+.row-actions{
+  display:flex; align-items:center; justify-content:space-between;
+  gap: 12px; margin-top: 10px;
+}
+.row-actions .left, .row-actions .right{ display:flex; gap:10px; }
+
+/* ---------- Navigation panel polish ---------- */
+[data-testid="stSidebarNav"] ul{
+  gap: 4px !important;
+}
+[data-testid="stSidebarNav"] li a{
+  border-radius: 8px !important;
+}
+[data-testid="stSidebarNav"] li a:hover{
+  background: #f3f4f6 !important;
 }
 
-.stButton > button[kind="primary"] {
-  margin-top: 0.5rem;
-  padding: 0.5rem 1rem;
-}
+/* ---------- Links ---------- */
+a{ color: var(--accent-700); }
+a:hover{ color: var(--accent-600); text-decoration: underline; }
 
-/* === Card and Tile Overrides === */
-div[style*="border: 1px solid #e0e0e0"] {
-  padding: 1.5rem;
-  margin: 0 auto;
-  max-width: 320px;
-  /* Comment: Card - keep padding and width consistent */
-}
-
-div[style*="min-height: 250px"] {
-  min-height: 250px;
-  /* Comment: Card height - lock for layout */
-}
-
-/* === Grid and Flex Overrides === */
-div[style*="grid-template-columns"] {
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
-  /* Comment: Grid - enforce clean layout */
-}
-
-div[style*="display: flex"] {
-  justify-content: center;
-  gap: 2rem;
-  /* Comment: Flex - center and space evenly */
+/* ---------- Tables / Dataframes ---------- */
+[data-testid="stTable"], [data-testid="stDataFrame"]{
+  border-radius: 12px !important;
+  border: 1px solid var(--border) !important;
+  overflow: hidden !important;
 }
