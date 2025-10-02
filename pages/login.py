@@ -31,7 +31,7 @@ def safe_go(target: str):
 ret = st.session_state.get("after_login_target") or "pages/hub.py"
 
 st.title("Sign in")
-st.caption("This is a prototype login. Choosing any option will mark you as signed in for this session and return you to the requested page.")
+st.caption("Prototype sign-in. Choose an option to mark this session as signed in and return to where you were going.")
 
 c1, c2, c3 = st.columns(3)
 with c1:

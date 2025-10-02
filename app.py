@@ -12,6 +12,7 @@ def inject_css(path: str):
     else:
         st.warning(f"Missing CSS: {path}")
 
+# Load your CSS if present
 inject_css("static/style.css")
 
 # Simple prototype auth flag
@@ -25,9 +26,14 @@ def ensure_page(path: str, title: str, icon: str, default: bool=False):
     page = st.Page(path, title=title, icon=icon, default=bool(default)) if default else st.Page(path, title=title, icon=icon)
     return page, None
 
+# Minimal set + you can extend later; crucially includes the tell-us pages
 INTENDED = [
     ("pages/welcome.py", "Welcome", "👋", True),
     ("pages/hub.py", "Your Concierge Care Hub", "🏠", False),
+    ("pages/tell_us_about_you.py", "Tell Us About You", "ℹ️", False),
+    ("pages/tell_us_about_loved_one.py", "Tell Us About Loved One", "ℹ️", False),
+    ("pages/professional_mode.py", "Professional Mode", "🧑‍⚕️", False),
+    ("pages/gcp.py", "Guided Care Plan", "🗺️", False),
     ("pages/login.py", "Login", "🔐", False),
 ]
 
