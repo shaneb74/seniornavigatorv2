@@ -1,52 +1,48 @@
 
 import streamlit as st
 
-# Debug: non-visual logger
-def _debug_log(msg: str):
-    try:
-        print(f"[SNAV] {msg}")
-    except Exception:
-        pass
-
-_debug_log('LOADED: cost_planner.py')
-
-
-# Guard: ensure session state keys exist across cold restarts
+# Session-state guard (safe, no visual change)
 if 'care_context' not in st.session_state:
     st.session_state.care_context = {
         'gcp_answers': {},
         'decision_trace': [],
         'planning_mode': 'exploring',
-        'care_flags': {}
+        'care_flags': {},
+        'person_name': 'Your Loved One',
     }
+
 ctx = st.session_state.care_context
+person_name = ctx.get('person_name', 'Your Loved One')
 
+st.title(f"Cost Planner for {person_name}")
 
-# Cost Planner: Mode
-st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-st.title("Cost Planner for your loved one")
-st.markdown("<h2>Choose your planning style.</h2>", unsafe_allow_html=True)
-st.markdown("<p>Estimating costs or Planning—your call.</p>", unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
+st.caption("Choose the level of detail that fits your needs right now.")
 
-# Mode selection with tile style
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
-st.markdown("### Planning Mode")
-st.markdown("<p>Select how you’d like to explore costs.</p>", unsafe_allow_html=True)
-st.button("Estimating costs", key="step_mode", type="primary")
-st.button("Planning", key="free_mode", type="primary")
+st.markdown("""
+Not everyone needs the same level of detail. Some families just want a ballpark idea of what care might cost, while others
+want a fully personalized view based on their situation.
 
-st.markdown('</div>', unsafe_allow_html=True)
+- **Estimate Costs**  
+  Choose this if you're simply curious what different care options might cost on average. It's quick, easy, and gives you a general picture without needing much detail.
 
-# Navigation
-st.markdown('<div class="scn-nav-row">', unsafe_allow_html=True)
-col1, col2 = st.columns([1, 1])
-with col1:
-    st.button("Back to Hub", key="back_cost", type="secondary")
-st.markdown('</div>', unsafe_allow_html=True)
-st.write("Choose how deep you want to go right now.")
+- **Plan Costs**  
+  Choose this if you'd like to build a personalized financial plan based on your (or your loved one's) specific circumstances. This uses your details to tailor the estimate for your family.
+""")
+
 st.markdown('---')
-if st.button('Estimating costs'):
-    st.switch_page('pages/cost_planner_modules.py')
-if st.button('Planning'):
-    st.switch_page('pages/cost_planner_modules.py')
+
+col1, col2, col3 = st.columns([1,1,1])
+
+with col1:
+    if st.button("Estimate Costs", key="cp_estimate"):
+        ctx['planning_mode'] = 'estimating'
+        st.switch_page('pages/cost_planner_modules.py')
+
+with col2:
+    if st.button("Plan Costs", key="cp_plan"):
+        ctx['planning_mode'] = 'planning'
+        st.switch_page('pages/cost_planner_modules.py')
+
+with col3:
+    if st.button("Back to Hub", key="cp_back_hub"):
+        st.switch_page('pages/hub.py')
