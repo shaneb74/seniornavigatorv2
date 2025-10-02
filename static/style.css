@@ -159,24 +159,24 @@ h1 {
 }
 
 button[kind="primary"] {
-  background: var(--btn-primary);
-  color: #FFFFFF;
-  border: 0;
-  box-shadow: 0 2px 8px rgba(46, 110, 255, 0.25);
+  background: var(--btn-primary) !important;
+  color: #FFFFFF !important;
+  border: 0 !important;
+  box-shadow: 0 2px 8px rgba(46, 110, 255, 0.25) !important;
 }
 
 button[kind="primary"]:hover {
-  background: var(--btn-primary-hover);
+  background: var(--btn-primary-hover) !important;
 }
 
 button[kind="secondary"] {
-  background: var(--btn-secondary-bg);
-  color: var(--btn-secondary-text);
-  border: 1px solid var(--btn-secondary-brd);
+  background: var(--btn-secondary-bg) !important;
+  color: var(--btn-secondary-text) !important;
+  border: 1px solid var(--btn-secondary-brd) !important;
 }
 
 button[kind="secondary"]:hover {
-  background: #D6E4FF;
+  background: #D6E4FF !important;
 }
 
 /* === Miscellaneous === */
@@ -215,13 +215,19 @@ button[kind="secondary"]:hover {
   outline-offset: 2px;
 }
 
-/* === Streamlit Theme Overrides === */
+/* === Streamlit Theme Overrides - Remove Orange === */
 :root {
   --primary-color: #2E6EFF !important;
+  --primary-color-light: #4D9EFF !important;
+  --primary-color-dark: #1F5AE6 !important;
   --background-color: #FFFFFF !important;
   --secondary-background-color: #F9F9F9 !important;
   --text-color: #111827 !important;
-  --font: sans-serif !important;
+  --font: "Segoe UI", sans-serif !important;
+}
+
+.stApp {
+  background-color: #FFFFFF !important;
 }
 
 .stButton > button {
@@ -235,14 +241,14 @@ button[kind="secondary"]:hover {
   background-color: var(--btn-primary-hover) !important;
 }
 
-.stButton > button[kind="secondary"] {
-  background-color: #EAF2FF !important;
-  color: #2E6EFF !important;
-  border: 1px solid #D6E4FF !important;
+.stTextInput > div > input {
+  border-color: #E5E7EB !important;
+  background-color: #FFFFFF !important;
 }
 
-.stButton > button[kind="secondary"]:hover {
-  background-color: #D6E4FF !important;
+.stTextInput > div > input:focus {
+  border-color: var(--btn-primary) !important;
+  box-shadow: 0 0 0 3px rgba(46, 110, 255, 0.1) !important;
 }
 
 .stRadio > div > label > div {
@@ -259,10 +265,25 @@ button[kind="secondary"]:hover {
   box-shadow: 0 3px 12px rgba(17, 24, 39, 0.25) !important;
 }
 
-.stApp {
+.stCheckbox > label {
+  color: #111827 !important;
+}
+
+.stSelectbox > div > div {
   background-color: #FFFFFF !important;
+  border-color: #E5E7EB !important;
+}
+
+.stSelectbox > div > div:focus {
+  border-color: var(--btn-primary) !important;
 }
 
 .section-divider {
   border-top: 1px solid #E5E7EB !important;
+}
+
+/* === AI Advisor Styling === */
+.stTextInput > div > input {
+  font-size: 16px;
+  padding: 0.5rem;
 }
