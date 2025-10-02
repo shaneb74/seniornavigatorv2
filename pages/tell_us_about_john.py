@@ -23,14 +23,6 @@ st.write("Does John own a home?")
 st.button("Yes", key="home_yes", type="primary")
 st.button("No", key="home_no", type="primary")
 
-# Conditional alerts (mockup text)
-st.markdown('<div style="margin-top: 1rem;">', unsafe_allow_html=True)
-if st.button("Yes (Medicaid)", key="medicaid_yes_alert", type="primary", help="Hidden trigger"):
-    st.warning("Note: Medicaid is federal. Check benefits.gov for details. We’ll cover the rest!")
-if st.button("Yes (Military)", key="military_yes_alert", type="primary", help="Hidden trigger"):
-    st.info("Great! We’ll highlight VA options for John ahead.")
-st.markdown('</div>', unsafe_allow_html=True)
-
 st.markdown('</div>', unsafe_allow_html=True)
 
 # Navigation
