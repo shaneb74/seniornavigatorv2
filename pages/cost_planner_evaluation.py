@@ -16,7 +16,7 @@ st.button("View Medicaid Tip", key="medicaid_tip", type="primary", help="Optiona
 st.markdown('<div class="scn-nav-row">', unsafe_allow_html=True)
 col1, col2 = st.columns([1, 1])
 with col1:
-    st.button("Back to Modules", key="back_to_modules", type="secondary")
+    st.button("Back to Modules", key="back_eval", type="secondary")
 with col2:
-    st.button("Next: Skipped Items", key="next_skipped", type="primary")
+    st.button("Next: Skipped Items", key="next_eval", type="primary")
 st.markdown('</div>', unsafe_allow_html=True)
