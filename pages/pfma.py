@@ -1,26 +1,26 @@
 import streamlit as st
 
-# Plan for My Advisor - Refined Design
+# Plan for My Advisor - Refined Design with Progress Bar
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
 st.title("Plan for My Advisor")
 st.markdown("<h2>Get your ducks in a row for John.</h2>", unsafe_allow_html=True)
 st.markdown("<p>Prepare for your concierge call—simple steps to make it smooth.</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Badge Progress Display - Horizontal
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; text-align: center; margin-bottom: 1.5rem;">', unsafe_allow_html=True)
+# Progress Bar - Horizontal with Sections
+st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 0.5rem; text-align: center; margin-bottom: 1.5rem;">', unsafe_allow_html=True)
 st.markdown("### Your Progress")
-st.markdown('<div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 1rem;">', unsafe_allow_html=True)
-st.markdown('<div style="border: 1px solid #ccc; border-radius: 8px; padding: 0.5rem 1rem; background: #e0e0e0; display: flex; align-items: center;"><span>Guided Plan</span><span style="margin-left: 0.5rem;">🟢</span></div>', unsafe_allow_html=True)
-st.markdown('<div style="border: 1px solid #ccc; border-radius: 8px; padding: 0.5rem 1rem; background: #e0e0e0; display: flex; align-items: center;"><span>Cost Plan</span><span style="margin-left: 0.5rem;">🟢</span></div>', unsafe_allow_html=True)
-st.markdown('<div style="border: 1px solid #ccc; border-radius: 8px; padding: 0.5rem 1rem; background: #e0e0e0; display: flex; align-items: center;"><span>Care Needs</span><span style="margin-left: 0.5rem;">🟢</span></div>', unsafe_allow_html=True)
-st.markdown('<div style="border: 1px solid #ccc; border-radius: 8px; padding: 0.5rem 1rem; background: #e0e0e0; display: flex; align-items: center;"><span>Benefits</span><span style="margin-left: 0.5rem;">🟢</span></div>', unsafe_allow_html=True)
+st.markdown('<div style="height: 20px; background: repeating-linear-gradient(to right, #e0e0e0 0%, #e0e0e0 25%, #e0e0e0 25%, #e0e0e0 50%, #e0e0e0 50%, #e0e0e0 75%, #e0e0e0 75%, #e0e0e0 100%); display: flex; justify-content: space-between;">', unsafe_allow_html=True)
+st.markdown('<span style="position: absolute; left: 12.5%; transform: translateX(-50%);">Care Plan</span>', unsafe_allow_html=True)
+st.markdown('<span style="position: absolute; left: 37.5%; transform: translateX(-50%);">Cost Plan</span>', unsafe_allow_html=True)
+st.markdown('<span style="position: absolute; left: 62.5%; transform: translateX(-50%);">Care Needs</span>', unsafe_allow_html=True)
+st.markdown('<span style="position: absolute; left: 87.5%; transform: translateX(-50%);">Benefits</span>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
 # Care Needs Section
 st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
-st.markdown("### Care Needs", unsafe_allow_html=True)
+st.markdown("### Care Needs")
 st.markdown("<p>Share John’s daily needs to help your advisor.</p>", unsafe_allow_html=True)
 marital_status = st.radio("Marital Status", ["Single", "Married", "Widowed"])
 living_situation = st.radio("Living Situation", ["Alone", "With Spouse", "With Family"])
@@ -37,7 +37,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 # Benefits Section
 st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px; margin-top: 1.5rem;">', unsafe_allow_html=True)
-st.markdown("### Benefits", unsafe_allow_html=True)
+st.markdown("### Benefits")
 st.markdown("<p>Details on insurance and eligibility to unlock savings.</p>", unsafe_allow_html=True)
 insurance_company = st.text_input("Insurance Company", value="Blue Cross")
 ltc_insurance = st.radio("LTC Insurance", ["Yes", "No", "Unsure"])
@@ -45,27 +45,6 @@ medicaid_status = st.radio("Medicaid Status", ["Yes", "In process", "No", "Unsur
 va_eligibility = st.radio("VA Eligibility", ["Yes", "No", "Unsure"])
 st.checkbox("This looks right?", key="benefits_confirm")
 st.button("Save Benefits", key="save_benefits", type="primary")
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Personal Info Section
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px; margin-top: 1.5rem;">', unsafe_allow_html=True)
-st.markdown("### Personal Info", unsafe_allow_html=True)
-st.markdown("<p>Confirm contact details for your advisor.</p>", unsafe_allow_html=True)
-confirmed_name = st.text_input("Name", value="John Doe")
-confirmed_phone = st.text_input("Phone", value="1234567890")
-confirmed_email = st.text_input("Email", value="john@example.com")
-confirmed_referral = st.text_input("Referral", value="Friend")
-st.checkbox("This looks right?", key="personal_info_confirm")
-st.button("Save Personal Info", key="save_personal", type="primary")
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Smart Review Notes Section
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px; margin-top: 1.5rem;">', unsafe_allow_html=True)
-st.markdown("### Smart Review Notes", unsafe_allow_html=True)
-st.markdown("<p>Notes from AI review—share with advisor.</p>", unsafe_allow_html=True)
-st.text_area("Notes", value="John may qualify for VA aid. Check spend down for Medicaid.")
-st.checkbox("This looks right?", key="notes_confirm")
-st.button("Save Notes", key="save_notes", type="primary")
 st.markdown('</div>', unsafe_allow_html=True)
 
 # Navigation
