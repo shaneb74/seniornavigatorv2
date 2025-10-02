@@ -2,9 +2,9 @@ import streamlit as st
 from pathlib import Path
 
 CSS = '''<style>
-/* Focus outlines for accessibility */
-*:focus { outline: 2px solid rgba(0,0,0,0.25) !important; outline-offset: 2px !important; }
-a:focus, button:focus { outline: 3px solid rgba(0,0,0,0.35) !important; }
+/* Focus outlines, scoped to our stepper only to avoid altering button styling */
+.sn-step:focus { outline: 2px solid rgba(0,0,0,0.25) !important; outline-offset: 2px !important; }
+.sn-step a:focus { outline: 3px solid rgba(0,0,0,0.35) !important; }
 
 /* Stepper container */
 .sn-stepper { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin: 8px 0 16px 0; }

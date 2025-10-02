@@ -1,43 +1,50 @@
 from ui.ux_enhancements import apply_global_ux, render_stepper
-
 import streamlit as st
+
 apply_global_ux()
 render_stepper()
 
+st.markdown("""
+<div class="scn-hero">
+  <h1>AI Advisor</h1>
+  <h2>I’m Navi — your expert advisor.</h2>
+  <p>I help you see the whole map: care paths, hidden costs, and what to ask providers.
+  For your loved one.</p>
+</div>
+""", unsafe_allow_html=True)
 
-# AI Advisor Page
-st.markdown(r'''<div class="scn-hero">', unsafe_allow_html=True)
-st.title("AI Advisor")
-st.markdown(r'''<h2>I'm Navi—your expert advisor.</h2>", unsafe_allow_html=True)
-st.markdown("<p>I help you see the whole map: care paths, hidden costs, decisions no one talks about. For your loved one.</p>", unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown("""
+<div style="display:flex; gap:12px; flex-wrap:wrap;">
+  <a href="#" style="display:inline-block; padding:10px 14px; border:1px solid #e5e7eb; border-radius:999px; text-decoration:none;">What does home care include?</a>
+  <a href="#" style="display:inline-block; padding:10px 14px; border:1px solid #e5e7eb; border-radius:999px; text-decoration:none;">How do we compare assisted living vs memory care?</a>
+  <a href="#" style="display:inline-block; padding:10px 14px; border:1px solid #e5e7eb; border-radius:999px; text-decoration:none;">What paperwork do we need?</a>
+</div>
+""", unsafe_allow_html=True)
 
-# Frequently Asked Questions Section
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; margin-bottom: 1.5rem; background: #f9f9f9;">', unsafe_allow_html=True)
-st.markdown("### Top Questions", unsafe_allow_html=True)
-st.markdown("<p>Click a question to see the answer below.</p>", unsafe_allow_html=True)
-st.markdown('<div style="display: block;">', unsafe_allow_html=True)
-st.markdown('<a href="#" style="display: block; text-decoration: none; color: #2E6EFF; padding: 1rem; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 1rem; background: #ffffff;" onmouseover="this.style.textDecoration='underline'; this.style.cursor='pointer';" onmouseout="this.style.textDecoration='none';">How much does home care cost?</a>', unsafe_allow_html=True)
-st.markdown('<a href="#" style="display: block; text-decoration: none; color: #2E6EFF; padding: 1rem; border: 1px solid #e0e0e0; border-radius: 8px; margin-bottom: 1rem; background: #ffffff;" onmouseover="this.style.textDecoration='underline'; this.style.cursor='pointer';" onmouseout="this.style.textDecoration='none';">Can VA help with costs?</a>', unsafe_allow_html=True)
-st.markdown('<a href="#" style="display: block; text-decoration: none; color: #2E6EFF; padding: 1rem; border: 1px solid #e0e0e0; border-radius: 8px; background: #ffffff;" onmouseover="this.style.textDecoration='underline'; this.style.cursor='pointer';" onmouseout="this.style.textDecoration='none';">What’s next after planning?</a>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown("""
+<div style="border: 1px solid #e0e0e0; border-radius: 12px; padding: 16px; background: #fff;">
+  <h3>Ask Me Anything</h3>
+  <p>Type your question about your loved one’s care below, or click a question above.</p>
+</div>
+""", unsafe_allow_html=True)
 
-# GPT Chat Interface
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px; background: #f0f0f0;">', unsafe_allow_html=True)
-st.markdown("### Ask Me Anything", unsafe_allow_html=True)
-st.markdown("<p>Type your question about your loved one’s care below, or click a question above.</p>''', unsafe_allow_html=True)
 st.text_input("Your question...", key="ai_input", placeholder="e.g., How can I afford home care?")
 st.button("Send", key="ai_send", type="primary")
-st.markdown('<div style="margin-top: 1rem; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">', unsafe_allow_html=True)
-st.write("**Response:** I’m here to help! Tell me more about your loved one’s situation...")
-st.markdown('<div style="text-align: right; margin-top: 0.5rem;"><a href="sms:?body=I’m here to help! Tell me more about your loved one’s situation..." style="color: #2E6EFF; text-decoration: none; font-size: 14px;" onmouseover="this.style.textDecoration='underline'; this.style.cursor='pointer';" onmouseout="this.style.textDecoration='none';">📧 Send via SMS</a></div>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
 
-# Navigation
-st.markdown('<div class="scn-nav-row">', unsafe_allow_html=True)
-col1, col2 = st.columns([1, 1])
+st.markdown("""
+<div style="margin-top: 1rem; border: 1px solid #e0e0e0; border-radius: 12px; padding: 16px; background: #fff;">
+  <strong>Response:</strong> I’m here to help! Tell me more about your loved one’s situation...
+  <div style="text-align: right; margin-top: 0.5rem;">
+    <a href="#" style="text-decoration:none;">📧 Send via SMS</a>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("""<div class="scn-nav-row"></div>""", unsafe_allow_html=True)
+col1, col2 = st.columns([1,1])
 with col1:
-    st.button("Back to Hub", key="back_ai", type="secondary")
-st.markdown('</div>''', unsafe_allow_html=True)
+    if st.button("Back: Hub"):
+        st.switch_page('pages/hub.py')
+with col2:
+    if st.button("Next: Cost Planner"):
+        st.switch_page('pages/cost_planner.py')
