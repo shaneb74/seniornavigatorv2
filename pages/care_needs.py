@@ -1,3 +1,7 @@
+st.markdown('<div style="display:flex;gap:6px;flex-wrap:wrap;margin:.25rem 0 1rem 0;">' + 
+' '.join([f"<div style='width:10px;height:10px;border-radius:999px;border:1px solid #cbd5e1;background:#fff;'></div>" for _ in range(12)]) + 
+'</div>', unsafe_allow_html=True)
+# SN_TICKBAR_12
 from ui.ux_enhancements import apply_global_ux, render_stepper
 
 import streamlit as st

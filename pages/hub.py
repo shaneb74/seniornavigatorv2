@@ -2,7 +2,7 @@ from ui.ux_enhancements import apply_global_ux, render_stepper
 
 import streamlit as st
 apply_global_ux()
-render_stepper()
+render_stepper('hub')
 
 
 # Hub page mimicking the dashboard design

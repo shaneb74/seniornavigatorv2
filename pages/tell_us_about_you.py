@@ -1,6 +1,16 @@
 from ui.ux_enhancements import apply_global_ux, render_stepper
 
 import streamlit as st
+if 'care_context' not in st.session_state:
+    st.session_state.care_context = {
+        'audience_type': None,
+        'professional_role': None,
+        'person_name': None,
+        'care_flags': {},
+        'derived_flags': {}
+    }
+ctx = st.session_state.care_context
+
 apply_global_ux()
 render_stepper()
 
