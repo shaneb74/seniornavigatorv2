@@ -1,3 +1,4 @@
+
 import streamlit as st
 from pathlib import Path
 
@@ -19,19 +20,20 @@ inject_css("static/style.css")
 # Define pages
 welcome = st.Page("pages/welcome.py", title="Welcome", icon="👋")
 
-# Replace the old john page with the correct Loved One + keep About You
+# Use the correct Loved One/You pages (no 'john' file)
 tell_us_loved = st.Page("pages/tell_us_about_loved_one.py", title="Tell Us About Loved One", icon="ℹ️")
 tell_us_you = st.Page("pages/tell_us_about_you.py", title="Tell Us About You", icon="ℹ️")
 
 hub = st.Page("pages/hub.py", title="Hub", icon="🏠")
 
-# Guided Care Plan entry + new sectional subpages + recommendation
+# Guided Care Plan flow (entry + 3 subsections + recommendation)
 gcp = st.Page("pages/gcp.py", title="Guided Care Plan", icon="🗺️")
 gcp_daily = st.Page("pages/gcp_daily_life.py", title="GCP — Daily Life & Support", icon="🗺️")
 gcp_health = st.Page("pages/gcp_health_safety.py", title="GCP — Health & Safety", icon="🗺️")
 gcp_context = st.Page("pages/gcp_context_prefs.py", title="GCP — Context & Preferences", icon="🗺️")
 gcp_reco = st.Page("pages/gcp_recommendation.py", title="GCP Recommendation", icon="🗺️")
 
+# Cost Planner
 cost_planner_mode = st.Page("pages/cost_planner.py", title="Cost Planner: Mode", icon="💰")
 cost_planner_modules = st.Page("pages/cost_planner_modules.py", title="Cost Planner: Modules", icon="📊")
 cost_planner_home_care = st.Page("pages/cost_planner_home_care.py", title="Home Care Support", icon="🏠")
@@ -63,7 +65,7 @@ export_results = st.Page("pages/export_results.py", title="Export Results", icon
 my_documents = st.Page("pages/my_documents.py", title="My Documents", icon="📁")
 my_account = st.Page("pages/my_account.py", title="My Account", icon="👤")
 
-# Optional PFMA page if you have it wired elsewhere
+# Optional PFMA page
 pfma = st.Page('pages/pfma.py', title='Plan for My Advisor', icon="🧭")
 
 # Configure navigation

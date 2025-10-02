@@ -17,7 +17,6 @@ st.caption('Step 1 of 3')
 
 st.markdown('---')
 
-# ADLs / independence
 adl_opts = ['Independent', 'Occasional reminders', 'Help with some tasks', 'Rely on help for most tasks']
 answers['adl_dependency'] = st.radio(
     'How well can you manage everyday activities like bathing, dressing, or preparing meals on your own?',
@@ -27,7 +26,6 @@ answers['adl_dependency'] = st.radio(
 )
 st.caption('ADLs include bathing, dressing, meals, and chores. This tells us the level of daily support.')
 
-# Caregiver support
 cg_opts = ['I have support most of the time','I have support a few days a week','I have support occasionally','I don’t have regular support']
 answers['caregiver_support_level'] = st.radio(
     'How much regular support do you have from a caregiver or family member?',
@@ -37,7 +35,6 @@ answers['caregiver_support_level'] = st.radio(
 )
 st.caption('Strong support can offset higher daily needs.')
 
-# Medications
 med_opts = ['None','A few, easy to manage','Several, harder to manage','Not sure']
 answers['meds_complexity'] = st.radio(
     'Do you take medications, and how manageable is the routine?',
@@ -47,7 +44,6 @@ answers['meds_complexity'] = st.radio(
 )
 st.caption('This helps us understand missed‑med risk when combined with cognition.')
 
-# Social isolation
 soc_opts = ['Frequent contact','Occasional contact','Rarely see others','Often alone']
 answers['social_isolation'] = st.radio(
     'How often do you connect with friends, family, or activities?',

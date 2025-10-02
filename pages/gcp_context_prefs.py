@@ -17,7 +17,6 @@ st.caption('Step 3 of 3')
 
 st.markdown('---')
 
-# Funding confidence
 fund_opts = ['Very confident','Somewhat confident','Somewhat concerned','Very concerned']
 answers['funding_confidence'] = st.radio(
     'How would you describe your financial situation when it comes to paying for care?',
@@ -27,7 +26,6 @@ answers['funding_confidence'] = st.radio(
 )
 st.caption('This helps right-size options for budget.')
 
-# Geographic access
 geo_opts = ['Very easy','Fairly easy','Somewhat difficult','Very difficult']
 answers['geographic_access'] = st.radio(
     'How accessible are services like pharmacies, grocery stores, and doctors from your home?',
@@ -37,7 +35,6 @@ answers['geographic_access'] = st.radio(
 )
 st.caption('Think drive time, transit availability, and how quickly you can get prescriptions or appointments.')
 
-# Willingness to move
 move_opts = ['I prefer to stay home',"I'd rather stay home but open if needed","I'm comfortable either way","I'm comfortable moving"]
 answers['move_willingness'] = st.radio(
     'If care is recommended, how open are you to changing where care happens?',

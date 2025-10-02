@@ -17,7 +17,6 @@ st.caption('Step 2 of 3')
 
 st.markdown('---')
 
-# Cognition
 cog_opts = ['Sharp','Sometimes forgetful','Frequent memory issues','Serious confusion']
 answers['cognition_level'] = st.radio(
     'How would you rate your memory and thinking in daily life?',
@@ -27,7 +26,6 @@ answers['cognition_level'] = st.radio(
 )
 st.caption("We'll pair this with medications and safety to gauge supervision needs.")
 
-# Mobility
 mob_opts = ['I walk easily','I use a cane','I use a walker','I use a wheelchair']
 answers['mobility'] = st.radio(
     'How do you usually get around?',
@@ -37,7 +35,6 @@ answers['mobility'] = st.radio(
 )
 st.caption('We mean typical movement at home and outside.')
 
-# Chronic conditions (multi-select)
 cond_opts = ['Diabetes','Hypertension','Dementia',"Parkinson's",'Stroke','CHF','COPD','Arthritis']
 answers['chronic_conditions'] = st.multiselect(
     'Do you have any ongoing health conditions? Select all that apply.',
@@ -47,7 +44,6 @@ answers['chronic_conditions'] = st.multiselect(
 )
 st.caption('Select all that apply. Dementia strongly influences recommendations.')
 
-# Recent fall
 fall_opts = ['Yes','No','Not sure']
 answers['recent_fall'] = st.radio(
     'Has there been a fall in the last 6 months?',
@@ -57,7 +53,6 @@ answers['recent_fall'] = st.radio(
 )
 st.caption('Recent falls increase the need for supervision or home changes.')
 
-# Home setup safety
 home_opts = ['Well-prepared','Mostly safe','Needs modifications','Not suitable']
 answers['home_setup_safety'] = st.radio(
     'How safe and manageable is your home for daily living as you age?',
