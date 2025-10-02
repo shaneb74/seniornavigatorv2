@@ -6,7 +6,6 @@ if 'care_context' not in st.session_state:
     st.session_state.care_context = {}
 
 ctx = st.session_state.care_context
-auth = ctx.get('is_authenticated', False)
 name = ctx.get('person_name', 'Your Loved One')
 
 gcp_done = bool(ctx.get('gcp_recommendation')) or bool(ctx.get('gcp_answers'))
@@ -23,7 +22,7 @@ st.caption("A quick double-check to make sure you didn’t miss anything importa
 
 # Completion strip
 st.markdown("---")
-c1, c2, c3, c4 = st.columns(4)
+c1, c2, c3 = st.columns(3)
 with c1:
     st.write("**Guided Care Plan**")
     st.success("Completed" if gcp_done else "Incomplete", icon="✅" if gcp_done else "⚠️")
@@ -38,9 +37,6 @@ with c2:
 with c3:
     st.write("**Modules**")
     st.caption(f"{mods_done} of {mods_total} completed")
-with c4:
-    st.write("**Account**")
-    st.success("Logged in" if auth else "Not logged in", icon="🔒" if auth else "🔓")
 
 st.markdown("---")
 
@@ -144,15 +140,10 @@ else:
     st.caption("We’ll list completed items here as you work through them.")
 
 st.markdown("---")
-b1, b2, b3 = st.columns(3)
+b1, b2 = st.columns(2)
 with b1:
     if st.button("Back to Modules", key="rev_back_modules"):
         st.switch_page("pages/cost_planner_modules.py")
 with b2:
     if st.button("Proceed to PFMA", key="rev_to_pfma"):
         st.switch_page("pages/pfma.py")
-with b3:
-    if not auth:
-        if st.button("Log in to save", key="rev_login"):
-            ctx['is_authenticated'] = True
-            st.rerun()
