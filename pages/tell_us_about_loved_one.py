@@ -5,6 +5,12 @@ apply_global_ux(); render_stepper('main')
 if 'care_context' not in st.session_state:
     st.session_state.care_context = {'audience_type': 'proxy', 'person_name': None, 'care_flags': {}, 'plan': {}}
 ctx = st.session_state.care_context
+# Guard: ensure expected keys exist
+if 'gcp_answers' not in ctx: ctx['gcp_answers'] = {}
+if 'decision_trace' not in ctx: ctx['decision_trace'] = []
+if 'planning_mode' not in ctx: ctx['planning_mode'] = 'exploring'
+if 'care_flags' not in ctx: ctx['care_flags'] = {}
+
 ctx['audience_type'] = 'proxy'
 
 st.header("Tell Us About Your Loved One")
