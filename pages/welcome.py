@@ -1,42 +1,23 @@
 
 import streamlit as st
-from pathlib import Path
-
-if "is_authenticated" not in st.session_state:
-    st.session_state.is_authenticated = False
-
-def safe_nav(target: str, fallback: str = "pages/hub.py"):
-    # Ensure the file exists before trying to route
-    if not Path(target).exists():
-        target = fallback if Path(fallback).exists() else None
-    try:
-        if target:
-            st.switch_page(target)
-        else:
-            st.error("Navigation target is unavailable in this build.")
-    except Exception:
-        # Likely not registered in st.navigation; fall back
-        if Path(fallback).exists():
-            try:
-                st.switch_page(fallback)
-                return
-            except Exception:
-                pass
-        st.error("Could not navigate. Use the sidebar to reach the Hub.")
 
 st.title("Entry – Who Are We Planning For?")
-choice = st.radio(
-    "Select an option",
-    ["Myself", "Someone Else", "I'm a professional"],
-    horizontal=True,
+
+# Use segmented control instead of radio, keep label hidden for a11y warning
+choice = st.segmented_control(
+    "Select who you are planning for",
+    options=["Myself", "Someone Else", "I'm a professional"],
+    selection_mode="single",
+    default="Myself",
     label_visibility="collapsed",
-    key="welcome_choice",
+    key="welcome_choice_seg",
 )
 
-if st.button("Continue", key="welcome_continue", type="primary"):
+if st.button("Continue", key="welcome_continue"):
     if choice == "Myself":
-        safe_nav("pages/tell_us_about_you.py")
+        st.switch_page("pages/tell_us_about_you.py")
     elif choice == "Someone Else":
-        safe_nav("pages/tell_us_about_loved_one.py")
+        st.switch_page("pages/tell_us_about_loved_one.py")
     else:
-        safe_nav("pages/professional_mode.py", fallback="pages/hub.py")
+        # Professional requires login in your flow; go to professional mode page
+        st.switch_page("pages/professional_mode.py")
