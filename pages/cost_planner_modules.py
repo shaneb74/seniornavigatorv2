@@ -1,4 +1,3 @@
-
 import streamlit as st
 
 # Guard
@@ -36,7 +35,7 @@ with st.container(border=True):
         if est_completed:
             st.success("Completed", icon="✅")
         else:
-            st.info("Not started", icon="🛈")
+            st.info("Not started", icon="ℹ️")  # fixed icon
 
 st.markdown('---')
 
