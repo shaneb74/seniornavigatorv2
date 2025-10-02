@@ -1,6 +1,17 @@
 
 import streamlit as st
 
+# Guard: ensure session state keys exist across cold restarts
+if 'care_context' not in st.session_state:
+    st.session_state.care_context = {
+        'gcp_answers': {},
+        'decision_trace': [],
+        'planning_mode': 'exploring',
+        'care_flags': {}
+    }
+ctx = st.session_state.care_context
+
+
 # Cost Plan Confirmation
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
 st.title("Confirm Cost Plan for your loved one")

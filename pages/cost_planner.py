@@ -1,6 +1,17 @@
 
 import streamlit as st
 
+# Guard: ensure session state keys exist across cold restarts
+if 'care_context' not in st.session_state:
+    st.session_state.care_context = {
+        'gcp_answers': {},
+        'decision_trace': [],
+        'planning_mode': 'exploring',
+        'care_flags': {}
+    }
+ctx = st.session_state.care_context
+
+
 # Cost Planner: Mode
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
 st.title("Cost Planner for your loved one")
@@ -29,4 +40,3 @@ if st.button('Estimating costs'):
     st.switch_page('pages/cost_planner_modules.py')
 if st.button('Planning'):
     st.switch_page('pages/cost_planner_modules.py')
-
