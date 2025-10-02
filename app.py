@@ -13,52 +13,19 @@ def inject_css(path: str):
 
 inject_css("static/style.css")
 
-# ---------- Auto-placeholder machinery ----------
-GEN_DIR = Path(".generated_pages")
-GEN_DIR.mkdir(exist_ok=True)
-
-PLACEHOLDER_TMPL = '''import streamlit as st
-
-# Auto-generated placeholder for missing page: {title}
-
-if 'care_context' not in st.session_state:
-    st.session_state.care_context = {}
-
-st.title("{title}")
-st.info("This is an auto-generated placeholder because the expected page file was not found: **{orig_path}**.")
-
-col1, col2 = st.columns(2)
-with col1:
-    if st.button("Back to Hub", key="{slug}_back_hub"):
-        st.switch_page("pages/hub.py")
-with col2:
-    if st.button("Go to Cost Planner", key="{slug}_to_cp"):
-        st.switch_page("pages/cost_planner.py")
-'''
-
-def slugify(s: str) -> str:
-    s = re.sub(r"[^a-zA-Z0-9]+", "_", s).strip("_").lower()
-    return s or "page"
-
+# ---------- Safe registration ----------
 def ensure_page(path: str, title: str, icon: str):
-    """Return an st.Page pointing at path if it exists; otherwise generate a placeholder file and return a Page for that."""
     p = Path(path)
-    if p.exists():
-        return st.Page(path, title=title, icon=icon)
-    # Generate placeholder
-    slug = slugify(title or Path(path).stem)
-    gen_path = GEN_DIR / f"{slug}.py"
-    if not gen_path.exists():
-        gen_path.write_text(PLACEHOLDER_TMPL.format(title=title, orig_path=path, slug=slug), encoding="utf-8")
-    return st.Page(str(gen_path), title=title + " (missing)", icon=icon)
+    if not p.exists():
+        return None
+    return st.Page(path, title=title, icon=icon)
 
-# ---------- Declare your intended pages once ----------
-INTENDED_PAGES = [
+INTENDED = [
     ("pages/welcome.py", "Welcome", "👋"),
     ("pages/tell_us_about_loved_one.py", "Tell Us About Loved One", "ℹ️"),
     ("pages/tell_us_about_you.py", "Tell Us About You", "ℹ️"),
     ("pages/hub.py", "Hub", "🏠"),
-    # GCP flow
+    # GCP
     ("pages/gcp.py", "Guided Care Plan", "🗺️"),
     ("pages/gcp_daily_life.py", "GCP — Daily Life & Support", "🗺️"),
     ("pages/gcp_health_safety.py", "GCP — Health & Safety", "🗺️"),
@@ -69,6 +36,7 @@ INTENDED_PAGES = [
     ("pages/cost_planner_estimate.py", "Cost Planner: Estimate", "💰"),
     ("pages/cost_planner_estimate_summary.py", "Cost Planner: Quick Summary", "💰"),
     ("pages/cost_planner_modules.py", "Cost Planner: Modules", "📊"),
+    ("pages/expert_review.py", "Expert Review", "🔎"),  # NEW
     ("pages/cost_planner_evaluation.py", "Cost Planner: Evaluation", "🔍"),
     ("pages/cost_planner_home_care.py", "Home Care Support", "🏠"),
     ("pages/cost_planner_daily_aids.py", "Daily Living Aids", "🛠️"),
@@ -90,7 +58,7 @@ INTENDED_PAGES = [
     ("pages/my_account.py", "My Account", "👤"),
 ]
 
-pages = [ensure_page(path, title, icon) for (path, title, icon) in INTENDED_PAGES]
+pages = [p for p in (ensure_page(*triple) for triple in INTENDED) if p is not None]
 pg = st.navigation(pages)
 pg.run()
 
