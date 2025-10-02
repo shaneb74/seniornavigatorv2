@@ -1,6 +1,8 @@
+
 import streamlit as st
 import re
 
+# Guard session state
 if 'care_context' not in st.session_state:
     st.session_state.care_context = {
         'gcp_answers': {},
@@ -19,16 +21,19 @@ cost_state = ctx.setdefault('cost_estimate', {})
 st.title(f"Estimate Costs for {person_name}")
 st.caption("A quick estimate based on a few selections. You can refine in the full planner later.")
 
+# Scenario selector
 scenario_options = ["In-home care", "Assisted living", "Memory care"]
 scenario = cost_state.get('setting_label', scenario_options[0])
 scenario = st.selectbox("Care setting", scenario_options, index=scenario_options.index(scenario) if scenario in scenario_options else 0, key="est_scenario")
 
+# ZIP code input
 zip_default = cost_state.get('zip', '')
 zip_val = st.text_input("ZIP code", value=zip_default, max_chars=5, key="est_zip")
 zip_valid = bool(re.fullmatch(r"\d{5}", zip_val))
 
 st.markdown('---')
 
+# Common pickers
 mobility_opts = ["None", "Cane", "Walker", "Wheelchair"]
 chronic_opts = ["Diabetes","Hypertension","Dementia","Parkinson's","Stroke","CHF","COPD","Arthritis"]
 
@@ -50,7 +55,7 @@ elif scenario == "Assisted living":
     chronic = st.multiselect(f"{person_name} • Chronic conditions", chronic_opts, default=c.get('chronic_conditions', []), key="al_chronic")
     c.update({'care_level': care_level, 'room_type': room_type, 'mobility': mobility, 'chronic_conditions': chronic})
 
-else:
+else:  # Memory care
     st.subheader(f"{person_name} — Scenario: Memory Care")
     c = cost_state.setdefault('memory', {})
     acuity = st.selectbox(f"{person_name} • Acuity level", ["Low Acuity","Moderate Acuity","High Acuity"], index=["Low Acuity","Moderate Acuity","High Acuity"].index(c.get('acuity','Moderate Acuity')), key="mc_acuity")
@@ -70,6 +75,7 @@ st.markdown(f"# ${placeholder_monthly:,}")
 st.caption(f"Typical range: ${placeholder_low:,} – ${placeholder_high:,}")
 st.caption("Local average, before benefits or insurance.")
 
+# Persist top-level selections
 cost_state['setting_label'] = scenario
 cost_state['zip'] = zip_val
 cost_state['estimate_monthly'] = placeholder_monthly
@@ -86,7 +92,7 @@ with col1:
 with col2:
     if planning_mode == 'estimating':
         if st.button('See Summary', key='est_to_summary', disabled=not zip_valid):
-            st.switch_page('pages/cost_planner_evaluation.py')
+            st.switch_page('pages/cost_planner_estimate_summary.py')
     else:
         if st.button('Continue to Planner', key='est_to_modules', disabled=not zip_valid):
             st.switch_page('pages/cost_planner_modules.py')
