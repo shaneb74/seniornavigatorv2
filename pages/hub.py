@@ -29,13 +29,6 @@ st.markdown("<h2>Start or pick up where you left off.</h2>", unsafe_allow_html=T
 st.markdown("<p>Explore tools tailored for your loved one’s needs.</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Assessment section with tile style
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 150px;">', unsafe_allow_html=True)
-st.markdown("### Assessment")
-st.markdown("<p>For your loved one—let’s build his plan step by step.</p>", unsafe_allow_html=True)
-st.button("Start Assessment", key="start_assess", type="primary")
-st.markdown('</div>', unsafe_allow_html=True)
-
 # Card sections with uniform tile design
 st.markdown('<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; justify-items: center; padding: 1rem;">', unsafe_allow_html=True)
 
@@ -77,6 +70,13 @@ st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding:
 st.markdown("### Risk Navigator", unsafe_allow_html=True)
 st.markdown("<p>See if your loved one’s at risk for ER trips again—prevent it early.</p>", unsafe_allow_html=True)
 st.button("Run Check", key="start_risk", type="primary")
+st.markdown('</div>', unsafe_allow_html=True)
+
+# Assessment section with tile style
+st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 150px;">', unsafe_allow_html=True)
+st.markdown("### Assessment")
+st.markdown("<p>For your loved one—let’s build his plan step by step.</p>", unsafe_allow_html=True)
+st.button("Start Assessment", key="start_assess", type="primary")
 st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)
