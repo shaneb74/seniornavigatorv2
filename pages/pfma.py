@@ -1,16 +1,16 @@
 import streamlit as st
 
-# Plan for My Advisor - Refined Design with Horizontal Badges
+# Plan for My Advisor - Refined Design
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
 st.title("Plan for My Advisor")
 st.markdown("<h2>Get your ducks in a row for John.</h2>", unsafe_allow_html=True)
 st.markdown("<p>Prepare for your concierge call—simple steps to make it smooth.</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Badge Progress Display - Horizontal with Icons
+# Badge Progress Display - Horizontal
 st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; text-align: center; margin-bottom: 1.5rem;">', unsafe_allow_html=True)
 st.markdown("### Your Progress")
-st.markdown('<div style="display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">', unsafe_allow_html=True)
+st.markdown('<div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 1rem;">', unsafe_allow_html=True)
 st.markdown('<div style="border: 1px solid #ccc; border-radius: 8px; padding: 0.5rem 1rem; background: #e0e0e0; display: flex; align-items: center;"><span>Guided Plan</span><span style="margin-left: 0.5rem;">🟢</span></div>', unsafe_allow_html=True)
 st.markdown('<div style="border: 1px solid #ccc; border-radius: 8px; padding: 0.5rem 1rem; background: #e0e0e0; display: flex; align-items: center;"><span>Cost Plan</span><span style="margin-left: 0.5rem;">🟢</span></div>', unsafe_allow_html=True)
 st.markdown('<div style="border: 1px solid #ccc; border-radius: 8px; padding: 0.5rem 1rem; background: #e0e0e0; display: flex; align-items: center;"><span>Care Needs</span><span style="margin-left: 0.5rem;">🟢</span></div>', unsafe_allow_html=True)
@@ -18,9 +18,9 @@ st.markdown('<div style="border: 1px solid #ccc; border-radius: 8px; padding: 0.
 st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Care Needs Section (Mockup with schema-based fields)
+# Care Needs Section
 st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
-st.markdown("### Care Needs")
+st.markdown("### Care Needs", unsafe_allow_html=True)
 st.markdown("<p>Share John’s daily needs to help your advisor.</p>", unsafe_allow_html=True)
 marital_status = st.radio("Marital Status", ["Single", "Married", "Widowed"])
 living_situation = st.radio("Living Situation", ["Alone", "With Spouse", "With Family"])
@@ -35,9 +35,9 @@ st.checkbox("This looks right?", key="care_needs_confirm")
 st.button("Save Care Needs", key="save_care", type="primary")
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Benefits Section (Mockup with schema-based fields)
+# Benefits Section
 st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px; margin-top: 1.5rem;">', unsafe_allow_html=True)
-st.markdown("### Benefits")
+st.markdown("### Benefits", unsafe_allow_html=True)
 st.markdown("<p>Details on insurance and eligibility to unlock savings.</p>", unsafe_allow_html=True)
 insurance_company = st.text_input("Insurance Company", value="Blue Cross")
 ltc_insurance = st.radio("LTC Insurance", ["Yes", "No", "Unsure"])
@@ -47,9 +47,9 @@ st.checkbox("This looks right?", key="benefits_confirm")
 st.button("Save Benefits", key="save_benefits", type="primary")
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Personal Info Section (Mockup with schema-based fields)
+# Personal Info Section
 st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px; margin-top: 1.5rem;">', unsafe_allow_html=True)
-st.markdown("### Personal Info")
+st.markdown("### Personal Info", unsafe_allow_html=True)
 st.markdown("<p>Confirm contact details for your advisor.</p>", unsafe_allow_html=True)
 confirmed_name = st.text_input("Name", value="John Doe")
 confirmed_phone = st.text_input("Phone", value="1234567890")
@@ -59,9 +59,9 @@ st.checkbox("This looks right?", key="personal_info_confirm")
 st.button("Save Personal Info", key="save_personal", type="primary")
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Smart Review Notes Section (Mockup)
+# Smart Review Notes Section
 st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px; margin-top: 1.5rem;">', unsafe_allow_html=True)
-st.markdown("### Smart Review Notes")
+st.markdown("### Smart Review Notes", unsafe_allow_html=True)
 st.markdown("<p>Notes from AI review—share with advisor.</p>", unsafe_allow_html=True)
 st.text_area("Notes", value="John may qualify for VA aid. Check spend down for Medicaid.")
 st.checkbox("This looks right?", key="notes_confirm")
