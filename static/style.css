@@ -158,14 +158,15 @@ h1 {
   min-width: 120px;
 }
 
-button[kind="primary"] {
+/* === Welcome Page Button Fix === */
+.stButton > button[kind="primary"] {
   background: var(--btn-primary) !important;
   color: #FFFFFF !important;
-  border: 0 !important;
+  border: none !important;
   box-shadow: 0 2px 8px rgba(46, 110, 255, 0.25) !important;
 }
 
-button[kind="primary"]:hover {
+.stButton > button[kind="primary"]:hover {
   background: var(--btn-primary-hover) !important;
 }
 
@@ -291,10 +292,4 @@ button[kind="secondary"]:hover {
 .stButton > button[kind="primary"] {
   margin-top: 0.5rem;
   padding: 0.5rem 1rem;
-}
-
-/* === Welcome Page Button Fix === */
-.stButton > button[kind="primary"] {
-  background: var(--btn-primary) !important;
-  box-shadow: 0 2px 8px rgba(46, 110, 255, 0.25) !important;
 }
