@@ -20,8 +20,9 @@ st.markdown('</div>', unsafe_allow_html=True)
 # Partner Spot Card
 st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; min-height: 200px; width: 300px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">', unsafe_allow_html=True)
 st.markdown("### Partner Spotlight")
-st.markdown("<p>Need Medicare help? Explore our trusted partner—no sales pressure.</p>", unsafe_allow_html=True)
-st.button("Learn More", key="partner_more", type="secondary")
+st.markdown("<p>Explore our trusted partners—vetted for your peace of mind.</p>", unsafe_allow_html=True)
+if st.button("See All Partners", key="partner_spotlight", type="secondary"):
+    st.switch_page("pages/trusted_partners.py")
 st.markdown('</div>', unsafe_allow_html=True)
 
 # Second Opinion Card
