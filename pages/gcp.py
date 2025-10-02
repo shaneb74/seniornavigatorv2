@@ -1,17 +1,7 @@
 
 import streamlit as st
 
-# Debug: non-visual logger
-def _debug_log(msg: str):
-    try:
-        print(f"[SNAV] {msg}")
-    except Exception:
-        pass
-
-_debug_log('LOADED: gcp.py')
-
-
-# Guard: ensure session state keys exist across cold restarts
+# Session-state guard (no visual change)
 if 'care_context' not in st.session_state:
     st.session_state.care_context = {
         'gcp_answers': {},
@@ -20,34 +10,16 @@ if 'care_context' not in st.session_state:
         'care_flags': {}
     }
 ctx = st.session_state.care_context
+answers = ctx.setdefault('gcp_answers', {})
 
+st.title('Guided Care Plan for {PERSON_NAME}')
+st.caption('A brief, structured set of questions in three short sections.')
 
-# Guided Care Plan
-st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-st.title("Guided Care Plan for your loved one")
-st.markdown("<h2>Find his best care path.</h2>", unsafe_allow_html=True)
-st.markdown("<p>Answer a few questions to get started.</p>", unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Plan questions with tile style
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
-st.markdown("### Care Questions")
-st.markdown("<p>Help us tailor your loved one’s care options.</p>", unsafe_allow_html=True)
-st.write("Does your loved one need help with daily tasks?")
-st.button("Yes", key="gcp_daily_yes", type="primary")
-st.button("No", key="gcp_daily_no", type="primary")
-
-st.write("Is your loved one comfortable at home?")
-st.button("Yes", key="gcp_home_yes", type="primary")
-st.button("No", key="gcp_home_no", type="primary")
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Navigation
-st.markdown('<div class="scn-nav-row">', unsafe_allow_html=True)
-col1, col2 = st.columns([1, 1])
+st.markdown('---')
+col1, col2 = st.columns(2)
 with col1:
-    st.button("Back to Hub", key="back_gcp", type="secondary")
+    if st.button('Back to Hub', key='gcp_back_hub'):
+        st.switch_page('pages/hub.py')
 with col2:
-    st.button("Next Step", key="next_gcp", type="primary")
-st.markdown('</div>', unsafe_allow_html=True)
+    if st.button('Start Section 1', key='gcp_start_section1'):
+        st.switch_page('pages/gcp_daily_life.py')
