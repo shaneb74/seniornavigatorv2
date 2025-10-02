@@ -9,7 +9,7 @@ def inject_css(path: str):
     css_path = Path(path)
     if css_path.exists():
         mtime = int(css_path.stat().st_mtime)
-        st.markdown(f'<div class="scn-app"><style>{css_path.read_text()}</style><!-- v:{mtime} --></div>', unsafe_allow_html=True)
+        st.markdown(f"<style>{css_path.read_text()}</style><!-- v:{mtime} -->", unsafe_allow_html=True)
     else:
         st.warning(f"Missing CSS: {path}")
 
