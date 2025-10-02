@@ -39,10 +39,11 @@ household_legal = st.Page("pages/household_legal.py", title="Household & Legal",
 benefits_coverage = st.Page("pages/benefits_coverage.py", title="Benefits & Coverage", icon="💳")
 personal_info = st.Page("pages/personal_info.py", title="Personal Info", icon="👤")
 appointment_interstitial = st.Page("pages/appointment_interstitial.py", title="Call Scheduled", icon="⏰")
+ai_advisor = st.Page("pages/ai_advisor.py", title="AI Advisor", icon="🤖")
 exports = st.Page("pages/exports.py", title="Exports", icon="📤")
 
 # Configure navigation
-pages = [welcome, tell_us, hub, gcp, cost_planner_mode, cost_planner_modules, cost_planner_home_care, cost_planner_daily_aids, cost_planner_housing, cost_planner_benefits, cost_planner_mods, cost_planner_evaluation, cost_planner_skipped, appointment_booking, care_plan_confirm, cost_plan_confirm, care_needs, care_prefs, household_legal, benefits_coverage, personal_info, appointment_interstitial, exports]
+pages = [welcome, tell_us, hub, gcp, cost_planner_mode, cost_planner_modules, cost_planner_home_care, cost_planner_daily_aids, cost_planner_housing, cost_planner_benefits, cost_planner_mods, cost_planner_evaluation, cost_planner_skipped, appointment_booking, care_plan_confirm, cost_plan_confirm, care_needs, care_prefs, household_legal, benefits_coverage, personal_info, appointment_interstitial, ai_advisor, exports]
 pg = st.navigation(pages)
 
 # Run the selected page
