@@ -215,13 +215,54 @@ button[kind="secondary"]:hover {
   outline-offset: 2px;
 }
 
-/* === AI Advisor Styling === */
-.stTextInput > div > input {
-  font-size: 16px;
-  padding: 0.5rem;
+/* === Streamlit Theme Overrides === */
+:root {
+  --primary-color: #2E6EFF !important;
+  --background-color: #FFFFFF !important;
+  --secondary-background-color: #F9F9F9 !important;
+  --text-color: #111827 !important;
+  --font: sans-serif !important;
 }
 
-.stButton > button[kind="primary"] {
-  margin-top: 0.5rem;
-  padding: 0.5rem 1rem;
+.stButton > button {
+  background-color: var(--btn-primary) !important;
+  color: #FFFFFF !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(46, 110, 255, 0.25) !important;
+}
+
+.stButton > button:hover {
+  background-color: var(--btn-primary-hover) !important;
+}
+
+.stButton > button[kind="secondary"] {
+  background-color: #EAF2FF !important;
+  color: #2E6EFF !important;
+  border: 1px solid #D6E4FF !important;
+}
+
+.stButton > button[kind="secondary"]:hover {
+  background-color: #D6E4FF !important;
+}
+
+.stRadio > div > label > div {
+  background-color: #F3F4F6 !important;
+  color: #111827 !important;
+  border: 1.5px solid #E5E7EB !important;
+  box-shadow: 0 2px 6px rgba(17, 24, 39, 0.08) !important;
+}
+
+.stRadio > div > label > div:checked {
+  background-color: #111827 !important;
+  color: #FFFFFF !important;
+  border-color: #111827 !important;
+  box-shadow: 0 3px 12px rgba(17, 24, 39, 0.25) !important;
+}
+
+.stApp {
+  background-color: #FFFFFF !important;
+}
+
+.section-divider {
+  border-top: 1px solid #E5E7EB !important;
 }
