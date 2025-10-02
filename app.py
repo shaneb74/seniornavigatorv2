@@ -12,11 +12,12 @@ def inject_css(path: str):
 
 inject_css("static/style.css")
 
-def ensure_page(path: str, title: str, icon: str, *, default: bool=False):
+def ensure_page(path: str, title: str, icon: str, default: bool=False):
+    """Return (Page|None, missing_path|None). Accepts optional default flag."""
     p = Path(path)
     if not p.exists():
         return None, path
-    page = st.Page(path, title=title, icon=icon, default=default) if default else st.Page(path, title=title, icon=icon)
+    page = st.Page(path, title=title, icon=icon, default=bool(default)) if default else st.Page(path, title=title, icon=icon)
     return page, None
 
 INTENDED = [
@@ -68,7 +69,7 @@ INTENDED = [
 pages = []
 missing = []
 for args in INTENDED:
-    page, miss = ensure_page(*args)
+    page, miss = ensure_page(*args)  # accepts 4-tuple
     if page:
         pages.append(page)
     if miss:
