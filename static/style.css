@@ -1,18 +1,53 @@
-/* === Additions: hero + promo image sizing === */
-.hero-img{
-  display:block;
-  max-width:85%;
-  height:auto;
-  margin: 0 auto;
+/* =========================================================================
+   Senior Navigator – Full Authoritative CSS
+   ========================================================================= */
+:root{
+  --bg:#ffffff;
+  --text:#111827;
+  --muted:#6b7280;
+  --border:#e5e7eb;
+  --divider:#f3f4f6;
+  --blue:#0B5CD8;
+  --black:#111827;
+  --pill-bg:#f3f4f6;
+  --pill-text:#111827;
+  --pill-brd:#e5e7eb;
+  --pill-selected:#111827;
+  --pill-selected-text:#ffffff;
 }
-
-.promo-card img{
-  display:block;
-  max-width:60%;
-  height:auto;
-  margin: 0 auto 10px auto;
-  border-radius:10px;
+html, body, [data-testid="stAppViewContainer"]{ background:var(--bg)!important; color:var(--text)!important; }
+.block-container{ max-width:980px!important; padding-top:2rem!important; padding-bottom:2.25rem!important; }
+h1{font-weight:800!important;font-size:2.25rem!important;}
+h2{font-weight:700!important;font-size:1.5rem!important;}
+h3{font-weight:600!important;font-size:1.25rem!important;}
+small,[data-testid="stCaptionContainer"], .stCaption{ color:var(--muted)!important; }
+/* Buttons */
+.stButton > button{
+  background:var(--blue)!important; color:#fff!important;
+  border:none!important; border-radius:12px!important;
+  padding:.6rem 1.1rem!important; font-weight:700!important; font-size:1rem!important;
+  transition: filter .15s ease, transform .02s ease;
 }
-
-/* Optional: ensure images never overflow narrow cols */
-img{ max-width: 100%; height: auto; }
+.stButton > button:hover{ filter:brightness(.96); }
+.stButton > button:active{ transform:translateY(1px); }
+/* Pill radios */
+[data-testid="stRadio"] [role="radiogroup"]{ display:flex!important; flex-wrap:wrap!important; gap:10px!important; }
+[data-testid="stRadio"] input[type="radio"]{ position:absolute!important; opacity:0!important; pointer-events:none!important; }
+[data-testid="stRadio"] [role="radiogroup"] > label,
+[data-testid="stRadio"] [role="radiogroup"] > div[role="radio"]{
+  display:inline-flex!important; align-items:center!important; justify-content:center!important;
+  background:var(--pill-bg)!important; color:var(--pill-text)!important;
+  border:1.5px solid var(--pill-brd)!important; border-radius:12px!important;
+  padding:10px 14px!important; font-weight:600!important; cursor:pointer!important;
+}
+[data-testid="stRadio"] [role="radiogroup"] > div[role="radio"][aria-checked="true"],
+[data-testid="stRadio"] [role="radiogroup"] > label:has(> input[type="radio"]:checked){
+  background:var(--pill-selected)!important; color:var(--pill-selected-text)!important; border-color:var(--pill-selected)!important;
+}
+[data-testid="stRadio"] [role="radiogroup"] > label > div:first-child,
+[data-testid="stRadio"] [role="radiogroup"] > div[role="radio"] > div:first-child{ display:none!important; }
+/* Hero image */
+.hero-wrap{ display:flex; justify-content:center; margin: 10px 0 22px; }
+.hero-img{ max-width:85%; border-radius:8px; box-shadow:0 10px 24px rgba(0,0,0,.12); transform:rotate(-2deg); }
+/* Promo images */
+.promo-img{ max-width:60%; border-radius:8px; box-shadow:0 8px 20px rgba(0,0,0,.1); }
