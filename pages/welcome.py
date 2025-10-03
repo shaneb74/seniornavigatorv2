@@ -146,7 +146,11 @@ st.markdown('<div class="section-kicker">How we can help you</div>', unsafe_allo
 # =====================================================================
 def card(image_path: str, title: str, sub: str, button_label: str, page_to: str) -> None:
     with st.container(border=True):
-        tag = img_html(image_path, cls="card-photo")  # full width via CSS
+        tag = img_html(
+            image_path,
+            cls="card-photo",
+            style="width:clamp(300px, 80%, 440px);"  # <-- adjust here if you want
+        )
         if tag:
             st.markdown(tag, unsafe_allow_html=True)
         st.markdown(f"**{title}**")
@@ -155,6 +159,7 @@ def card(image_path: str, title: str, sub: str, button_label: str, page_to: str)
         with right_btn:
             if st.button(button_label, key=f"btn_{page_to}"):
                 st.switch_page(page_to)
+
 
 col1, col2 = st.columns(2, gap="large")
 with col1:
