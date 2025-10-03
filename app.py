@@ -1,15 +1,16 @@
-# app.py - header + global CSS injector (full replacement for the opening block)
-
+# app.py — Senior Navigator app bootstrap with robust CSS injection
 from __future__ import annotations
-import streamlit as st
-from pathlib import Path
 
-# ---- Import the theme injector with a safe fallback ----
+from pathlib import Path
+import streamlit as st
+
+# ===============================
+# Theme import with safe fallback
+# ===============================
 try:
-    # preferred: provided by ui/theme.py
-    from ui.theme import inject_theme  # exposes the real CSS and tokens
+    from ui.theme import inject_theme  # preferred path
 except Exception:
-    # belt-and-suspenders: keep the app running even if ui/theme.py is missing/broken
+    # Fallback keeps the app running even if the theme module is missing/broken
     def inject_theme() -> None:
         st.markdown(
             """
@@ -22,30 +23,32 @@ except Exception:
             unsafe_allow_html=True,
         )
 
-# ========= Global CSS (single source of truth) =========
+# ==========================================
+# Global CSS injection (theme comes in last)
+# ==========================================
 def _inject_global_css() -> None:
-    # Inject the theme once
-    inject_theme()
-
-    # Optionally layer a repo-level stylesheet (if present)
+    # 1) Inject repo-level stylesheet FIRST (if present)
     css_path = Path("static/style.css")
     if css_path.exists():
         try:
             extra = css_path.read_text(encoding="utf-8").strip()
         except Exception:
-            # If encoding is weird, read bytes and decode permissively
             extra = css_path.read_bytes().decode(errors="ignore").strip()
-        # cache-bust by appending file mtime as a comment
         v = int(css_path.stat().st_mtime)
         st.markdown(f"<style>{extra}</style><!-- v:{v} -->", unsafe_allow_html=True)
+
+    # 2) Inject the theme LAST so it wins the cascade
+    inject_theme()
 
 # Call once on startup (before you render anything)
 _inject_global_css()
 
-
-# ---- PRE-FLIGHT SYNTAX CHECK FOR PAGES ----
+# ==========================================
+# Pre-flight syntax check for page modules
+# ==========================================
 def _syntax_preflight(paths=("pages",), stop_on_error=True):
-    import pathlib, io, tokenize, ast, streamlit as st
+    import pathlib, io, tokenize, ast
+
     errors = []
     for root in paths:
         for p in pathlib.Path(root).rglob("*.py"):
@@ -63,23 +66,29 @@ def _syntax_preflight(paths=("pages",), stop_on_error=True):
             except Exception as e:
                 # Not syntax, but still fatal at import time
                 errors.append((p, 0, 0, f"{type(e).__name__}: {e}", ""))
+
     if errors:
         st.error("Syntax/parse error(s) found. Fix these before running pages.")
         for p, line, col, msg, txt in errors:
+            pointer = " " * (max((col or 1) - 1, 0)) + "^" if txt else ""
             st.write(f"**{p}**")
-            st.code(f"line {line}, col {col}: {msg}\n{txt.rstrip()}\n{' '*(max(col-1,0))}^")
+            st.code(f"line {line}, col {col}: {msg}\n{(txt or '').rstrip()}\n{pointer}")
             st.markdown("---")
         if stop_on_error:
             st.stop()
 
-# run it once at startup
+# Run once at startup (comment out in prod if you want)
 _syntax_preflight()
 
-# ========= Simple prototype auth flag (keep your original logic below) =========
+# ==========================================
+# Session bootstrap (prototype auth flag)
+# ==========================================
 if "is_authenticated" not in st.session_state:
     st.session_state.is_authenticated = False
 
-# ========= Navigation helpers =========
+# ==========================================
+# Page registration helpers
+# ==========================================
 def ensure_page(path: str, title: str, icon: str, default: bool = False):
     p = Path(path)
     if not p.exists():
@@ -91,7 +100,9 @@ def ensure_page(path: str, title: str, icon: str, default: bool = False):
     )
     return page, None
 
-# ========= Pages to register (order controls left-nav order) =========
+# ==========================================
+# Pages to register (controls nav order)
+# ==========================================
 INTENDED = [
     # Entry & Hub
     ("pages/welcome.py", "Welcome", "👋", True),
@@ -162,7 +173,9 @@ if pages:
 else:
     st.error("No pages available. Check file paths in app.py.")
 
-# ========= Sidebar login toggle (prototype) =========
+# ==========================================
+# Sidebar auth toggle (prototype)
+# ==========================================
 with st.sidebar:
     st.markdown("---")
     st.caption("Authentication")
