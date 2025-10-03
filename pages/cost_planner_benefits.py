@@ -1,9 +1,13 @@
 """Insurance costs and benefit offsets drawer."""
 from __future__ import annotations
+from ui.theme import inject_theme
 
 import streamlit as st
 
 from cost_planner_shared import (
+inject_theme()
+st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
+
     ensure_core_state,
     format_currency,
     get_numeric,
@@ -133,3 +137,5 @@ with col_back:
 with col_next:
     if st.button("Next: Debts & Other", type="primary"):
         st.switch_page("pages/cost_planner_freeform.py")
+
+st.markdown('</div>', unsafe_allow_html=True)

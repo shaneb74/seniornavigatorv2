@@ -1,9 +1,13 @@
 """Medical and daily aids drawer."""
 from __future__ import annotations
+from ui.theme import inject_theme
 
 import streamlit as st
 
 from cost_planner_shared import ensure_core_state, format_currency, get_numeric, recompute_costs, set_numeric
+
+inject_theme()
+st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
 ensure_core_state()
 cp = st.session_state["cost_planner"]
@@ -62,3 +66,5 @@ with col_back:
 with col_next:
     if st.button("Next: Insurance", type="primary"):
         st.switch_page("pages/cost_planner_benefits.py")
+
+st.markdown('</div>', unsafe_allow_html=True)

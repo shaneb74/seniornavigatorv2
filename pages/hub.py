@@ -1,10 +1,14 @@
 """Concierge Care Hub that adapts to the audiencing snapshot."""
 
 from __future__ import annotations
+from ui.theme import inject_theme
 
 import streamlit as st
 
 from audiencing import (
+inject_theme()
+st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
+
     URGENT_FEATURE_FLAG,
     apply_audiencing_sanitizer,
     ensure_audiencing_state,

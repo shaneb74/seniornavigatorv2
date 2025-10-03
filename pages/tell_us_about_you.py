@@ -1,10 +1,14 @@
 """Self-entry audiencing flow with qualifier toggles."""
 
 from __future__ import annotations
+from ui.theme import inject_theme
 
 import streamlit as st
 
 from audiencing import (
+inject_theme()
+st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
+
     URGENT_FEATURE_FLAG,
     apply_audiencing_sanitizer,
     compute_audiencing_route,
@@ -92,3 +96,5 @@ with st.expander("Debug: Audiencing state", expanded=False):
     st.json(st.session_state.get("audiencing_snapshot", {}))
 
 st.button("Back to Welcome", on_click=lambda: st.switch_page("pages/welcome.py"))
+
+st.markdown('</div>', unsafe_allow_html=True)

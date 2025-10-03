@@ -1,5 +1,9 @@
 
 import streamlit as st
+from ui.theme import inject_theme
+
+inject_theme()
+st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
 # Guard
 if "is_authenticated" not in st.session_state:
@@ -21,3 +25,5 @@ st.info("Optional: You may want to revisit the Benefits Check module to ensure c
 
 if st.button("Back to Hub", key="expert_review_back"):
     st.switch_page("pages/hub.py")
+
+st.markdown('</div>', unsafe_allow_html=True)

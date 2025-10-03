@@ -1,4 +1,8 @@
 import streamlit as st
+from ui.theme import inject_theme
+
+inject_theme()
+st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
 # CSS already injected by app.py
 
@@ -31,3 +35,5 @@ if st.button("Sign in", type="primary", disabled=not(email and pwd and agree)):
     st.switch_page("pages/hub.py")
 
 st.caption("By continuing you agree to our Terms & Privacy.")
+
+st.markdown('</div>', unsafe_allow_html=True)

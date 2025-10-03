@@ -1,9 +1,13 @@
 """Debts, other expenses, and custom line items."""
 from __future__ import annotations
+from ui.theme import inject_theme
 
 import streamlit as st
 
 from cost_planner_shared import add_decision_log, ensure_core_state, format_currency, get_numeric, recompute_costs, set_numeric
+
+inject_theme()
+st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
 ensure_core_state()
 cp = st.session_state["cost_planner"]
@@ -93,3 +97,5 @@ with col_back:
 with col_next:
     if st.button("Next: Expert Review", type="primary"):
         st.switch_page("pages/cost_planner_evaluation.py")
+
+st.markdown('</div>', unsafe_allow_html=True)

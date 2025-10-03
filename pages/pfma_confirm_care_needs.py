@@ -1,5 +1,9 @@
 
 import streamlit as st
+from ui.theme import inject_theme
+
+inject_theme()
+st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
 # Guard
 if 'care_context' not in st.session_state:
@@ -28,3 +32,5 @@ with col2:
 with col3:
     if st.button("Next", key="pfma_confirm_care_needs_agree_next", disabled=not agreed):
         st.switch_page("pages/pfma_confirm_care_prefs.py")
+
+st.markdown('</div>', unsafe_allow_html=True)

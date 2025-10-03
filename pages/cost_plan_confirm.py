@@ -1,11 +1,15 @@
 """Final confirmation and PFMA handoff for Cost Planner."""
 from __future__ import annotations
+from ui.theme import inject_theme
 
 import json
 
 import streamlit as st
 
 from cost_planner_shared import ensure_core_state, format_currency, recompute_costs
+
+inject_theme()
+st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
 ensure_core_state()
 cp = st.session_state["cost_planner"]
@@ -60,3 +64,5 @@ with col_hub:
 with col_back:
     if st.button("Back to Summary"):
         st.switch_page("pages/cost_planner_estimate_summary.py")
+
+st.markdown('</div>', unsafe_allow_html=True)

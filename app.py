@@ -180,7 +180,7 @@ for args in INTENDED:
         missing.append(miss)
 
 if missing:
-    st.sidebar.warning("Missing pages detected:\n" + "\n".join(f"- {m}" for m in missing))
+    st.sidebar.warning("Missing pages detected:\\n" + "\\n".join(f"- {m}" for m in missing))
 
 # Kick the session back to Welcome on first load
 _force_welcome_once()

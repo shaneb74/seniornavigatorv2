@@ -1,6 +1,5 @@
 # ui/theme.py
 # Design tokens + global CSS. Exposes BOTH inject() and inject_theme().
-
 from __future__ import annotations
 import streamlit as st
 
@@ -486,9 +485,9 @@ button.danger {{
   border-color: transparent !important;
 }}
 
-/* Extra coverage for Streamlit submit buttons (v1.50 and friends) */
+/* Extra coverage for Streamlit submit buttons */
 div[data-testid="stFormSubmitButton"] > button,
-div[data-testid="formSubmitButton"] > button,          /* older/alternate */
+div[data-testid="formSubmitButton"] > button,
 form button[type="submit"],
 form [data-testid="baseButton-primary"] > button,
 form [data-testid="baseButton-secondary"] > button {{
@@ -511,6 +510,58 @@ form [data-testid="baseButton-secondary"] > button:hover {{
   transform: translateY(-1px);
 }}
 
+/* =========================
+   Scoped button variants
+   ========================= */
+
+/* DASHBOARD scope: strong brand blue + white text */
+.sn-scope.dashboard .stButton > button,
+.sn-scope.dashboard [data-testid="stFormSubmitButton"] > button {{
+  background: var(--brand) !important;
+  color: var(--brand-ink) !important;
+  border: 1px solid transparent !important;
+  border-radius: 999px !important;
+  padding: 0.78rem 1.85rem !important;
+  font-weight: 700 !important;
+}}
+.sn-scope.dashboard .stButton > button:hover,
+.sn-scope.dashboard [data-testid="stFormSubmitButton"] > button:hover {{
+  background: #0a4fc0 !important;
+  transform: translateY(-1px);
+}}
+
+/* Optional dashboard outline variant */
+.sn-scope.dashboard .sn-btn--outline .stButton > button,
+.sn-scope.dashboard .sn-btn--outline [data-testid="stFormSubmitButton"] > button {{
+  background: transparent !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--border) !important;
+}}
+
+/* GCP/Q&A scope: light blue pill + dark text */
+.sn-scope.gcp .stButton > button,
+.sn-scope.gcp [data-testid="stFormSubmitButton"] > button {{
+  background: var(--chip) !important;
+  color: var(--chip-ink) !important;
+  border: 1px solid var(--chip-border) !important;
+  border-radius: 14px !important;
+  padding: 0.86rem 1.6rem !important;
+  font-weight: 700 !important;
+}}
+.sn-scope.gcp .stButton > button:hover,
+.sn-scope.gcp [data-testid="stFormSubmitButton"] > button:hover {{
+  background: #dbe6ff !important;
+  transform: translateY(-1px);
+}}
+
+/* GCP "Skip" (subtle) */
+.sn-scope.gcp .sn-btn--subtle .stButton > button,
+.sn-scope.gcp .sn-btn--subtle [data-testid="stFormSubmitButton"] > button {{
+  background: #f1f5f9 !important;
+  color: var(--ink) !important;
+  border: 1px solid #d7dee9 !important;
+}}
+
 </style>
 """
 
@@ -529,3 +580,19 @@ def inject_theme() -> None:
 def inject() -> None:
     """Alias kept for older imports."""
     inject_theme()
+
+# ----- Scoped container helper
+from contextlib import contextmanager
+
+@contextmanager
+def scope(kind: str):
+    """
+    Wrap a section so scoped CSS applies:
+      with scope("dashboard"): ...
+      with scope("gcp"): ...
+    """
+    st.markdown(f'<div class="sn-scope {kind}">', unsafe_allow_html=True)
+    try:
+        yield
+    finally:
+        st.markdown("</div>", unsafe_allow_html=True)

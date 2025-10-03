@@ -1,3 +1,6 @@
+inject_theme()
+st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
+
 # pages/welcome.py
 """Welcome page with hero and two entry cards (safe, self-contained)."""
 
@@ -7,6 +10,7 @@ import base64
 import mimetypes
 from urllib.parse import urlparse
 from pathlib import Path
+from ui.theme import inject_theme
 
 import streamlit as st
 from PIL import Image, UnidentifiedImageError

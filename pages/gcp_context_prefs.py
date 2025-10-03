@@ -9,9 +9,8 @@ from guided_care_plan.state import current_audiencing_snapshot
 
 from ui.theme import inject_theme
 
-def ensure_gcp_theme():
-    inject_theme()
-
+inject_theme()
+st.markdown('<div class="sn-scope gcp">', unsafe_allow_html=True)
 
 BASE_QUESTIONS = ["living_situation"]
 CONDITIONAL_QUESTIONS = {
@@ -107,3 +106,5 @@ if submitted:
 
 if st.button("Back to Health & Safety"):
     st.switch_page("pages/gcp_health_safety.py")
+
+st.markdown('</div>', unsafe_allow_html=True)

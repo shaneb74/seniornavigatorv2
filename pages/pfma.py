@@ -1,5 +1,9 @@
 
 import streamlit as st
+from ui.theme import inject_theme
+
+inject_theme()
+st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
 # Guard
 if 'care_context' not in st.session_state:
@@ -27,3 +31,5 @@ st.caption("It takes about two minutes. This helps your advisor prepare a tailor
 
 if st.button("Start Confirmation", key="pfma_start_confirm"):
     st.switch_page("pages/pfma_confirm_care_plan.py")
+
+st.markdown('</div>', unsafe_allow_html=True)

@@ -1,5 +1,9 @@
 
 import streamlit as st
+from ui.theme import inject_theme
+
+inject_theme()
+st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
 if 'care_context' not in st.session_state:
     st.session_state.care_context = {}
@@ -15,3 +19,5 @@ with col1:
 with col2:
     if st.button("Skip & Remind Me", key="ai_skip_prep"):
         st.switch_page("pages/hub.py")
+
+st.markdown('</div>', unsafe_allow_html=True)

@@ -1,4 +1,8 @@
 import streamlit as st
+from ui.theme import inject_theme
+
+inject_theme()
+st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
 # Guard
 if 'care_context' not in st.session_state:
@@ -66,3 +70,5 @@ with c1:
 with c2:
     if st.button("Expert Review", key="mods_expert_review"):
         st.switch_page("pages/expert_review.py")
+
+st.markdown('</div>', unsafe_allow_html=True)

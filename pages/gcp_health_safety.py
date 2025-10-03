@@ -8,9 +8,8 @@ from guided_care_plan import ensure_gcp_session, get_question_meta, render_stepp
 
 from ui.theme import inject_theme
 
-def ensure_gcp_theme():
-    inject_theme()
-
+inject_theme()
+st.markdown('<div class="sn-scope gcp">', unsafe_allow_html=True)
 
 SECTION_QUESTIONS = [
     "falls_history",
@@ -76,3 +75,5 @@ if submitted:
 
 if st.button("Back to Daily Life"):
     st.switch_page("pages/gcp_daily_life.py")
+
+st.markdown('</div>', unsafe_allow_html=True)

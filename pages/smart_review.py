@@ -1,5 +1,9 @@
 from ui.ux_enhancements import apply_global_ux, render_stepper
 import streamlit as st
+from ui.theme import inject_theme
+inject_theme()
+st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
+
 apply_global_ux()
 render_stepper('main')
 if 'care_context' not in st.session_state:
@@ -48,4 +52,6 @@ with c1:
 with c2:
     if st.button('Next: PFMA'):
         st.switch_page('pages/pfma.py')
+st.markdown('</div>', unsafe_allow_html=True)
+
 st.markdown('</div>', unsafe_allow_html=True)

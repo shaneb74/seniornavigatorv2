@@ -1,5 +1,9 @@
 
 import streamlit as st
+from ui.theme import inject_theme
+
+inject_theme()
+st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
 # Debug: non-visual logger
 def _debug_log(msg: str):
@@ -42,4 +46,6 @@ st.markdown('<div class="scn-nav-row">', unsafe_allow_html=True)
 col1, col2 = st.columns([1, 1])
 with col1:
     st.button("Back to Hub", key="back_risk", type="secondary")
+st.markdown('</div>', unsafe_allow_html=True)
+
 st.markdown('</div>', unsafe_allow_html=True)

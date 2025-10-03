@@ -10,10 +10,8 @@ from guided_care_plan.state import current_audiencing_snapshot
 
 from ui.theme import inject_theme
 
-def ensure_gcp_theme():
-    inject_theme()
-
-
+inject_theme()
+st.markdown('<div class="sn-scope gcp">', unsafe_allow_html=True)
 
 def _ensure_care_context():
     return st.session_state.setdefault(
@@ -139,3 +137,5 @@ if has_result:
 
 with st.expander("Debug: GCP snapshot", expanded=False):
     st.json({"answers": answers, "gcp": gcp_result})
+
+st.markdown('</div>', unsafe_allow_html=True)
