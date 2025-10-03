@@ -36,19 +36,56 @@ DEFAULT_EXTS = {
 }
 
 # Replacement map for the most common offenders
+# Replacement map for the most common offenders
 REPLACEMENTS = {
-    "\u2018": "'",  # ' left single
-    "\u2019": "'",  # ' right single / apostrophe
-    "\u201C": '"',  # " left double
-    "\u201D": '"',  # " right double
-    "\u2013": "-",  # - en dash
-    "\u2014": "-",  # - em dash
-    "\u2026": "...",# ... ellipsis
-    "\u00A0": " ",  # NBSP
-    "\u200B": "",   # zero-width space
-    "\u200C": "",   # zero-width non-joiner
-    "\u200D": "",   # zero-width joiner
+    # Quotes
+    "\u2018": "'",   # left single
+    "\u2019": "'",   # right single / apostrophe
+    "\u201A": "'",   # single low-9 quote
+    "\u201B": "'",   # single high-reversed-9
+    "\u201C": '"',   # left double
+    "\u201D": '"',   # right double
+    "\u201E": '"',   # double low-9 quote
+    "\u201F": '"',   # double high-reversed-9
+
+    # Dashes and minus-like
+    "\u2010": "-",   # hyphen
+    "\u2011": "-",   # non-breaking hyphen
+    "\u2012": "-",   # figure dash
+    "\u2013": "-",   # en dash
+    "\u2014": "-",   # em dash
+    "\u2015": "-",   # horizontal bar
+    "\u2212": "-",   # minus sign
+
+    # Ellipsis
+    "\u2026": "...", # ellipsis
+
+    # Spaces
+    "\u00A0": " ",   # NBSP
+    "\u202F": " ",   # narrow NBSP
+    "\u2000": " ",   # en quad
+    "\u2001": " ",   # em quad
+    "\u2002": " ",   # en space
+    "\u2003": " ",   # em space
+    "\u2004": " ",   # three-per-em space
+    "\u2005": " ",   # four-per-em space
+    "\u2006": " ",   # six-per-em space
+    "\u2007": " ",   # figure space
+    "\u2008": " ",   # punctuation space
+    "\u2009": " ",   # thin space
+    "\u200A": " ",   # hair space
+
+    # Zero-width / invisible
+    "\u200B": "",    # zero-width space
+    "\u200C": "",    # zero-width non-joiner
+    "\u200D": "",    # zero-width joiner
+    "\uFEFF": "",    # zero-width no-break space / BOM
+
+    # Misc symbols
+    "\u2022": "*",   # bullet
+    "\u25E6": "*",   # white bullet
 }
+
 
 # Characters we consider problematic (for reporting)
 PROBLEMATIC = set(REPLACEMENTS.keys())
