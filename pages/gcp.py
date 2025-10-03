@@ -7,6 +7,12 @@ import streamlit as st
 from guided_care_plan import ensure_gcp_session, render_stepper
 from guided_care_plan.state import current_audiencing_snapshot
 
+from ui.theme import inject_theme
+
+def ensure_gcp_theme():
+    inject_theme()
+
+
 st.set_page_config(page_title="Guided Care Plan", layout="centered")
 
 # -------- helpers --------
