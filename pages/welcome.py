@@ -73,7 +73,7 @@ st.markdown(
 
       /* Card image: a bit smaller & centered */
       .card-photo{
-        width: clamp(280px, 78%, 420px);
+        width: clamp(280px, 82%, 420px);
         border-radius: 14px;
         box-shadow: 0 6px 16px rgba(0,0,0,.12);
         display: block;
