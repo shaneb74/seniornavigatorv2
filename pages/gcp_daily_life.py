@@ -1,60 +1,67 @@
 import streamlit as st
 
-if 'care_context' not in st.session_state:
-    st.session_state.care_context = {
-        'gcp_answers': {},
-        'decision_trace': [],
-        'planning_mode': 'exploring',
-        'care_flags': {}
-    }
-ctx = st.session_state.care_context
-answers = ctx.setdefault('gcp_answers', {})
+from guided_care_plan import ensure_gcp_session, get_question_meta, render_stepper
 
-st.title('Guided Care Plan — Daily Life & Support')
-st.caption('Step 1 of 3')
+SECTION_QUESTIONS = [
+    "daily_tasks_support",
+    "medication_management",
+    "caregiver_support",
+]
 
-st.markdown('---')
 
-adl_opts = ['Independent', 'Occasional reminders', 'Help with some tasks', 'Rely on help for most tasks']
-answers['adl_dependency'] = st.radio(
-    'How well can you manage everyday activities like bathing, dressing, or preparing meals on your own?',
-    adl_opts,
-    index=adl_opts.index(answers.get('adl_dependency', adl_opts[0])),
-    key='q_adl_dependency'
-)
-st.caption('ADLs include bathing, dressing, meals, and chores. This tells us the level of daily support.')
+def _ensure_widget_defaults(answers):
+    for question_id in SECTION_QUESTIONS:
+        meta = get_question_meta(question_id)
+        options = [option["value"] for option in meta["options"]]
+        default_value = answers.get(question_id) or options[0]
+        if default_value not in options:
+            default_value = options[0]
+        st.session_state.setdefault(f"gcp_{question_id}", default_value)
 
-cg_opts = ['I have support most of the time','I have support a few days a week','I have support occasionally','I don’t have regular support']
-answers['caregiver_support_level'] = st.radio(
-    'How much regular support do you have from a caregiver or family member?',
-    cg_opts,
-    index=cg_opts.index(answers.get('caregiver_support_level', cg_opts[0])),
-    key='q_caregiver_support'
-)
-st.caption('Strong support can offset higher daily needs.')
 
-med_opts = ['None','A few, easy to manage','Several, harder to manage','Not sure']
-answers['meds_complexity'] = st.radio(
-    'Do you take medications, and how manageable is the routine?',
-    med_opts,
-    index=med_opts.index(answers.get('meds_complexity', med_opts[0])),
-    key='q_meds_complexity'
-)
-st.caption('This helps us understand missed‑med risk when combined with cognition.')
+def _render_radio(question_id: str) -> str:
+    meta = get_question_meta(question_id)
+    option_map = {opt["value"]: opt["label"] for opt in meta["options"]}
+    values = list(option_map.keys())
+    selected_value = st.session_state.get(f"gcp_{question_id}", values[0])
+    try:
+        index = values.index(selected_value)
+    except ValueError:
+        index = 0
+    with st.container(border=True):
+        choice = st.radio(
+            meta["label"],
+            options=values,
+            index=index,
+            key=f"gcp_{question_id}",
+            format_func=lambda value: option_map[value],
+        )
+        if meta.get("description"):
+            st.caption(meta["description"])
+    return choice
 
-soc_opts = ['Frequent contact','Occasional contact','Rarely see others','Often alone']
-answers['social_isolation'] = st.radio(
-    'How often do you connect with friends, family, or activities?',
-    soc_opts,
-    index=soc_opts.index(answers.get('social_isolation', soc_opts[0])),
-    key='q_social_isolation'
-)
 
-st.markdown('---')
-col1, col2 = st.columns(2)
-with col1:
-    if st.button('Back', key='daily_back'):
-        st.switch_page('pages/gcp.py')
-with col2:
-    if st.button('Next', key='daily_next'):
-        st.switch_page('pages/gcp_health_safety.py')
+answers, _ = ensure_gcp_session()
+_ensure_widget_defaults(answers)
+
+st.title("Guided Care Plan — Daily Life & Support")
+st.caption("Step 1 of 5")
+
+render_stepper(1)
+
+error_placeholder = st.empty()
+
+with st.form("gcp_daily_life_form"):
+    selections = {qid: _render_radio(qid) for qid in SECTION_QUESTIONS}
+    submitted = st.form_submit_button("Continue to Health & Safety", type="primary")
+
+if submitted:
+    missing = [qid for qid, value in selections.items() if value is None]
+    if missing:
+        error_placeholder.error("Answer each question before moving on.")
+    else:
+        answers.update(selections)
+        st.switch_page("pages/gcp_health_safety.py")
+
+if st.button("Back to intro"):
+    st.switch_page("pages/gcp.py")
