@@ -2,7 +2,7 @@
 import streamlit as st
 from pathlib import Path
 
-st.set_page_config(page_title="CCA Senior Navigator", layout="centered")
+st.set_page_config(page_title="CCA Senior Navigator", layout="wide")
 
 # ========= Global CSS (single source of truth) =========
 def _inject_global_css():
