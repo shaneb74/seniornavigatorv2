@@ -1,4 +1,4 @@
-"""Proxy-entry audiencing flow with unified design system."""
+"""Proxy-entry audiencing flow capturing names and qualifiers."""
 
 from __future__ import annotations
 
@@ -9,147 +9,91 @@ from audiencing import (
     apply_audiencing_sanitizer,
     compute_audiencing_route,
     ensure_audiencing_state,
+    log_audiencing_set,
     snapshot_audiencing,
 )
 
-st.set_page_config(page_title="Tell us about your loved one", layout="wide")
+st.set_page_config(page_title="Tell Us About Your Loved One", layout="wide")
 
-# ---------------------------------------------------------------------------
-# Session defaults
-# ---------------------------------------------------------------------------
-audiencing = ensure_audiencing_state()
-audiencing["entry"] = "proxy"
-qualifiers = audiencing["qualifiers"]
-route = audiencing.setdefault("route", {"next": None, "meta": {}})
-route.setdefault("next", None)
-audiencing.setdefault("recipient_name", None)
-audiencing.setdefault("proxy_name", None)
+state = ensure_audiencing_state()
+state["entry"] = "proxy"
+apply_audiencing_sanitizer(state)
+qualifiers = state["qualifiers"]
+people = state.setdefault("people", {"recipient_name": "", "proxy_name": ""})
 
-care_context = st.session_state.setdefault(
-    "care_context",
-    {
-        "person_name": "Your Loved One",
-        "gcp_answers": {},
-        "gcp_recommendation": None,
-        "gcp_cost": None,
-    },
-)
+st.title("Tell Us About Your Loved One")
+st.caption("These toggles make sure the right guidance shows up first.")
 
-# ---------------------------------------------------------------------------
-# Layout
-# ---------------------------------------------------------------------------
-st.markdown("""
-<div style="display:flex; flex-direction:column; gap:0.8rem;">
-  <div>
-    <h1>Tell us about your loved one</h1>
-    <p style="max-width:640px; color:#475569;">These details help us tailor the guidance to their household and benefits.</p>
-  </div>
-</div>
-""", unsafe_allow_html=True)
-
-name_cols = st.columns(2, gap="large")
-with name_cols[0]:
+with st.form("audiencing_proxy_form"):
     recipient_name = st.text_input(
-        "What’s their name?",
-        value=audiencing.get("recipient_name") or "",
-        placeholder="Add the person you’re caring for",
+        "What is their name?",
+        value=people.get("recipient_name", ""),
+        help="We use this to personalize the Hub for them.",
     )
-with name_cols[1]:
     proxy_name = st.text_input(
-        "What’s your name?",
-        value=audiencing.get("proxy_name") or "",
-        placeholder="Optional",
+        "What is your name?",
+        value=people.get("proxy_name", ""),
+        help="Optional, for caregiver-facing notes.",
     )
 
-qualifier_cards = [
-    {
-        "key": "is_veteran",
-        "label": "Are they a veteran?",
-        "hint": "Impacts benefits and offsets.",
-    },
-    {
-        "key": "has_partner",
-        "label": "Do they have a partner?",
-        "hint": "Determines household setup.",
-    },
-    {
-        "key": "owns_home",
-        "label": "Do they own their home?",
-        "hint": "Affects housing and home modifications.",
-    },
-    {
-        "key": "on_medicaid",
-        "label": "Are they on Medicaid?",
-        "hint": "We will show you the right path.",
-    },
-]
+    col1, col2 = st.columns(2, gap="large")
+    with col1:
+        is_veteran = st.toggle(
+            "Are they a veteran?",
+            value=qualifiers.get("is_veteran", False),
+            key="aud_proxy_is_veteran",
+        )
+        owns_home = st.toggle(
+            "Do they own their home?",
+            value=qualifiers.get("owns_home", False),
+            key="aud_proxy_owns_home",
+        )
+    with col2:
+        has_partner = st.toggle(
+            "Do they have a partner?",
+            value=qualifiers.get("has_partner", False),
+            key="aud_proxy_has_partner",
+        )
+        on_medicaid = st.toggle(
+            "Are they on Medicaid?",
+            value=qualifiers.get("on_medicaid", False),
+            key="aud_proxy_on_medicaid",
+        )
 
-if URGENT_FEATURE_FLAG:
-    qualifier_cards.append(
+    urgent_case = False
+    if URGENT_FEATURE_FLAG:
+        urgent_case = st.toggle(
+            "Is this urgent?",
+            value=qualifiers.get("urgent", False),
+            key="aud_proxy_urgent",
+        )
+
+    submitted = st.form_submit_button("Continue", use_container_width=True)
+
+if submitted:
+    people["recipient_name"] = recipient_name.strip()
+    people["proxy_name"] = proxy_name.strip()
+    qualifiers.update(
         {
-            "key": "urgent",
-            "label": "Is this urgent?",
-            "hint": "We’ll prioritize faster options if needed.",
+            "is_veteran": bool(is_veteran),
+            "has_partner": bool(has_partner),
+            "owns_home": bool(owns_home),
+            "on_medicaid": bool(on_medicaid),
+            "urgent": bool(urgent_case) if URGENT_FEATURE_FLAG else False,
         }
     )
-
-columns = st.columns(2, gap="large")
-for idx, card in enumerate(qualifier_cards):
-    col = columns[idx % 2]
-    with col:
-        st.markdown('<div class="sn-field-card">', unsafe_allow_html=True)
-        toggle_value = st.toggle(
-            card["label"],
-            value=bool(qualifiers.get(card["key"], False)),
-            key=f"aud_proxy_{card['key']}",
-        )
-        st.markdown(
-            f"<div class='sn-field-hint'>{card['hint']}</div>",
-            unsafe_allow_html=True,
-        )
-        st.markdown("</div>", unsafe_allow_html=True)
-        qualifiers[card["key"]] = bool(toggle_value)
-
-# Normalize, compute route, and snapshot
-audiencing["recipient_name"] = (recipient_name or "").strip() or None
-audiencing["proxy_name"] = (proxy_name or "").strip() or None
-qualifiers.setdefault("urgent", False)
-if not URGENT_FEATURE_FLAG:
-    qualifiers["urgent"] = False
-
-apply_audiencing_sanitizer(audiencing)
-compute_audiencing_route(audiencing)
-
-care_context["person_name"] = audiencing.get("recipient_name") or "Your Loved One"
-
-st.session_state["audiencing_snapshot"] = snapshot_audiencing(audiencing)
-
-ready = audiencing.get("recipient_name") is not None
-
-with st.container():
-    st.markdown('<div class="sn-sticky-footer"><div class="sn-footer-inner">', unsafe_allow_html=True)
-    footer_cols = st.columns([1, 1, 1])
-    continue_clicked = False
-    disabled_reason = None if ready else "Enter your loved one’s name to continue."
-    with footer_cols[1]:
-        continue_clicked = st.button(
-            "Go to your Concierge Care Hub",
-            type="primary",
-            use_container_width=True,
-            key="aud_proxy_continue",
-            disabled=not ready,
-            help=disabled_reason,
-        )
-    st.markdown('</div><div class="sn-footer-note">Personalized guidance will reference them by name.</div></div>', unsafe_allow_html=True)
-
-if continue_clicked:
-    st.session_state["last_event"] = {"type": "audiencing_set"}
+    apply_audiencing_sanitizer(state)
+    compute_audiencing_route(state)
+    snapshot = snapshot_audiencing(state)
+    st.session_state["audiencing_snapshot"] = snapshot
+    log_audiencing_set(snapshot)
     st.switch_page("pages/hub.py")
 
+st.divider()
+
 with st.expander("Debug: Audiencing state", expanded=False):
-    st.json(audiencing)
+    st.json(state)
     st.markdown("---")
     st.json(st.session_state.get("audiencing_snapshot", {}))
 
-if st.button("Back to Welcome", type="secondary"):
-    st.switch_page("pages/welcome.py")
+st.button("Back to Welcome", on_click=lambda: st.switch_page("pages/welcome.py"))

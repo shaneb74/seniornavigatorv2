@@ -26,9 +26,7 @@ def _default_audiencing_state() -> Dict[str, Any]:
         "entry": None,
         "qualifiers": {key: False for key in AUDIENCING_QUALIFIER_KEYS},
         "route": {"next": None, "meta": {}},
-        "recipient_name": None,
-        "proxy_name": None,
-        "people": {"recipient_name": None, "proxy_name": None},
+        "people": {"recipient_name": "", "proxy_name": ""},
         "sanitized": {},
     }
 
@@ -53,16 +51,7 @@ def ensure_audiencing_state() -> Dict[str, Any]:
         route = state.setdefault("route", {})
         route.setdefault("next", None)
         route.setdefault("meta", {})
-        state.setdefault("recipient_name", None)
-        state.setdefault("proxy_name", None)
-        people = state.setdefault("people", {"recipient_name": None, "proxy_name": None})
-        # Backfill from legacy structure if needed
-        if state.get("recipient_name") is None and people.get("recipient_name"):
-            state["recipient_name"] = people.get("recipient_name") or None
-        if state.get("proxy_name") is None and people.get("proxy_name"):
-            state["proxy_name"] = people.get("proxy_name") or None
-        people["recipient_name"] = state.get("recipient_name")
-        people["proxy_name"] = state.get("proxy_name")
+        state.setdefault("people", {"recipient_name": "", "proxy_name": ""})
         state.setdefault("sanitized", {})
     return state
 
@@ -150,12 +139,7 @@ def snapshot_audiencing(state: Dict[str, Any]) -> Dict[str, Any]:
             "next": state.get("route", {}).get("next"),
             "meta": deepcopy(state.get("route", {}).get("meta", {})),
         },
-        "recipient_name": state.get("recipient_name"),
-        "proxy_name": state.get("proxy_name"),
-        "people": {
-            "recipient_name": state.get("recipient_name"),
-            "proxy_name": state.get("proxy_name"),
-        },
+        "people": deepcopy(state.get("people", {})),
         "sanitized": deepcopy(state.get("sanitized", {})),
         "visibility": {
             "partner": bool(qualifiers["has_partner"]),
