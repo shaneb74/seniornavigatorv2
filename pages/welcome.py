@@ -290,4 +290,4 @@ st.markdown(
 _, cta_right = st.columns([2, 1])
 with cta_right:
     if st.button("Professional Mode", key="pro_mode_cta"):
-        _start_branch("pro")
+        st.switch_page("pages/professional_mode.py")
