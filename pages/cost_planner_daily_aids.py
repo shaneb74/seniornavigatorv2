@@ -1,53 +1,64 @@
+"""Medical and daily aids drawer."""
+from __future__ import annotations
 
 import streamlit as st
 
-# Debug: non-visual logger
-def _debug_log(msg: str):
-    try:
-        print(f"[SNAV] {msg}")
-    except Exception:
-        pass
+from cost_planner_shared import ensure_core_state, format_currency, get_numeric, recompute_costs, set_numeric
 
-_debug_log('LOADED: cost_planner_daily_aids.py')
+ensure_core_state()
+cp = st.session_state["cost_planner"]
+gcp = st.session_state.get("gcp", {})
 
+st.title("Medical and daily living aids")
+st.caption("Capture medication costs, supplies, and transport to appointments.")
 
-# Guard: ensure session state keys exist across cold restarts
-if 'care_context' not in st.session_state:
-    st.session_state.care_context = {
-        'gcp_answers': {},
-        'decision_trace': [],
-        'planning_mode': 'exploring',
-        'care_flags': {}
-    }
-ctx = st.session_state.care_context
+chronic = gcp.get("chronic_conditions", [])
+if chronic:
+    st.info(
+        "Chronic conditions noted in the Guided Care Plan: " + ", ".join(chronic),
+        icon="🧬",
+    )
 
+rx = st.number_input(
+    "Prescription medications",
+    min_value=0.0,
+    step=25.0,
+    value=float(get_numeric("medical_prescriptions")),
+    help="Monthly prescription spending across retail and mail order.",
+)
+set_numeric("medical_prescriptions", rx)
 
-# Cost Planner: Daily Living Aids
-st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-st.title("Daily Living Aids for your loved one")
-st.markdown("<h2>Add safety tools at home.</h2>", unsafe_allow_html=True)
-st.markdown("<p>Select aids to support his independence.</p>", unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
+supplies = st.number_input(
+    "Medical supplies & equipment",
+    min_value=0.0,
+    step=25.0,
+    value=float(get_numeric("medical_supplies")),
+    help="Incontinence products, DME rentals, batteries, and similar.",
+)
+set_numeric("medical_supplies", supplies)
 
-# Aids options with tile style
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
-st.markdown("### Daily Aids")
-st.markdown("<p>Pick tools for your loved one’s safety.</p>", unsafe_allow_html=True)
-st.write("Bath chair?")
-st.button("Yes", key="da_bath_yes", type="primary")
-st.button("No", key="da_bath_no", type="primary")
+transport = st.number_input(
+    "Medical transportation",
+    min_value=0.0,
+    step=25.0,
+    value=float(get_numeric("medical_transport")),
+    help="Ambulance subscriptions, paratransit, or rides to medical appointments.",
+)
+set_numeric("medical_transport", transport)
 
-st.write("Pill dispenser?")
-st.button("Yes", key="da_pill_yes", type="primary")
-st.button("No", key="da_pill_no", type="primary")
+recompute_costs()
 
-st.markdown('</div>', unsafe_allow_html=True)
+st.metric("Medical subtotal", format_currency(cp["subtotals"]["medical"]))
 
-# Navigation
-st.markdown('<div class="scn-nav-row">', unsafe_allow_html=True)
-col1, col2 = st.columns([1, 1])
-with col1:
-    st.button("Back to Modules", key="back_da", type="secondary")
-with col2:
-    st.button("Next Option", key="next_da", type="primary")
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown("---")
+
+col_hub, col_back, col_next = st.columns([1, 1, 1])
+with col_hub:
+    if st.button("Return to Hub", type="secondary"):
+        st.switch_page("pages/hub.py")
+with col_back:
+    if st.button("Back: Care"):
+        st.switch_page("pages/cost_planner_home_care.py")
+with col_next:
+    if st.button("Next: Insurance", type="primary"):
+        st.switch_page("pages/cost_planner_benefits.py")

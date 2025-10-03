@@ -1,49 +1,62 @@
+"""Final confirmation and PFMA handoff for Cost Planner."""
+from __future__ import annotations
+
+import json
 
 import streamlit as st
 
-# Debug: non-visual logger
-def _debug_log(msg: str):
-    try:
-        print(f"[SNAV] {msg}")
-    except Exception:
-        pass
+from cost_planner_shared import ensure_core_state, format_currency, recompute_costs
 
-_debug_log('LOADED: cost_plan_confirm.py')
+ensure_core_state()
+cp = st.session_state["cost_planner"]
+aud_snapshot = st.session_state.get("audiencing_snapshot") or st.session_state.get("audiencing")
 
+recompute_costs()
 
-# Guard: ensure session state keys exist across cold restarts
-if 'care_context' not in st.session_state:
-    st.session_state.care_context = {
-        'gcp_answers': {},
-        'decision_trace': [],
-        'planning_mode': 'exploring',
-        'care_flags': {}
-    }
-ctx = st.session_state.care_context
+st.title("Confirm cost plan & handoff")
+st.caption("Lock in the current snapshot, export it, or share with an advisor.")
 
+monthly = format_currency(cp["monthly_total"])
+offsets = format_currency(cp["subtotals"]["offsets"])
+net = format_currency(cp["net_out_of_pocket"])
 
-# Cost Plan Confirmation
-st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-st.title("Confirm Cost Plan for your loved one")
-st.markdown("<h2>Does this fit his budget?</h2>", unsafe_allow_html=True)
-st.markdown("<p>Review and lock in the cost summary.</p>", unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
+st.metric("Monthly costs", monthly)
+st.metric("Offsets", offsets)
+st.metric("Net out-of-pocket", net)
 
-# Confirmation tile
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
-st.markdown("### Cost Plan Summary", unsafe_allow_html=True)
-st.markdown("<p>Total: $1,500/month (10 hrs home care + aids). Covers your loved one’s needs—adjust if needed later.</p>", unsafe_allow_html=True)
-st.checkbox("This looks right?", key="cost_plan_confirm")
-st.button("Save Confirmation", key="save_cost_plan", type="primary")
-st.markdown('</div>', unsafe_allow_html=True)
+if cp.get("runway_months") is not None:
+    st.metric("Runway", f"{cp['runway_months']:.1f} months")
 
-# Navigation
-st.markdown('<div class="scn-nav-row">', unsafe_allow_html=True)
-col1, col2 = st.columns([1, 1])
-with col1:
-    st.button("Back to Care Plan", key="back_cpc", type="secondary")
-with col2:
-    if st.button("Next: Care Needs", key="next_cpc", type="primary"):
-        st.switch_page('pages/care_needs.py')
-        st.switch_page("pages/care_needs.py")
-st.markdown('</div>', unsafe_allow_html=True)
+st.subheader("Ready to share?")
+confirm = st.checkbox("I reviewed these numbers and they reflect our plan.")
+
+snapshot_json = json.dumps(cp["snapshot_for_crm"], indent=2).encode("utf-8")
+st.download_button(
+    "Download CRM snapshot",
+    data=snapshot_json,
+    file_name="cost_planner_snapshot.json",
+    mime="application/json",
+    disabled=not confirm,
+)
+
+col_share, col_tweak = st.columns(2)
+with col_share:
+    if st.button("Share with Advisor / PFMA", type="primary", disabled=not confirm):
+        st.session_state["last_event"] = {
+            "type": "cost_planner_shared",
+            "audiencing": aud_snapshot,
+        }
+        st.switch_page("pages/pfma_confirm_cost_plan.py")
+with col_tweak:
+    if st.button("Tweak estimate"):
+        st.switch_page("pages/cost_planner_estimate.py")
+
+st.markdown("---")
+
+col_hub, col_back = st.columns(2)
+with col_hub:
+    if st.button("Return to Hub", type="secondary"):
+        st.switch_page("pages/hub.py")
+with col_back:
+    if st.button("Back to Summary"):
+        st.switch_page("pages/cost_planner_estimate_summary.py")
