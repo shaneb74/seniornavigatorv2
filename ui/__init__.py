@@ -1,3 +1,4 @@
-"""UI helpers for the Senior Navigator design system."""
+# ui/__init__.py
+# Make ui a package and re-export the injector and tokens.
 
-from . import components  # re-export for convenience
+from .theme import inject_theme, inject, TOKENS
