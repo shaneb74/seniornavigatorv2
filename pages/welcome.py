@@ -6,12 +6,56 @@ from pathlib import Path
 import streamlit as st
 from PIL import Image, UnidentifiedImageError
 
+from audiencing import (
+    AUDIENCING_QUALIFIER_KEYS,
+    apply_audiencing_sanitizer,
+    compute_audiencing_route,
+    ensure_audiencing_state,
+    log_audiencing_set,
+    snapshot_audiencing,
+)
+
 # ------------------ Page / session ------------------
 st.set_page_config(layout="wide")
 
-if "care_context" not in st.session_state:
-    st.session_state.care_context = {}
-ctx = st.session_state.care_context
+ensure_audiencing_state()
+apply_audiencing_sanitizer(st.session_state["audiencing"])
+
+
+def _initialize_entry(entry: str) -> None:
+    """Reset the audiencing block for a fresh entry branch."""
+
+    state = ensure_audiencing_state()
+    state["entry"] = entry
+    for key in AUDIENCING_QUALIFIER_KEYS:
+        state["qualifiers"][key] = False
+    state.setdefault("route", {}).update({"next": None, "meta": {}})
+    state.setdefault("people", {"recipient_name": "", "proxy_name": ""})
+    if entry == "self":
+        state["people"].update({"recipient_name": "", "proxy_name": ""})
+    elif entry == "proxy":
+        state["people"].update({"recipient_name": "", "proxy_name": ""})
+    else:
+        state["people"].update({"recipient_name": "", "proxy_name": ""})
+    apply_audiencing_sanitizer(state)
+    compute_audiencing_route(state)
+    snapshot = snapshot_audiencing(state)
+    st.session_state["audiencing_snapshot"] = snapshot
+    if entry == "pro":
+        log_audiencing_set(snapshot)
+
+
+def _start_branch(entry: str) -> None:
+    """Entry selection handler with appropriate navigation."""
+
+    _initialize_entry(entry)
+    if entry == "self":
+        st.switch_page("pages/tell_us_about_you.py")
+    elif entry == "proxy":
+        st.switch_page("pages/tell_us_about_loved_one.py")
+    else:
+        # Professionals head straight to the hub; route metadata keeps track.
+        st.switch_page("pages/hub.py")
 
 # (Hide the extra top heading to match the comp)
 # st.title("Welcome")
@@ -82,6 +126,33 @@ st.markdown(
 
       /* Safety: hide truly empty markdown containers */
       div[data-testid="stMarkdownContainer"]:empty{ display:none !important; }
+
+      .pro-callout{
+        margin-top: 2.25rem;
+        padding: 1.5rem 1.75rem;
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(15, 60, 90, 0.06), rgba(15, 60, 90, 0.02));
+        border: 1px solid rgba(10, 40, 60, 0.08);
+      }
+      .pro-callout-title{
+        font-size: 0.9rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(10, 40, 60, 0.75);
+        margin-bottom: 0.35rem;
+      }
+      .pro-callout-body{
+        font-size: 0.95rem;
+        line-height: 1.5;
+        color: rgba(20, 20, 20, 0.78);
+        margin-bottom: 0.9rem;
+      }
+      .pro-callout-roles{
+        font-size: 0.9rem;
+        color: rgba(10, 40, 60, 0.7);
+        margin-bottom: 1rem;
+      }
     </style>
     """,
     unsafe_allow_html=True,
@@ -146,7 +217,7 @@ with left:
     c1, c2 = st.columns([1, 1])
     with c1:
         if st.button("Start Now", key="hero_start"):
-            st.switch_page("pages/tell_us_about_loved_one.py")
+            _start_branch("proxy")
     with c2:
         if st.button("Log in", key="hero_login"):
             st.switch_page("pages/login.py")
@@ -167,7 +238,7 @@ st.markdown('<div class="section-kicker">How we can help you</div>', unsafe_allo
 # =====================================================================
 # CARDS — each card is a bordered Streamlit container (CTA inside)
 # =====================================================================
-def card(image_path: str, title: str, sub: str, button_label: str, page_to: str) -> None:
+def card(image_path: str, title: str, sub: str, button_label: str, entry: str) -> None:
     with st.container(border=True):
         tag = img_html(
             image_path,
@@ -180,8 +251,8 @@ def card(image_path: str, title: str, sub: str, button_label: str, page_to: str)
         st.caption(sub)
         _, right_btn = st.columns([1, 1])
         with right_btn:
-            if st.button(button_label, key=f"btn_{page_to}"):
-                st.switch_page(page_to)
+            if st.button(button_label, key=f"btn_{entry}"):
+                _start_branch(entry)
 
 col1, col2 = st.columns(2, gap="large")
 with col1:
@@ -190,7 +261,7 @@ with col1:
         "I would like to support my loved ones",
         "For someone",
         "For someone",
-        "pages/tell_us_about_loved_one.py",
+        "proxy",
     )
 with col2:
     card(
@@ -198,5 +269,25 @@ with col2:
         "I’m looking for support just for myself",
         "For myself",
         "For myself",
-        "pages/tell_us_about_you.py",
+        "self",
     )
+
+st.markdown(
+    """
+    <div class="pro-callout">
+      <div class="pro-callout-title">For Professionals</div>
+      <div class="pro-callout-body">
+        We also support teams guiding older adults through transitions. Access a quieter workspace built for coordinating services with families.
+      </div>
+      <div class="pro-callout-roles">
+        Discharge planners &middot; Referral partners
+      </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+_, cta_right = st.columns([2, 1])
+with cta_right:
+    if st.button("Professional Mode", key="pro_mode_cta"):
+        _start_branch("pro")
