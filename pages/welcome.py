@@ -96,7 +96,7 @@ def load_bytes(path_str: str) -> bytes | None:
     return None
 
 # ------------------ Card helper ------------------
-def card(image_path: str, title: str, sub: str, button_label: str, page_to: str):
+def card(image_path: str, title: str, sub: str, button_label: str, page_to: str) -> None:
     with st.container():
         st.markdown('<div class="sn-card">', unsafe_allow_html=True)
 
@@ -104,7 +104,7 @@ def card(image_path: str, title: str, sub: str, button_label: str, page_to: str)
         if b:
             # Explicit width so images never render tiny
             st.markdown('<div class="sn-photo">', unsafe_allow_html=True)
-            st.image(b, width=520)   # adjust if you want larger/smaller
+            st.image(b, width=520)  # adjust if you want larger/smaller
             st.markdown('</div>', unsafe_allow_html=True)
 
         st.markdown(f"**{title}**")
@@ -172,7 +172,3 @@ with col2:
         "For myself",
         "pages/tell_us_about_you.py",
     )
-            st.switch_page("pages/tell_us_about_you.py")
-    st.markdown("</div>", unsafe_allow_html=True)
-
-st.markdown("</div>", unsafe_allow_html=True)  # end .cards
