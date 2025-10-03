@@ -100,7 +100,7 @@ INTENDED = [
     # Tell-us flows
     ("pages/tell_us_about_you.py", "Tell Us About You", "ℹ️", False),
     ("pages/tell_us_about_loved_one.py", "Tell Us About Loved One", "ℹ️", False),
-    ("pages/professional_mode.py", "Professional Mode", "🧑⚕️", False),
+    ("pages/professional_mode.py", "Professional Mode", "🧑", False),
 
     # Guided Care Plan
     ("pages/gcp.py", "Guided Care Plan", "🗺️", False),
