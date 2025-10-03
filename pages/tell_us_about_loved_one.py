@@ -8,149 +8,91 @@ from audiencing import (
     URGENT_FEATURE_FLAG,
     apply_audiencing_sanitizer,
     compute_audiencing_route,
+    ensure_audiencing_state,
+    log_audiencing_set,
+    snapshot_audiencing,
 )
 
 st.set_page_config(page_title="Tell Us About Your Loved One", layout="wide")
 
+state = ensure_audiencing_state()
+state["entry"] = "proxy"
+apply_audiencing_sanitizer(state)
+qualifiers = state["qualifiers"]
+people = state.setdefault("people", {"recipient_name": "", "proxy_name": ""})
+
 st.title("Tell Us About Your Loved One")
 st.caption("These toggles make sure the right guidance shows up first.")
 
-audiencing = st.session_state.setdefault(
-    "audiencing",
-    {
-        "entry": None,
-        "qualifiers": {
-            "is_veteran": False,
-            "has_partner": False,
-            "owns_home": False,
-            "on_medicaid": False,
-            "urgent": False,
-        },
-        "route": {"next": None},
-        "recipient_name": None,
-        "proxy_name": None,
-    },
-)
-
-audiencing["entry"] = "proxy"
-
-qualifiers = audiencing.setdefault(
-    "qualifiers",
-    {
-        "is_veteran": False,
-        "has_partner": False,
-        "owns_home": False,
-        "on_medicaid": False,
-        "urgent": False,
-    },
-)
-
-for key in ("is_veteran", "has_partner", "owns_home", "on_medicaid", "urgent"):
-    qualifiers.setdefault(key, False)
-
-route = audiencing.setdefault("route", {"next": None})
-route.setdefault("next", None)
-
-audiencing.setdefault("recipient_name", None)
-audiencing.setdefault("proxy_name", None)
-
-recipient_name = st.text_input(
-    "What is their name?",
-    value=audiencing.get("recipient_name") or "",
-    help="We use this to personalize the Hub for them.",
-)
-proxy_name = st.text_input(
-    "What is your name?",
-    value=audiencing.get("proxy_name") or "",
-    help="Optional, for caregiver-facing notes.",
-)
-
-col1, col2 = st.columns(2, gap="large")
-with col1:
-    is_veteran = st.toggle(
-        "Are they a veteran?",
-        value=qualifiers.get("is_veteran", False),
-        key="aud_proxy_is_veteran",
+with st.form("audiencing_proxy_form"):
+    recipient_name = st.text_input(
+        "What is their name?",
+        value=people.get("recipient_name", ""),
+        help="We use this to personalize the Hub for them.",
     )
-    owns_home = st.toggle(
-        "Do they own their home?",
-        value=qualifiers.get("owns_home", False),
-        key="aud_proxy_owns_home",
-    )
-with col2:
-    has_partner = st.toggle(
-        "Do they have a partner?",
-        value=qualifiers.get("has_partner", False),
-        key="aud_proxy_has_partner",
-    )
-    on_medicaid = st.toggle(
-        "Are they on Medicaid?",
-        value=qualifiers.get("on_medicaid", False),
-        key="aud_proxy_on_medicaid",
+    proxy_name = st.text_input(
+        "What is your name?",
+        value=people.get("proxy_name", ""),
+        help="Optional, for caregiver-facing notes.",
     )
 
-urgent_case = False
-if URGENT_FEATURE_FLAG:
-    urgent_case = st.toggle(
-        "Is this urgent?",
-        value=qualifiers.get("urgent", False),
-        key="aud_proxy_urgent",
+    col1, col2 = st.columns(2, gap="large")
+    with col1:
+        is_veteran = st.toggle(
+            "Are they a veteran?",
+            value=qualifiers.get("is_veteran", False),
+            key="aud_proxy_is_veteran",
+        )
+        owns_home = st.toggle(
+            "Do they own their home?",
+            value=qualifiers.get("owns_home", False),
+            key="aud_proxy_owns_home",
+        )
+    with col2:
+        has_partner = st.toggle(
+            "Do they have a partner?",
+            value=qualifiers.get("has_partner", False),
+            key="aud_proxy_has_partner",
+        )
+        on_medicaid = st.toggle(
+            "Are they on Medicaid?",
+            value=qualifiers.get("on_medicaid", False),
+            key="aud_proxy_on_medicaid",
+        )
+
+    urgent_case = False
+    if URGENT_FEATURE_FLAG:
+        urgent_case = st.toggle(
+            "Is this urgent?",
+            value=qualifiers.get("urgent", False),
+            key="aud_proxy_urgent",
+        )
+
+    submitted = st.form_submit_button("Continue", use_container_width=True)
+
+if submitted:
+    people["recipient_name"] = recipient_name.strip()
+    people["proxy_name"] = proxy_name.strip()
+    qualifiers.update(
+        {
+            "is_veteran": bool(is_veteran),
+            "has_partner": bool(has_partner),
+            "owns_home": bool(owns_home),
+            "on_medicaid": bool(on_medicaid),
+            "urgent": bool(urgent_case) if URGENT_FEATURE_FLAG else False,
+        }
     )
-
-qualifiers.update(
-    {
-        "is_veteran": bool(is_veteran),
-        "has_partner": bool(has_partner),
-        "owns_home": bool(owns_home),
-        "on_medicaid": bool(on_medicaid),
-        "urgent": bool(urgent_case) if URGENT_FEATURE_FLAG else False,
-    }
-)
-
-audiencing["recipient_name"] = (recipient_name or "").strip() or None
-audiencing["proxy_name"] = (proxy_name or "").strip() or None
-
-apply_audiencing_sanitizer(audiencing)
-audiencing["route"] = compute_audiencing_route(audiencing)
-
-care_context = st.session_state.setdefault(
-    "care_context",
-    {
-        "person_name": "Your Loved One",
-        "gcp_answers": {},
-        "gcp_recommendation": None,
-        "gcp_cost": None,
-    },
-)
-care_context["person_name"] = audiencing.get("recipient_name") or "Your Loved One"
-
-st.session_state["audiencing_snapshot"] = {
-    "entry": audiencing["entry"],
-    "qualifiers": audiencing["qualifiers"].copy(),
-    "route": audiencing["route"].copy(),
-}
-
-ready = audiencing.get("recipient_name") is not None
-
-st.write("")
-st.divider()
-
-disabled_reason = None
-if not ready:
-    disabled_reason = "Enter your loved one's name to continue."
-
-if st.button(
-    "Go to your Concierge Care Hub",
-    type="primary",
-    use_container_width=True,
-    disabled=not ready,
-    help=disabled_reason,
-):
-    st.session_state["last_event"] = {"type": "audiencing_set"}
+    apply_audiencing_sanitizer(state)
+    compute_audiencing_route(state)
+    snapshot = snapshot_audiencing(state)
+    st.session_state["audiencing_snapshot"] = snapshot
+    log_audiencing_set(snapshot)
     st.switch_page("pages/hub.py")
 
+st.divider()
+
 with st.expander("Debug: Audiencing state", expanded=False):
-    st.json(audiencing)
+    st.json(state)
     st.markdown("---")
     st.json(st.session_state.get("audiencing_snapshot", {}))
 

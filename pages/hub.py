@@ -4,340 +4,156 @@ from __future__ import annotations
 
 import streamlit as st
 
-from audiencing import (
-    URGENT_FEATURE_FLAG,
-    apply_audiencing_sanitizer,
-    ensure_audiencing_state,
-    snapshot_audiencing,
-)
+# ---------- Session guard ----------
+if "care_context" not in st.session_state:
+    st.session_state.care_context = {
+        "person_name": "Your Loved One",
+        "gcp_answers": {},
+        "gcp_recommendation": None,
+        "gcp_cost": None,
+    }
 
-st.set_page_config(page_title="Concierge Care Hub", layout="wide")
+ctx = st.session_state.care_context
+person_name = ctx.get("person_name", "Your Loved One")
 
-state = ensure_audiencing_state()
-apply_audiencing_sanitizer(state)
-snapshot = snapshot_audiencing(state)
-st.session_state["audiencing_snapshot"] = snapshot
+st.title("Dashboard")  # keep your H1; match your design copy if needed
 
-visibility = snapshot["visibility"]
-flags = snapshot["flags"]
-route_next = snapshot.get("route", {}).get("next") or "gcp"
-
-gcp_state = st.session_state.get("gcp", {})
-gcp_recommendation = gcp_state.get("recommended_setting")
-gcp_intensity = gcp_state.get("care_intensity")
-
-SETTING_COPY = {
-    "home": "Stay at home with supports",
-    "assisted": "Assisted living",
-    "memory": "Memory care",
-}
-
-INTENSITY_COPY = {
-    "low": "Low support",
-    "med": "Moderate support",
-    "high": "High support",
-}
-
-gcp_status = None
-if gcp_recommendation:
-    setting = SETTING_COPY.get(gcp_recommendation, gcp_recommendation.title())
-    intensity = INTENSITY_COPY.get(gcp_intensity, gcp_intensity)
-    gcp_status = f"{setting} • {intensity}" if intensity else setting
-
-people = snapshot.get("people", {})
-if snapshot.get("entry") == "self":
-    person_display = people.get("recipient_name") or "you"
-else:
-    person_display = people.get("recipient_name") or "your loved one"
-
-# ---------------------------------------------------------------------------
-# Helper utilities
-# ---------------------------------------------------------------------------
-HIDDEN_TOOLTIPS = {
-    "partner": "Partner planning is hidden because you told us there isn't a partner involved.",
-    "home": "Home ownership tools are hidden when the household does not own a home.",
-    "veteran": "Veteran-specific resources are hidden if the person is not a veteran.",
-}
-
-hidden_items: list[tuple[str, str]] = []
-
-def visible_item(tags: list[str], label: str) -> bool:
-    """Determine if a card tagged with qualifiers should be shown."""
-
-    for tag in tags:
-        if not visibility.get(tag, True):
-            hidden_items.append((label, tag))
-            return False
-    return True
-
-
-def switch_page_if(path: str) -> None:
-    """Helper to switch pages from within button callbacks."""
-
-    if path:
-        st.switch_page(path)
-
-
-ROUTE_DESTINATIONS = {
-    "gcp": {
-        "label": "Start the Guided Care Plan",
-        "description": "Answer a few questions so we can map the right mix of care options and benefits for {person}.",
-        "page": "pages/gcp.py",
-    },
-    "pfma": {
-        "label": "Connect with a Concierge Advisor",
-        "description": "Share details with our advisors so we can coordinate next steps quickly for {person}.",
-        "page": "pages/pfma.py",
-    },
-    "medicaid_off_ramp": {
-        "label": "Review Medicaid Support",
-        "description": "We'll confirm Medicaid coverage and guide you through the financial relief options available now.",
-        "page": "pages/pfma.py",
-    },
-    "pro": {
-        "label": "Open Professional Workspace",
-        "description": "Jump into the tools built for discharge planners and referral partners.",
-        "page": "pages/professional_mode.py",
-    },
-}
-
-CARDS = [
-    {
-        "key": "guided_plan",
-        "icon": "🧭",
-        "title": "Guided Care Plan",
-        "subtitle": "Understand the situation",
-        "body": "Map needs, risks, and recommendations tailored to {person}.",
-        "primary_label": "Open guided plan",
-        "primary_page": "pages/gcp.py",
-        "tags": [],
-    },
-    {
-        "key": "cost_planner",
-        "icon": "💰",
-        "title": "Cost Planner",
-        "subtitle": "Project care costs",
-        "body": "Explore cost scenarios, offsets, and payment options.",
-        "primary_label": "Open cost planner",
-        "primary_page": "pages/cost_planner.py",
-        "tags": [],
-    },
-    {
-        "key": "advisor",
-        "icon": "🤝",
-        "title": "Concierge Advisor",
-        "subtitle": "Plan with an expert",
-        "body": "Schedule time with our team to coordinate services and next steps.",
-        "primary_label": "Connect with an advisor",
-        "primary_page": "pages/pfma.py",
-        "tags": [],
-    },
-    {
-        "key": "partner_support",
-        "icon": "💞",
-        "title": "Partner planning",
-        "subtitle": "Support both of you",
-        "body": "Coordinate preferences, legal documentation, and shared decisions when a partner is involved.",
-        "primary_label": "Review partner checklist",
-        "primary_page": "pages/care_prefs.py",
-        "tags": ["partner"],
-    },
-    {
-        "key": "home_support",
-        "icon": "🏠",
-        "title": "Home updates",
-        "subtitle": "Safer living at home",
-        "body": "Plan accessibility upgrades, maintenance, and utility support for the home.",
-        "primary_label": "Explore home support",
-        "primary_page": "pages/cost_planner_home_care.py",
-        "tags": ["home"],
-    },
-    {
-        "key": "va_benefits",
-        "icon": "🎖️",
-        "title": "VA & military benefits",
-        "subtitle": "Check eligibility",
-        "body": "Unlock veteran-specific programs, stipends, and respite coverage if they served.",
-        "primary_label": "Review VA benefits",
-        "primary_page": "pages/benefits_coverage.py",
-        "tags": ["veteran"],
-    },
-    {
-        "key": "risk_navigator",
-        "icon": "🛡️",
-        "title": "Risk Navigator",
-        "subtitle": "Spot areas of concern",
-        "body": "Track safety watchpoints so you can advocate for {person}.",
-        "primary_label": "Open risk navigator",
-        "primary_page": "pages/risk_navigator.py",
-        "tags": [],
-    },
-    {
-        "key": "medication_check",
-        "icon": "💊",
-        "title": "Medication check",
-        "subtitle": "Review meds & interactions",
-        "body": "Upload medications and get key questions for the care team.",
-        "primary_label": "Review medications",
-        "primary_page": "pages/medication_management.py",
-        "tags": [],
-    },
-]
-
-# ---------------------------------------------------------------------------
-# Page body
-# ---------------------------------------------------------------------------
+# ---------- Hub-only CSS fixes ----------
+# 1) Nuke any global "card decorators" that create empty rounded boxes above content.
+#    These often target Streamlit block wrappers or inject ::before/::after backgrounds.
 st.markdown(
     """
     <style>
-      .block-container {
-        max-width: 1160px;
-        margin: 0 auto;
-        padding-top: 2.25rem;
-        padding-bottom: 3rem;
+      /* Scope to this page only by wrapping all below in .hub-scope */
+      .hub-scope [data-testid="stVerticalBlock"],
+      .hub-scope [data-testid="stHorizontalBlock"] {
+        /* Remove any background/box/shadow/min-height global decorations */
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+        outline: none !important;
+        min-height: auto !important;
       }
-      .hub-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-        gap: 1.4rem;
+      /* Kill pseudo-element decorations that some themes inject */
+      .hub-scope *::before,
+      .hub-scope *::after {
+        box-shadow: none !important;
+        background: none !important;
       }
-      .hub-card {
-        border-radius: 20px;
-        border: 1px solid rgba(15, 23, 42, 0.08);
-        background: #ffffff;
-        padding: 1.4rem;
-        box-shadow: 0 24px 44px -32px rgba(15, 23, 42, 0.35);
-        display: flex;
-        flex-direction: column;
-        gap: 0.8rem;
-        min-height: 240px;
+
+      /* Our actual cards */
+      .sn-card {
+        background: #fff;
+        border: 1px solid rgba(2,6,23,0.08);
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(2,6,23,0.06);
+        padding: 22px;
+        margin: 24px 0;
       }
-      .hub-card h4 {
-        margin: 0;
-        font-size: 1.12rem;
-      }
-      .hub-card small {
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        font-weight: 600;
-        color: rgba(15, 23, 42, 0.56);
-      }
-      .hub-card button {
-        border-radius: 12px !important;
-        padding: 0.65rem 1rem;
-        font-weight: 600;
-      }
-      .hub-card .stButton>button {
-        width: 100%;
-        background: linear-gradient(135deg, #4f46e5, #6366f1);
-        color: #ffffff;
-        border: none;
-      }
-      .hub-card .stButton>button:hover {
-        background: linear-gradient(135deg, #4338ca, #4f46e5);
-      }
-      .hub-banner {
-        border-radius: 18px;
-        padding: 1.3rem 1.6rem;
-        background: linear-gradient(135deg, rgba(79, 70, 229, 0.12), rgba(59, 130, 246, 0.1));
-        border: 1px solid rgba(79, 70, 229, 0.28);
-        display: flex;
-        flex-direction: column;
-        gap: 0.8rem;
-      }
-      .hub-banner strong {
-        font-size: 1.05rem;
-      }
-      .hub-banner .stButton>button {
+      .sn-title { font-weight: 800; font-size: 18px; margin: 0 0 6px 0; }
+      .sn-subtle { color: #475569; margin: 0 0 12px 0; }
+      .sn-status {
+        font-size: 12px;
+        padding: 6px 10px;
         border-radius: 999px;
-        padding: 0.55rem 1.1rem;
-        background: #ffffff;
-        color: #1e1b4b;
-        border: 1px solid rgba(79, 70, 229, 0.4);
+        border: 1px solid rgba(2, 6, 23, 0.08);
+        background: #F8FAFC;
+        display: inline-block;
       }
-      .hidden-note {
-        font-size: 0.85rem;
-        color: rgba(30, 41, 59, 0.7);
-      }
-      .status-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.35rem 0.75rem;
-        border-radius: 999px;
-        background: rgba(34, 197, 94, 0.12);
-        color: #166534;
+      .sn-card .stButton>button {
+        padding: 10px 14px;
+        border-radius: 10px;
         font-weight: 600;
-        font-size: 0.85rem;
       }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-st.title("Concierge Care Hub")
-st.caption(f"Tailored for {person_display} based on what you shared.")
+# ---------- Page scope wrapper to confine the resets above ----------
+st.markdown('<div class="hub-scope">', unsafe_allow_html=True)
 
-# Recommended next step banner
-recommended = ROUTE_DESTINATIONS.get(route_next)
-if recommended:
-    with st.container():
-        st.markdown("<div class='hub-banner'>", unsafe_allow_html=True)
-        st.markdown(
-            f"<strong>Next best step:</strong> {recommended['description'].format(person=person_display)}",
-            unsafe_allow_html=True,
-        )
-        if st.button(recommended["label"], key="hub_recommended"):
-            switch_page_if(recommended["page"])
-        st.markdown("</div>", unsafe_allow_html=True)
+def card(title: str, subtitle: str, cta_label: str, cta_key: str, on_click_page: str, status: str | None = None):
+    st.markdown('<div class="sn-card">', unsafe_allow_html=True)
+    # Use Streamlit columns for layout; they stay INSIDE our card because the card
+    # is a real DOM node, not a pseudo-element.
+    c1, c2, c3 = st.columns([6, 2, 2], vertical_alignment="center")
+    with c1:
+        st.markdown(f'<p class="sn-title">{title}</p>', unsafe_allow_html=True)
+        st.markdown(f'<p class="sn-subtle">{subtitle}</p>', unsafe_allow_html=True)
+    with c2:
+        if st.button(cta_label, key=cta_key):
+            st.switch_page(on_click_page)
+    with c3:
+        if status:
+            st.markdown(f'<span class="sn-status">{status}</span>', unsafe_allow_html=True)
+        else:
+            st.markdown("&nbsp;", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-if gcp_status:
-    st.success(
-        f"Guided Care Plan is complete: {gcp_status}.",
-        icon="🧭",
-    )
+# ---------- Guided Care Plan ----------
+gcp_completed = bool(ctx.get("gcp_recommendation")) or bool(ctx.get("gcp_answers"))
+rec_text = ctx.get("gcp_recommendation") or "Understand the situation"
+cost_text = ctx.get("gcp_cost") or "In progress"
 
-if flags.get("medicaid"):
-    st.info(
-        "Medicaid is active for this household. Cost Planner will highlight Medicaid-covered services and skip non-applicable offsets.",
-        icon="🛡️",
-    )
+card(
+    title="Guided Care Plan",
+    subtitle=(f"{rec_text} • {cost_text}" if gcp_completed
+              else f"See what we learned from your answers and refine the recommendation for {person_name}."),
+    cta_label=("Open" if gcp_completed else "Start guided plan"),
+    cta_key="hub_gcp_start",
+    on_click_page="pages/gcp.py",
+    status=("Completed ✅" if gcp_completed else "In progress"),
+)
 
-if flags.get("urgent") and URGENT_FEATURE_FLAG:
-    st.warning(
-        "You've marked this as urgent. Advisors will prioritize rapid coordination across the tools below.",
-        icon="⏱️",
-    )
+# ---------- Cost Planner ----------
+card(
+    title="Cost Estimator",
+    subtitle=f"Assess the total cost scenarios across options for {person_name}. The estimate will update based on your guided plan.",
+    cta_label="Open estimator",
+    cta_key="hub_open_cp",
+    on_click_page="pages/cost_planner.py",
+    status=None,
+)
 
-st.markdown("<div class='hub-grid'>", unsafe_allow_html=True)
-for card in CARDS:
-    if not visible_item(card.get("tags", []), card["title"]):
-        continue
-    with st.container():
-        st.markdown("<div class='hub-card'>", unsafe_allow_html=True)
-        st.markdown(
-            f"<small>{card['subtitle']}</small><h4>{card['icon']} {card['title']}</h4>",
-            unsafe_allow_html=True,
-        )
-        st.markdown(card["body"].format(person=person_display))
-        button_label = card["primary_label"]
-        if card["key"] == "guided_plan" and gcp_status:
-            st.markdown(
-                f"<div class='status-chip'>✅ Recommendation ready · {gcp_status}</div>",
-                unsafe_allow_html=True,
-            )
-            button_label = "Review recommendation"
-        if st.button(button_label, key=f"hub_{card['key']}"):
-            switch_page_if(card["primary_page"])
-        st.markdown("</div>", unsafe_allow_html=True)
-st.markdown("</div>", unsafe_allow_html=True)
+# ---------- Plan for My Advisor ----------
+card(
+    title="Plan for My Advisor",
+    subtitle="Book time with a concierge advisor and share your plan.",
+    cta_label="Get connected",
+    cta_key="hub_pfma",
+    on_click_page="pages/pfma.py",
+    status=None,
+)
 
-if hidden_items:
-    with st.expander("Why some tools are hidden", expanded=False):
-        for label, tag in hidden_items:
-            st.markdown(
-                f"**{label}** — {HIDDEN_TOOLTIPS.get(tag, 'Hidden based on the audiencing qualifiers.')}"
-            )
+# ---------- Medication Management ----------
+card(
+    title="Medication Management",
+    subtitle="Keep meds on track with simple reminders and checks.",
+    cta_label="Open",
+    cta_key="hub_meds",
+    on_click_page="pages/medication_management.py",
+    status=None,
+)
 
-with st.expander("Debug: Audiencing snapshot", expanded=False):
-    st.json(snapshot)
+# ---------- Risk Navigator ----------
+card(
+    title="Risk Navigator",
+    subtitle="Quick safety check to reduce avoidable risks at home.",
+    cta_label="Run check",
+    cta_key="hub_risk",
+    on_click_page="pages/risk_navigator.py",
+    status=None,
+)
+
+# ---------- Assessment (last) ----------
+card(
+    title="Assessment",
+    subtitle="Additional screening tools and forms.",
+    cta_label="Open assessment",
+    cta_key="hub_assess",
+    on_click_page="pages/care_plan_confirm.py",
+    status=None,
+)
+
+st.markdown('</div>', unsafe_allow_html=True)  # end .hub-scope
