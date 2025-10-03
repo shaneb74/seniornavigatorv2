@@ -1,55 +1,43 @@
 import streamlit as st
 from pathlib import Path
 
-# -----------------------------------------------------------------------------
-# Base config
-# -----------------------------------------------------------------------------
 st.set_page_config(page_title="CCA Senior Navigator", layout="centered")
 
-# Load external CSS (keeps your design system in static/style.css)
-def inject_css(path: str):
-    css_path = Path(path)
+# ========= Global CSS (single source of truth) =========
+def _inject_global_css():
+    css_path = Path("static/css/style.css")
     if css_path.exists():
-        mtime = int(css_path.stat().st_mtime)
-        st.markdown(f"<style>{css_path.read_text()}</style><!-- v:{mtime} -->", unsafe_allow_html=True)
+        v = int(css_path.stat().st_mtime)  # cache-bust
+        st.markdown(f"<style>{css_path.read_text()}</style><!-- v:{v} -->", unsafe_allow_html=True)
     else:
-        st.warning(f"Missing CSS: {path}")
+        st.warning("Missing CSS: static/css/style.css")
 
-inject_css("static/style.css")
+_inject_global_css()
 
-# Simple prototype auth flag (global)
+# ========= Simple prototype auth flag =========
 if "is_authenticated" not in st.session_state:
     st.session_state.is_authenticated = False
 
-# -----------------------------------------------------------------------------
-# Page registry helpers
-# -----------------------------------------------------------------------------
+# ========= Navigation helpers =========
 def ensure_page(path: str, title: str, icon: str, default: bool = False):
-    """
-    Return (st.Page, None) if file exists; otherwise (None, 'missing_path').
-    Keeps ordering exactly as defined below.
-    """
     p = Path(path)
     if not p.exists():
         return None, path
     page = st.Page(path, title=title, icon=icon, default=bool(default)) if default else st.Page(path, title=title, icon=icon)
     return page, None
 
-# -----------------------------------------------------------------------------
-# ORDERED PAGE LISTS
-# Always visible in the sidebar; individual pages can soft-gate content.
-# The order here is the order in the left nav. Period.
-# -----------------------------------------------------------------------------
-PAGES_PUBLIC = [
+# ========= Pages to register (order controls left-nav order) =========
+INTENDED = [
+    # Entry & Hub
     ("pages/welcome.py", "Welcome", "👋", True),
     ("pages/hub.py", "Your Concierge Care Hub", "🏠", False),
+
+    # Tell-us flows
     ("pages/tell_us_about_you.py", "Tell Us About You", "ℹ️", False),
     ("pages/tell_us_about_loved_one.py", "Tell Us About Loved One", "ℹ️", False),
-    ("pages/login.py", "Login", "🔐", False),
-]
+    ("pages/professional_mode.py", "Professional Mode", "🧑‍⚕️", False),
 
-PAGES_AUTH = [
-    # Guided Care Plan (kept high in nav)
+    # Guided Care Plan
     ("pages/gcp.py", "Guided Care Plan", "🗺️", False),
     ("pages/gcp_daily_life.py", "GCP — Daily Life & Support", "🗺️", False),
     ("pages/gcp_health_safety.py", "GCP — Health & Safety", "🗺️", False),
@@ -64,7 +52,7 @@ PAGES_AUTH = [
     ("pages/cost_planner_home_care.py", "Home Care Support", "🏠", False),
     ("pages/cost_planner_daily_aids.py", "Daily Living Aids", "🛠️", False),
     ("pages/cost_planner_housing.py", "Housing Path", "🏡", False),
-    ("pages/cost_planner_benefits.py", "Benefits & Coverage", "💳", False),
+    ("pages/cost_planner_benefits.py", "Benefits Check", "💳", False),
     ("pages/cost_planner_mods.py", "Age-in-Place Upgrades", "🔧", False),
     ("pages/expert_review.py", "Expert Review", "🔎", False),
     ("pages/cost_planner_evaluation.py", "Cost Planner: Evaluation", "🔍", False),
@@ -82,21 +70,16 @@ PAGES_AUTH = [
     ("pages/pfma_confirm_benefits_coverage.py", "PFMA • Benefits & Coverage", "💳", False),
     ("pages/pfma_confirm_personal_info.py", "PFMA • Personal Info", "👤", False),
 
-    # Everything else (AI Advisor intentionally below core flows)
+    # Misc
+    ("pages/login.py", "Login", "🔐", False),
     ("pages/ai_advisor.py", "AI Advisor", "🤖", False),
     ("pages/waiting_room.py", "Waiting Room", "⏳", False),
     ("pages/trusted_partners.py", "Trusted Partners", "🤝", False),
     ("pages/export_results.py", "Export Results", "📥", False),
     ("pages/my_documents.py", "My Documents", "📁", False),
     ("pages/my_account.py", "My Account", "👤", False),
-
-    # Pro mode (always registered; page can enforce login)
-    ("pages/professional_mode.py", "Professional Mode", "🧑‍⚕️", False),
 ]
 
-INTENDED = PAGES_PUBLIC + PAGES_AUTH
-
-# Build pages and collect any missing files so we don't crash on cold starts
 pages, missing = [], []
 for args in INTENDED:
     page, miss = ensure_page(*args)
@@ -108,18 +91,13 @@ for args in INTENDED:
 if missing:
     st.sidebar.warning("Missing pages detected:\n" + "\n".join(f"- {m}" for m in missing))
 
-# -----------------------------------------------------------------------------
-# Run navigation
-# -----------------------------------------------------------------------------
 if pages:
     pg = st.navigation(pages)
     pg.run()
 else:
     st.error("No pages available. Check file paths in app.py.")
 
-# -----------------------------------------------------------------------------
-# Sidebar auth toggle (prototype)
-# -----------------------------------------------------------------------------
+# ========= Sidebar login toggle (prototype) =========
 with st.sidebar:
     st.markdown("---")
     st.caption("Authentication")
