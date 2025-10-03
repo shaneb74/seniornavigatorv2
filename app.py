@@ -1,22 +1,48 @@
-# app.py
+# app.py — header + global CSS injector (full replacement for the opening block)
+
+from __future__ import annotations
 import streamlit as st
 from pathlib import Path
 
-st.set_page_config(page_title="CCA Senior Navigator", layout="wide")
+# ---- Import the theme injector with a safe fallback ----
+try:
+    # preferred: provided by ui/theme.py
+    from ui.theme import inject_theme  # exposes the real CSS and tokens
+except Exception:
+    # belt-and-suspenders: keep the app running even if ui/theme.py is missing/broken
+    def inject_theme() -> None:
+        st.markdown(
+            """
+            <style>
+              .block-container{max-width:1160px;padding-top:8px;}
+              header[data-testid="stHeader"]{background:transparent;}
+              footer{visibility:hidden;}
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
 
 # ========= Global CSS (single source of truth) =========
-def _inject_global_css():
+def _inject_global_css() -> None:
+    # Inject the theme once
     inject_theme()
+
+    # Optionally layer a repo-level stylesheet (if present)
     css_path = Path("static/style.css")
     if css_path.exists():
-        extra = css_path.read_text().strip()
-        if extra:
-            v = int(css_path.stat().st_mtime)
-            st.markdown(f"<style>{extra}</style><!-- v:{v} -->", unsafe_allow_html=True)
+        try:
+            extra = css_path.read_text(encoding="utf-8").strip()
+        except Exception:
+            # If encoding is weird, read bytes and decode permissively
+            extra = css_path.read_bytes().decode(errors="ignore").strip()
+        # cache-bust by appending file mtime as a comment
+        v = int(css_path.stat().st_mtime)
+        st.markdown(f"<style>{extra}</style><!-- v:{v} -->", unsafe_allow_html=True)
 
+# Call once on startup (before you render anything)
 _inject_global_css()
 
-# ========= Simple prototype auth flag =========
+# ========= Simple prototype auth flag (keep your original logic below) =========
 if "is_authenticated" not in st.session_state:
     st.session_state.is_authenticated = False
 
