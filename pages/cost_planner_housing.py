@@ -1,53 +1,70 @@
+"""Housing drawer for the Cost Planner."""
+from __future__ import annotations
 
 import streamlit as st
 
-# Debug: non-visual logger
-def _debug_log(msg: str):
-    try:
-        print(f"[SNAV] {msg}")
-    except Exception:
-        pass
+from cost_planner_shared import ensure_core_state, format_currency, get_numeric, recompute_costs, set_numeric
 
-_debug_log('LOADED: cost_planner_housing.py')
+ensure_core_state()
+cp = st.session_state["cost_planner"]
+aud = st.session_state["audiencing"]
+quals = aud.get("qualifiers", {})
 
+st.title("Housing and living costs")
+st.caption("Capture recurring housing payments before care or benefits.")
 
-# Guard: ensure session state keys exist across cold restarts
-if 'care_context' not in st.session_state:
-    st.session_state.care_context = {
-        'gcp_answers': {},
-        'decision_trace': [],
-        'planning_mode': 'exploring',
-        'care_flags': {}
-    }
-ctx = st.session_state.care_context
+if not quals.get("owns_home"):
+    st.info(
+        "Audiencing shows this household does not own a home. Home maintenance fields are hidden and treated as $0.",
+        icon="🏢",
+    )
 
+base_rent = st.number_input(
+    "Monthly housing cost (rent, mortgage, or community fee)",
+    min_value=0.0,
+    step=50.0,
+    value=float(get_numeric("housing_base_rent")),
+    help="Include rent, mortgage, or assisted living base fees.",
+)
+set_numeric("housing_base_rent", base_rent)
 
-# Cost Planner: Housing Path
-st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-st.title("Housing Path for your loved one")
-st.markdown("<h2>Plan his living options.</h2>", unsafe_allow_html=True)
-st.markdown("<p>Decide to stay or explore new paths.</p>", unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
+col_a, col_b = st.columns(2)
+with col_a:
+    utilities = st.number_input(
+        "Utilities & services",
+        min_value=0.0,
+        step=25.0,
+        value=float(get_numeric("housing_utilities")),
+        help="Electric, water, trash, cable, HOA dues.",
+    )
+    set_numeric("housing_utilities", utilities)
 
-# Housing options with tile style
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
-st.markdown("### Housing Choices")
-st.markdown("<p>Select your loved one’s living preference.</p>", unsafe_allow_html=True)
-st.write("Stay home?")
-st.button("Yes", key="hp_stay_yes", type="primary")
-st.button("No", key="hp_stay_no", type="primary")
+with col_b:
+    if quals.get("owns_home"):
+        maintenance = st.number_input(
+            "Maintenance or HOA",
+            min_value=0.0,
+            step=25.0,
+            value=float(get_numeric("housing_maintenance")),
+            help="Repairs, lawn care, or HOA assessments.",
+        )
+        set_numeric("housing_maintenance", maintenance)
+    else:
+        set_numeric("housing_maintenance", 0.0)
 
-st.write("Assisted living?")
-st.button("Yes", key="hp_assist_yes", type="primary")
-st.button("No", key="hp_assist_no", type="primary")
+recompute_costs()
 
-st.markdown('</div>', unsafe_allow_html=True)
+st.metric("Housing subtotal", format_currency(cp["subtotals"]["housing"]))
 
-# Navigation
-st.markdown('<div class="scn-nav-row">', unsafe_allow_html=True)
-col1, col2 = st.columns([1, 1])
-with col1:
-    st.button("Back to Modules", key="back_hp", type="secondary")
-with col2:
-    st.button("Next Option", key="next_hp", type="primary")
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown("---")
+
+col_hub, col_back, col_next = st.columns([1, 1, 1])
+with col_hub:
+    if st.button("Return to Hub", type="secondary"):
+        st.switch_page("pages/hub.py")
+with col_back:
+    if st.button("Back to Intro"):
+        st.switch_page("pages/cost_planner_estimate.py")
+with col_next:
+    if st.button("Next: Care", type="primary"):
+        st.switch_page("pages/cost_planner_home_care.py")

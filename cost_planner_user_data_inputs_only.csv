@@ -1,0 +1,25 @@
+field_id,label,category,required,helper_text,default_value
+housing_base_rent,Monthly housing cost (rent or fees),housing,required,"Base rent, mortgage, or community fee.",0
+housing_utilities,Utilities & services,housing,optional,"Electric, water, trash, HOA, cable.",0
+housing_maintenance,Home maintenance or HOA,housing,optional,"Repairs, lawn care, community dues.",0
+care_base_rate,Primary care or staffing cost,care,required,"Monthly in-home staffing or community base care.",0
+care_level_addon,Level-of-care add-ons,care,optional,"Medication management, higher acuity tiers.",0
+care_second_person,Second person care add-on,care,optional,"Only if a partner also receives care.",0
+care_support_services,Supplemental support services,care,optional,"Adult day, respite, or transportation add-ons.",0
+medical_prescriptions,Prescription medications,medical,required,"Average monthly prescription spending.",0
+medical_supplies,Medical supplies & equipment,medical,optional,"Incontinence, DME rentals, batteries.",0
+medical_transport,Medical transportation,medical,optional,"Ambulance, paratransit, rides to appointments.",0
+insurance_health,Health insurance premiums,insurance,required,"Medicare, Advantage, supplemental premiums.",0
+insurance_ltc,Long-term care insurance premiums,insurance,optional,"Monthly LTC premium due.",0
+insurance_other,Other insurance premiums,insurance,optional,"Dental, vision, life, umbrella policies.",0
+debt_credit_cards,Credit card payments,debts,optional,"Minimum monthly payments across cards.",0
+debt_loans,Loan payments,debts,optional,"Auto, personal, reverse mortgage draws.",0
+other_miscellaneous,Other monthly expenses,other,optional,"Transportation, clubs, subscriptions, etc.",0
+offset_ss_income,Social Security income,offsets,optional,"Monthly SSA or SSI income received.",0
+offset_pension_income,Pension income,offsets,optional,"Traditional pension or retirement distributions.",0
+offset_annuity_income,Annuity income,offsets,optional,"Structured annuity or investment draw.",0
+offset_other_income,Other income,offsets,optional,"Gig work, family contributions, trusts.",0
+offset_va_benefits,VA benefits,offsets,optional,"VA Aid & Attendance or other VA programs.",0
+offset_medicaid_benefits,Medicaid coverage,offsets,optional,"State Medicaid offsets covering care costs.",0
+offset_ltc_benefits,LTC insurance payouts,offsets,optional,"Monthly payout from LTC policy.",0
+assets_total,Available savings (if planning),assets,optional,"Liquid assets available for care (planning mode only).",0
