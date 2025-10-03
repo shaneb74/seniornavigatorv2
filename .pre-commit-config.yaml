@@ -1,0 +1,27 @@
+repos:
+  - repo: local
+    hooks:
+      # 1) ASCII sanitizer (auto-fixes smart quotes, em dashes, NBSP, etc.)
+      - id: sanitize-ascii
+        name: Sanitize ASCII punctuation
+        entry: python3 tools/sanitize_ascii.py --ext .py --write
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      # 2) Future import placement (check only)
+      - id: check-future-imports
+        name: Check __future__ import placement
+        entry: python3 tools/check_future_imports.py
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      # 3) Quick syntax compile for pages/ (fast fail on typos)
+      - id: compile-pages
+        name: Compile pages/*.py
+        entry: python3 tools/compile_pages.py
+        language: system
+        types: [python]
+        pass_filenames: false
+

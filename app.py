@@ -1,5 +1,6 @@
-# app.py - Senior Navigator app bootstrap with robust CSS injection
 from __future__ import annotations
+
+# app.py - Senior Navigator app bootstrap with robust CSS injection
 
 from pathlib import Path
 import streamlit as st

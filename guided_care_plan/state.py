@@ -1,6 +1,6 @@
 """Session helpers and metadata for the Guided Care Plan."""
-
 from __future__ import annotations
+
 
 import json
 from functools import lru_cache

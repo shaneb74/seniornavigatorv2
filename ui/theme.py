@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 # ui/theme.py
 # Design tokens + global CSS. Exposes BOTH inject() and inject_theme().
-from __future__ import annotations
 import streamlit as st
 
 TOKENS = {
