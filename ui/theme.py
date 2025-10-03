@@ -490,6 +490,31 @@ button.danger {{
   border-color: transparent !important;
 }}
 
+/* Extra coverage for Streamlit submit buttons (v1.50 and friends) */
+div[data-testid="stFormSubmitButton"] > button,
+div[data-testid="formSubmitButton"] > button,          /* older/alternate */
+form button[type="submit"],
+form [data-testid="baseButton-primary"] > button,
+form [data-testid="baseButton-secondary"] > button {
+  background: var(--brand) !important;
+  color: var(--brand-ink) !important;
+  border: 1px solid transparent !important;
+  border-radius: 999px !important;
+  padding: 0.78rem 1.85rem !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+}
+
+div[data-testid="stFormSubmitButton"] > button:hover,
+div[data-testid="formSubmitButton"] > button:hover,
+form button[type="submit"]:hover,
+form [data-testid="baseButton-primary"] > button:hover,
+form [data-testid="baseButton-secondary"] > button:hover {
+  background: #0a4fc0 !important;
+  color: var(--brand-ink) !important;
+  transform: translateY(-1px);
+}
+
 </style>
 """
 
