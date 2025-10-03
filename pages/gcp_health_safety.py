@@ -1,70 +1,75 @@
+"""Guided Care Plan – Health & Safety section."""
+
+from __future__ import annotations
+
 import streamlit as st
 
-if 'care_context' not in st.session_state:
-    st.session_state.care_context = {
-        'gcp_answers': {},
-        'decision_trace': [],
-        'planning_mode': 'exploring',
-        'care_flags': {}
-    }
-ctx = st.session_state.care_context
-answers = ctx.setdefault('gcp_answers', {})
+from guided_care_plan import ensure_gcp_session, get_question_meta, render_stepper
 
-st.title('Guided Care Plan — Health & Safety')
-st.caption('Step 2 of 3')
+SECTION_QUESTIONS = [
+    "falls_history",
+    "cognition",
+    "behavior_signals",
+    "supervision_need",
+]
 
-st.markdown('---')
+answers, _ = ensure_gcp_session()
 
-cog_opts = ['Sharp','Sometimes forgetful','Frequent memory issues','Serious confusion']
-answers['cognition_level'] = st.radio(
-    'How would you rate your memory and thinking in daily life?',
-    cog_opts,
-    index=cog_opts.index(answers.get('cognition_level', cog_opts[0])),
-    key='q_cognition'
-)
-st.caption("We'll pair this with medications and safety to gauge supervision needs.")
+st.set_page_config(page_title="GCP – Health & Safety", layout="wide")
 
-mob_opts = ['I walk easily','I use a cane','I use a walker','I use a wheelchair']
-answers['mobility'] = st.radio(
-    'How do you usually get around?',
-    mob_opts,
-    index=mob_opts.index(answers.get('mobility', mob_opts[0])),
-    key='q_mobility'
-)
-st.caption('We mean typical movement at home and outside.')
+st.markdown("""
+<h2 style="text-transform:uppercase; letter-spacing:0.08em; color:#6b7280; font-size:0.95rem;">Guided Care Plan</h2>
+<h1 style="margin-bottom:0.4rem;">Health & safety check</h1>
+<p style="max-width:660px; color:#475569;">These responses guide supervision levels and highlight any safety flags.</p>
+""", unsafe_allow_html=True)
 
-cond_opts = ['Diabetes','Hypertension','Dementia',"Parkinson's",'Stroke','CHF','COPD','Arthritis']
-answers['chronic_conditions'] = st.multiselect(
-    'Do you have any ongoing health conditions? Select all that apply.',
-    cond_opts,
-    default=answers.get('chronic_conditions', []),
-    key='q_chronic_conditions'
-)
-st.caption('Select all that apply. Dementia strongly influences recommendations.')
+render_stepper(2)
 
-fall_opts = ['Yes','No','Not sure']
-answers['recent_fall'] = st.radio(
-    'Has there been a fall in the last 6 months?',
-    fall_opts,
-    index=fall_opts.index(answers.get('recent_fall', 'No')),
-    key='q_recent_fall'
-)
-st.caption('Recent falls increase the need for supervision or home changes.')
+for question_id in SECTION_QUESTIONS:
+    meta = get_question_meta(question_id)
+    option_map = {opt["value"]: opt["label"] for opt in meta["options"]}
+    values = list(option_map.keys())
+    default_value = answers.get(question_id, values[0])
+    if default_value not in values:
+        default_value = values[0]
+    st.markdown(f"<h3 style='margin-top:1.6rem;'>{meta['label']}</h3>", unsafe_allow_html=True)
+    st.markdown('<div class="sn-choice-group">', unsafe_allow_html=True)
+    selected = st.radio(
+        meta["label"],
+        options=values,
+        index=values.index(default_value),
+        key=f"gcp_{question_id}",
+        label_visibility="collapsed",
+        format_func=lambda value, m=option_map: m[value],
+    )
+    st.markdown("</div>", unsafe_allow_html=True)
+    if meta.get("description"):
+        st.caption(meta["description"])
+    answers[question_id] = selected
 
-home_opts = ['Well-prepared','Mostly safe','Needs modifications','Not suitable']
-answers['home_setup_safety'] = st.radio(
-    'How safe and manageable is your home for daily living as you age?',
-    home_opts,
-    index=home_opts.index(answers.get('home_setup_safety', home_opts[0])),
-    key='q_home_safety'
-)
-st.caption('Think stairs, bathrooms, lighting, grab bars, and trip hazards.')
+with st.container():
+    st.markdown('<div class="sn-sticky-footer"><div class="sn-footer-inner">', unsafe_allow_html=True)
+    footer_cols = st.columns([1, 1, 1])
+    skip_clicked = False
+    continue_clicked = False
+    with footer_cols[0]:
+        skip_clicked = st.button(
+            "Skip",
+            type="secondary",
+            use_container_width=True,
+            key="gcp_health_skip",
+        )
+    with footer_cols[2]:
+        continue_clicked = st.button(
+            "Continue",
+            type="primary",
+            use_container_width=True,
+            key="gcp_health_continue",
+        )
+    st.markdown(
+        "</div><div class=\"sn-footer-note\">Respond as a person receiving care even if you’re filling it for someone else.</div></div>",
+        unsafe_allow_html=True,
+    )
 
-st.markdown('---')
-col1, col2 = st.columns(2)
-with col1:
-    if st.button('Back', key='health_back'):
-        st.switch_page('pages/gcp_daily_life.py')
-with col2:
-    if st.button('Next', key='health_next'):
-        st.switch_page('pages/gcp_context_prefs.py')
+if continue_clicked or skip_clicked:
+    st.switch_page("pages/gcp_context_prefs.py")

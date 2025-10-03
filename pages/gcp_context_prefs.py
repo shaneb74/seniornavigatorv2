@@ -1,52 +1,86 @@
+"""Guided Care Plan – Context & Preferences section."""
+
+from __future__ import annotations
+
 import streamlit as st
 
-if 'care_context' not in st.session_state:
-    st.session_state.care_context = {
-        'gcp_answers': {},
-        'decision_trace': [],
-        'planning_mode': 'exploring',
-        'care_flags': {}
-    }
-ctx = st.session_state.care_context
-answers = ctx.setdefault('gcp_answers', {})
+from guided_care_plan import ensure_gcp_session, get_question_meta, render_stepper
+from guided_care_plan.state import current_audiencing_snapshot
 
-st.title('Guided Care Plan — Context & Preferences')
-st.caption('Step 3 of 3')
+BASE_QUESTIONS = ["living_situation"]
+CONDITIONAL_QUESTIONS = {
+    "partner_support": {"qualifier": "has_partner", "default": "no_partner"},
+    "home_safety": {"qualifier": "owns_home", "default": "not_homeowner"},
+    "veteran_benefits": {"qualifier": "is_veteran", "default": "not_applicable"},
+}
 
-st.markdown('---')
+answers, _ = ensure_gcp_session()
+snapshot = current_audiencing_snapshot()
+qualifiers = snapshot.get("qualifiers", {})
 
-fund_opts = ['Very confident','Somewhat confident','Somewhat concerned','Very concerned']
-answers['funding_confidence'] = st.radio(
-    'How would you describe your financial situation when it comes to paying for care?',
-    fund_opts,
-    index=fund_opts.index(answers.get('funding_confidence', fund_opts[1])),
-    key='q_funding_confidence'
-)
-st.caption('This helps right-size options for budget.')
+st.set_page_config(page_title="GCP – Context & Preferences", layout="wide")
 
-geo_opts = ['Very easy','Fairly easy','Somewhat difficult','Very difficult']
-answers['geographic_access'] = st.radio(
-    'How accessible are services like pharmacies, grocery stores, and doctors from your home?',
-    geo_opts,
-    index=geo_opts.index(answers.get('geographic_access', geo_opts[0])),
-    key='q_geo_access'
-)
-st.caption('Think drive time, transit availability, and how quickly you can get prescriptions or appointments.')
+st.markdown("""
+<h2 style="text-transform:uppercase; letter-spacing:0.08em; color:#6b7280; font-size:0.95rem;">Guided Care Plan</h2>
+<h1 style="margin-bottom:0.4rem;">Context & preferences</h1>
+<p style="max-width:660px; color:#475569;">We tailor recommendations based on living setup, partner involvement, and benefits.</p>
+""", unsafe_allow_html=True)
 
-move_opts = ['I prefer to stay home',"I'd rather stay home but open if needed","I'm comfortable either way","I'm comfortable moving"]
-answers['move_willingness'] = st.radio(
-    'If care is recommended, how open are you to changing where care happens?',
-    move_opts,
-    index=move_opts.index(answers.get('move_willingness', move_opts[0])),
-    key='q_move_willingness'
-)
-st.caption('This frames recommendations. It does not override safety.')
+render_stepper(3)
 
-st.markdown('---')
-col1, col2 = st.columns(2)
-with col1:
-    if st.button('Back', key='context_back'):
-        st.switch_page('pages/gcp_health_safety.py')
-with col2:
-    if st.button('Get my recommendation', key='context_next_get_reco'):
-        st.switch_page('pages/gcp_recommendation.py')
+visible_questions = list(BASE_QUESTIONS)
+for question_id, cfg in CONDITIONAL_QUESTIONS.items():
+    if qualifiers.get(cfg["qualifier"]):
+        visible_questions.append(question_id)
+    else:
+        answers[question_id] = cfg["default"]
+        st.session_state[f"gcp_{question_id}"] = cfg["default"]
+
+for question_id in visible_questions:
+    meta = get_question_meta(question_id)
+    option_map = {opt["value"]: opt["label"] for opt in meta["options"]}
+    values = list(option_map.keys())
+    default_value = answers.get(question_id, values[0])
+    if default_value not in values:
+        default_value = values[0]
+    st.markdown(f"<h3 style='margin-top:1.6rem;'>{meta['label']}</h3>", unsafe_allow_html=True)
+    st.markdown('<div class="sn-choice-group">', unsafe_allow_html=True)
+    selected = st.radio(
+        meta["label"],
+        options=values,
+        index=values.index(default_value),
+        key=f"gcp_{question_id}",
+        label_visibility="collapsed",
+        format_func=lambda value, m=option_map: m[value],
+    )
+    st.markdown("</div>", unsafe_allow_html=True)
+    if meta.get("description"):
+        st.caption(meta["description"])
+    answers[question_id] = selected
+
+with st.container():
+    st.markdown('<div class="sn-sticky-footer"><div class="sn-footer-inner">', unsafe_allow_html=True)
+    footer_cols = st.columns([1, 1, 1])
+    skip_clicked = False
+    continue_clicked = False
+    with footer_cols[0]:
+        skip_clicked = st.button(
+            "Skip",
+            type="secondary",
+            use_container_width=True,
+            key="gcp_context_skip",
+        )
+    with footer_cols[2]:
+        continue_clicked = st.button(
+            "Continue",
+            type="primary",
+            use_container_width=True,
+            key="gcp_context_continue",
+        )
+    st.markdown(
+        "</div><div class=\"sn-footer-note\">Respond as a person receiving care even if you’re filling it for someone else.</div></div>",
+        unsafe_allow_html=True,
+    )
+
+if continue_clicked or skip_clicked:
+    st.switch_page("pages/gcp_recommendation.py")
