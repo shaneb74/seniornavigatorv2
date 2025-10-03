@@ -1,39 +1,53 @@
-import streamlit as st
+import io
 from pathlib import Path
+
+import streamlit as st
+from PIL import Image, UnidentifiedImageError
+
+# ------------------ Settings ------------------
+st.set_page_config(layout="wide")
 
 # Keep state
 if "care_context" not in st.session_state:
     st.session_state.care_context = {}
 ctx = st.session_state.care_context
 
-st.set_page_config(layout="wide")
 st.title("Welcome")
 st.caption("A simple starting point for families and professionals.")
 
-# ---------- CSS (smaller hero + card polish) ----------
+# ------------------ CSS ------------------
 st.markdown(
     """
     <style>
-      .block-container { padding-top: 1.5rem; padding-bottom: 3rem; }
+      .block-container { padding-top: 1.25rem; padding-bottom: 3rem; }
 
-      /* Toned-down hero */
-      .hero-wrap { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 3rem; align-items: center; }
-      @media (max-width: 1100px) { .hero-wrap { grid-template-columns: 1fr; gap: 1.5rem; } }
+      /* HERO */
+      .hero-wrap { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 3rem; align-items: center; }
+      @media (max-width: 1100px) { .hero-wrap { grid-template-columns: 1fr; gap: 1.25rem; } }
 
       .hero-h1 {
-        font-size: clamp(26px, 4.0vw, 42px);  /* smaller than before */
+        font-size: clamp(26px, 3.6vw, 40px);  /* toned down */
         line-height: 1.08;
         font-weight: 800;
         letter-spacing: .2px;
         margin: 0 0 .25rem 0;
       }
       .hero-h2 {
-        font-size: clamp(16px, 1.8vw, 18px);
+        font-size: clamp(16px, 1.7vw, 18px);
         color: rgba(0,0,0,0.72);
         font-weight: 500;
         margin: .5rem 0 1.0rem 0;
       }
       .hero-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+
+      /* Fake “polaroid” frame for hero image */
+      .img-polaroid img {
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 12px 22px rgba(0,0,0,.18);
+        border: 10px solid #fff;
+        transform: rotate(-3deg);
+      }
 
       .divider { margin: 1.5rem 0 1.25rem 0; border: none; border-top: 1px solid rgba(0,0,0,.08); }
       .section-kicker {
@@ -45,6 +59,7 @@ st.markdown(
         margin: .25rem 0 1rem 0;
       }
 
+      /* Cards */
       .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
       @media (max-width: 1000px) { .cards { grid-template-columns: 1fr; } }
 
@@ -52,44 +67,54 @@ st.markdown(
         background: #fff;
         border-radius: 16px;
         box-shadow: 0 8px 24px rgba(0,0,0,.08);
-        padding: 0.8rem 0.8rem 1rem 0.8rem;
+        padding: 0.9rem 0.9rem 1.1rem 0.9rem;
         border: 1px solid rgba(0,0,0,.05);
-      }
-      .card h4 { margin: .25rem 0 .25rem 0; font-size: 17px; }
-      .card .sub { color: rgba(0,0,0,.6); font-size: 14px; margin-bottom: .5rem; }
-
-      /* Apply border/shadow to st.image inside wrappers we mark */
-      .img-polaroid img {
-        border-radius: 10px;
-        background: #fff;
-        box-shadow: 0 10px 18px rgba(0,0,0,.18);
-        border: 8px solid #fff;   /* photo border look */
       }
       .img-card img {
         width: 100%;
         border-radius: 14px;
         box-shadow: 0 6px 16px rgba(0,0,0,.12);
       }
+      .card h4 { margin: .35rem 0 .3rem 0; font-size: 17px; }
+      .card .sub { color: rgba(0,0,0,.6); font-size: 14px; margin-bottom: .55rem; }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# ---------- Safe image helper: ALWAYS uses st.image ----------
-def show_image(path_str: str, *, width: int | str = "stretch", wrapper_class: str | None = None):
-    """Render image from static/… via st.image (works on Streamlit Cloud)."""
+# ------------------ Image loader that ALWAYS works ------------------
+def load_image_bytes(path_str: str) -> bytes | None:
+    """
+    Read an image file from disk, validate with PIL, and return raw bytes.
+    Works reliably on Streamlit Cloud regardless of current working dir.
+    """
     p = Path(path_str)
     if not p.exists():
         st.info(f"Add image at {path_str}")
+        return None
+    try:
+        with p.open("rb") as f:
+            data = f.read()
+        # Validate it’s an actual image
+        Image.open(io.BytesIO(data)).verify()
+        return data
+    except UnidentifiedImageError:
+        st.warning(f"{p.name} exists but isn't a valid image file. Replace it with PNG/JPG/WEBP.")
+    except Exception as e:
+        st.warning(f"Couldn't load {p.name}: {e}")
+    return None
+
+def show_image_bytes(path: str, *, width: int | str = "stretch", wrapper_class: str | None = None):
+    b = load_image_bytes(path)
+    if not b:
         return
     if wrapper_class:
         st.markdown(f'<div class="{wrapper_class}">', unsafe_allow_html=True)
-    # Accept int or the new string API ('stretch'/'content')
-    st.image(str(p), width=width if isinstance(width, int) else width)
+    st.image(b, width=width if isinstance(width, int) else width)
     if wrapper_class:
         st.markdown("</div>", unsafe_allow_html=True)
 
-# ============================= HERO =============================
+# ------------------ HERO ------------------
 with st.container():
     st.markdown('<div class="hero-wrap">', unsafe_allow_html=True)
 
@@ -107,9 +132,8 @@ with st.container():
         unsafe_allow_html=True,
     )
 
-    # Right: hero image (smaller) — served with st.image
-    show_image("static/images/Hero.png", width=420, wrapper_class="img-polaroid")
-
+    # Right: hero image (bytes → st.image), smaller to match your PDF
+    show_image_bytes("static/images/Hero.png", width=380, wrapper_class="img-polaroid")
     st.markdown("</div>", unsafe_allow_html=True)
 
     # Buttons under text
@@ -124,13 +148,13 @@ with st.container():
 st.markdown('<hr class="divider">', unsafe_allow_html=True)
 st.markdown('<div class="section-kicker">How we can help you</div>', unsafe_allow_html=True)
 
-# ============================= CARDS =============================
+# ------------------ CARDS ------------------
 st.markdown('<div class="cards">', unsafe_allow_html=True)
 
 # Card 1
 with st.container():
     st.markdown('<div class="card">', unsafe_allow_html=True)
-    show_image("static/images/Someone-Else.png", width="stretch", wrapper_class="img-card")
+    show_image_bytes("static/images/Someone-Else.png", width="stretch", wrapper_class="img-card")
     st.markdown("**I would like to support my loved ones**", unsafe_allow_html=True)
     st.markdown('<div class="sub">For someone</div>', unsafe_allow_html=True)
     col_a, col_b = st.columns([1, 1])
@@ -142,7 +166,7 @@ with st.container():
 # Card 2
 with st.container():
     st.markdown('<div class="card">', unsafe_allow_html=True)
-    show_image("static/images/Myself.png", width="stretch", wrapper_class="img-card")
+    show_image_bytes("static/images/Myself.png", width="stretch", wrapper_class="img-card")
     st.markdown("**I’m looking for support just for myself**", unsafe_allow_html=True)
     st.markdown('<div class="sub">For myself</div>', unsafe_allow_html=True)
     col_c, col_d = st.columns([1, 1])
