@@ -6,14 +6,13 @@ st.set_page_config(page_title="CCA Senior Navigator", layout="wide")
 
 # ========= Global CSS (single source of truth) =========
 def _inject_global_css():
-    # Use the single canonical file we agreed on
+    inject_theme()
     css_path = Path("static/style.css")
     if css_path.exists():
-        # cache-bust on change
-        v = int(css_path.stat().st_mtime)
-        st.markdown(f"<style>{css_path.read_text()}</style><!-- v:{v} -->", unsafe_allow_html=True)
-    else:
-        st.warning("Missing CSS: static/style.css")
+        extra = css_path.read_text().strip()
+        if extra:
+            v = int(css_path.stat().st_mtime)
+            st.markdown(f"<style>{extra}</style><!-- v:{v} -->", unsafe_allow_html=True)
 
 _inject_global_css()
 
