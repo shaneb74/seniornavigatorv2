@@ -1,4 +1,4 @@
-"""Concierge Care Hub with unified senior-friendly design."""
+"""Concierge Care Hub that adapts to the audiencing snapshot."""
 
 from __future__ import annotations
 
@@ -12,172 +12,174 @@ from audiencing import (
     snapshot_audiencing,
 )
 
+# Page config must be set before any UI output
 st.set_page_config(page_title="Concierge Care Hub", layout="wide")
 
+# ---------- Audiencing snapshot ----------
 state = ensure_audiencing_state()
 apply_audiencing_sanitizer(state)
 snapshot = snapshot_audiencing(state)
 st.session_state["audiencing_snapshot"] = snapshot
 
+# ---------- Session guard (fixed: closed parenthesis) ----------
 care_context = st.session_state.setdefault(
     "care_context",
     {
         "person_name": "Your Loved One",
         "gcp_answers": {},
-        "gcp_recommendation": None,
-        "gcp_cost": None,
+        "gcp_recommendation": None,  # 'In-home care' | 'Assisted living' | 'Memory care' | None
+        "gcp_cost": None,            # e.g., '$5,200/mo'
     },
 )
+ctx = st.session_state.care_context
+person_name = ctx.get("person_name", "Your Loved One")
 
-person_name = care_context.get("person_name") or "Your Loved One"
-if snapshot.get("entry") == "self":
-    person_name = "You"
+st.title("Dashboard")  # keep your H1; match your design copy if needed
 
-gcp_state = st.session_state.get("gcp", {})
-gcp_recommendation = gcp_state.get("recommended_setting")
-gcp_intensity = gcp_state.get("care_intensity")
-
-SETTING_COPY = {
-    "home": "In-home care",
-    "assisted": "Assisted living",
-    "memory": "Memory care",
-    "skilled-reserved": "Skilled nursing (reserved)",
-}
-INTENSITY_COPY = {
-    "low": "Low support",
-    "med": "Moderate support",
-    "high": "High support",
-}
-
-recommendation_subtitle = None
-if gcp_recommendation:
-    setting_label = SETTING_COPY.get(gcp_recommendation, gcp_recommendation.title())
-    intensity_label = INTENSITY_COPY.get(gcp_intensity, gcp_intensity)
-    recommendation_subtitle = (
-        f"Recommendation: {setting_label}" + (f" • {intensity_label}" if intensity_label else "")
-    )
-
-flags = snapshot.get("flags", {})
-visibility = snapshot.get("visibility", {})
-
-if flags.get("medicaid"):
-    st.markdown(
-        "<div class='sn-banner'>🩺 <div>Medicaid is on file. We’ll highlight off-ramp options and Cost Planner shortcuts with this in mind.</div></div>",
-        unsafe_allow_html=True,
-    )
-
-if URGENT_FEATURE_FLAG and flags.get("urgent"):
-    st.markdown(
-        "<div class='sn-banner sn-banner--success'>⚡ <div>Urgent case noted. Advisors will prioritize quicker responses.</div></div>",
-        unsafe_allow_html=True,
-    )
-
-chip_text = "For yourself"
-if snapshot.get("entry") == "proxy":
-    chip_text = f"For someone {person_name}"
-elif snapshot.get("entry") == "pro":
-    chip_text = "Professional mode"
-
+# ---------- Hub-only CSS fixes ----------
+# 1) Nuke any global "card decorators" that create empty rounded boxes above content.
+#    These often target Streamlit block wrappers or inject ::before/::after backgrounds.
 st.markdown(
-    f"""
-<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-top:1.6rem;">
-  <div>
-    <h1 style="margin-bottom:0.2rem;">Concierge Care Hub</h1>
-    <p style="color:#475569; max-width:620px;">Keep everything for {person} organized — recommendations, costs, and ways to get help.</p>
-  </div>
-  <div class="sn-chip">{chip}</div>
-</div>
-""".format(person=person_name, chip=chip_text),
+    """
+    <style>
+      /* Scope to this page only by wrapping all below in .hub-scope */
+      .hub-scope [data-testid="stVerticalBlock"],
+      .hub-scope [data-testid="stHorizontalBlock"] {
+        /* Remove any background/box/shadow/min-height global decorations */
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+        outline: none !important;
+        min-height: auto !important;
+      }
+      /* Kill pseudo-element decorations that some themes inject */
+      .hub-scope *::before,
+      .hub-scope *::after {
+        box-shadow: none !important;
+        background: none !important;
+      }
+
+      /* Our actual cards */
+      .sn-card {
+        background: #fff;
+        border: 1px solid rgba(2,6,23,0.08);
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(2,6,23,0.06);
+        padding: 22px;
+        margin: 24px 0;
+      }
+      .sn-title { font-weight: 800; font-size: 18px; margin: 0 0 6px 0; }
+      .sn-subtle { color: #475569; margin: 0 0 12px 0; }
+      .sn-status {
+        font-size: 12px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(2, 6, 23, 0.08);
+        background: #F8FAFC;
+        display: inline-block;
+      }
+      .sn-card .stButton>button {
+        padding: 10px 14px;
+        border-radius: 10px;
+        font-weight: 600;
+      }
+    </style>
+    """,
     unsafe_allow_html=True,
 )
 
-tiles = [
-    {
-        "key": "tile_gcp",
-        "badge": "Guided Care Plan",
-        "title": "Understand the situation",
-        "subtitle": recommendation_subtitle or "Capture needs, risks, and preferences in five steps.",
-        "description": "See or update the Guided Care Plan for actionable recommendations.",
-        "cta": "See responses" if recommendation_subtitle else "Start now",
-        "page": "pages/gcp.py",
-    },
-    {
-        "key": "tile_cost",
-        "badge": "Cost Estimator",
-        "title": "Understand the costs",
-        "subtitle": None,
-        "description": f"Estimate monthly costs and offsets tailored for {'you' if person_name == 'You' else person_name}.",
-        "cta": "Open cost estimator",
-        "page": "pages/cost_planner.py",
-    },
-    {
-        "key": "tile_advisor",
-        "badge": "Get Connected",
-        "title": "Connect with an advisor",
-        "subtitle": "Whenever you’re ready to meet with an advisor.",
-        "description": "Share this snapshot so our team can coordinate services and paperwork.",
-        "cta": "Get connected",
-        "page": "pages/pfma.py",
-    },
-    {
-        "key": "tile_ai",
-        "badge": "AI Agent",
-        "title": "AI assistance",
-        "subtitle": "Receive instant, tailored assistance from our advanced AI chat.",
-        "description": "Ask questions any time for quick answers and next steps.",
-        "cta": "Open AI agent",
-        "page": "pages/ai_advisor.py",
-    },
-]
+# ---------- Page scope wrapper to confine the resets above ----------
+st.markdown('<div class="hub-scope">', unsafe_allow_html=True)
 
-for idx, tile in enumerate(tiles):
-    if idx % 2 == 0:
-        cols = st.columns(2, gap="large")
-    col = cols[idx % 2]
-    with col:
-        st.markdown('<div class="sn-dashboard-card">', unsafe_allow_html=True)
-        st.markdown(f"<span class='sn-chip'>{tile['badge']}</span>", unsafe_allow_html=True)
-        st.markdown(f"<h3>{tile['title']}</h3>", unsafe_allow_html=True)
-        if tile.get("subtitle"):
-            st.markdown(
-                f"<p class='sn-subtitle'>{tile['subtitle']}</p>",
-                unsafe_allow_html=True,
-            )
-        st.markdown(
-            f"<p class='sn-subtitle' style='margin-top:0.4rem;'>{tile['description']}</p>",
-            unsafe_allow_html=True,
-        )
-        clicked = st.button(
-            tile["cta"],
-            key=tile["key"],
-            type="primary",
-        )
-        st.markdown("</div>", unsafe_allow_html=True)
-        if clicked:
-            st.switch_page(tile["page"])
+def card(
+    title: str,
+    subtitle: str,
+    cta_label: str,
+    cta_key: str,
+    on_click_page: str,
+    status: str | None = None,
+) -> None:
+    st.markdown('<div class="sn-card">', unsafe_allow_html=True)
+    # Use Streamlit columns for layout; they stay INSIDE our card because the card
+    # is a real DOM node, not a pseudo-element.
+    c1, c2, c3 = st.columns([6, 2, 2], vertical_alignment="center")
+    with c1:
+        st.markdown(f'<p class="sn-title">{title}</p>', unsafe_allow_html=True)
+        st.markdown(f'<p class="sn-subtle">{subtitle}</p>', unsafe_allow_html=True)
+    with c2:
+        if st.button(cta_label, key=cta_key):
+            st.switch_page(on_click_page)
+    with c3:
+        if status:
+            st.markdown(f'<span class="sn-status">{status}</span>', unsafe_allow_html=True)
+        else:
+            st.markdown("&nbsp;", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-hidden_messages = []
-if not visibility.get("partner", True):
-    hidden_messages.append("Partner planning tools are hidden for single-household scenarios.")
-if not visibility.get("home", True):
-    hidden_messages.append("Homeownership tasks are hidden because you told us the home isn’t owned.")
-if not visibility.get("veteran", True):
-    hidden_messages.append("VA benefits are hidden when the person isn’t a veteran.")
+# ---------- Guided Care Plan ----------
+gcp_completed = bool(ctx.get("gcp_recommendation")) or bool(ctx.get("gcp_answers"))
+rec_text = ctx.get("gcp_recommendation") or "Understand the situation"
+cost_text = ctx.get("gcp_cost") or "In progress"
 
-if hidden_messages:
-    items = "".join(f"<li>{msg}</li>" for msg in hidden_messages)
-    st.markdown(
-        f"<div class='sn-choice-note'><strong>Why some items are hidden:</strong><ul style='margin:0.6rem 0 0 1.2rem;'>{items}</ul></div>",
-        unsafe_allow_html=True,
-    )
+card(
+    title="Guided Care Plan",
+    subtitle=(
+        f"{rec_text} • {cost_text}"
+        if gcp_completed
+        else f"See what we learned from your answers and refine the recommendation for {person_name}."
+    ),
+    cta_label=("Open" if gcp_completed else "Start guided plan"),
+    cta_key="hub_gcp_start",
+    on_click_page="pages/gcp.py",
+    status=("Completed ✅" if gcp_completed else "In progress"),
+)
 
-with st.container():
-    st.markdown('<div class="sn-dashboard-note">Prefer a fresh start? Resetting clears responses and estimates so you can begin again.</div>', unsafe_allow_html=True)
-    if st.button("Start from scratch", key="hub_reset"):
-        reset_audiencing_state()
-        st.session_state.pop("gcp_answers", None)
-        st.session_state.pop("gcp", None)
-        st.session_state.pop("cost_planner", None)
-        st.session_state.pop("audiencing_snapshot", None)
-        st.session_state.pop("care_context", None)
-        st.rerun()
+# ---------- Cost Planner ----------
+card(
+    title="Cost Estimator",
+    subtitle=(
+        f"Assess the total cost scenarios across options for {person_name}. "
+        f"The estimate will update based on your guided plan."
+    ),
+    cta_label="Open estimator",
+    cta_key="hub_open_cp",
+    on_click_page="pages/cost_planner.py",
+)
+
+# ---------- Plan for My Advisor ----------
+card(
+    title="Plan for My Advisor",
+    subtitle="Book time with a concierge advisor and share your plan.",
+    cta_label="Get connected",
+    cta_key="hub_pfma",
+    on_click_page="pages/pfma.py",
+)
+
+# ---------- Medication Management ----------
+card(
+    title="Medication Management",
+    subtitle="Keep meds on track with simple reminders and checks.",
+    cta_label="Open",
+    cta_key="hub_meds",
+    on_click_page="pages/medication_management.py",
+)
+
+# ---------- Risk Navigator ----------
+card(
+    title="Risk Navigator",
+    subtitle="Quick safety check to reduce avoidable risks at home.",
+    cta_label="Run check",
+    cta_key="hub_risk",
+    on_click_page="pages/risk_navigator.py",
+)
+
+# ---------- Assessment (last) ----------
+card(
+    title="Assessment",
+    subtitle="Additional screening tools and forms.",
+    cta_label="Open assessment",
+    cta_key="hub_assess",
+    on_click_page="pages/care_plan_confirm.py",
+)
+
+st.markdown("</div>", unsafe_allow_html=True)  # end .hub-scope

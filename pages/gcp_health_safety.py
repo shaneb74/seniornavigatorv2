@@ -7,71 +7,66 @@ import streamlit as st
 from guided_care_plan import ensure_gcp_session, get_question_meta, render_stepper
 
 SECTION_QUESTIONS = [
+    "falls_history",
     "cognition",
-    "behavior_risks",
-    "falls",
-    "med_mgmt",
-    "home_safety",
-    "supervision",
+    "behavior_signals",
+    "supervision_need",
 ]
 
-answers, _ = ensure_gcp_session()
 
-st.set_page_config(page_title="GCP – Health & Safety", layout="wide")
+def _ensure_widget_defaults(answers):
+    for question_id in SECTION_QUESTIONS:
+        meta = get_question_meta(question_id)
+        options = [option["value"] for option in meta["options"]]
+        default_value = answers.get(question_id) or options[0]
+        if default_value not in options:
+            default_value = options[0]
+        st.session_state.setdefault(f"gcp_{question_id}", default_value)
 
-st.markdown("""
-<h2 style="text-transform:uppercase; letter-spacing:0.08em; color:#6b7280; font-size:0.95rem;">Guided Care Plan</h2>
-<h1 style="margin-bottom:0.4rem;">Health & Safety</h1>
-<p style="max-width:660px; color:#475569;">Tell us about memory, behaviors, falls, medications, and supervision so we can understand any safety risks.</p>
-""", unsafe_allow_html=True)
 
-render_stepper(2)
-
-for question_id in SECTION_QUESTIONS:
+def _render_radio(question_id: str) -> str:
     meta = get_question_meta(question_id)
     option_map = {opt["value"]: opt["label"] for opt in meta["options"]}
     values = list(option_map.keys())
-    default_value = answers.get(question_id, values[0])
-    if default_value not in values:
-        default_value = values[0]
-    st.markdown(f"<h3 style='margin-top:1.6rem;'>{meta['label']}</h3>", unsafe_allow_html=True)
-    st.markdown('<div class="sn-choice-group">', unsafe_allow_html=True)
-    selected = st.radio(
-        meta["label"],
-        options=values,
-        index=values.index(default_value),
-        key=f"gcp_{question_id}",
-        label_visibility="collapsed",
-        format_func=lambda value, m=option_map: m[value],
-    )
-    st.markdown("</div>", unsafe_allow_html=True)
-    if meta.get("description"):
-        st.caption(meta["description"])
-    answers[question_id] = selected
-
-with st.container():
-    st.markdown('<div class="sn-sticky-footer"><div class="sn-footer-inner">', unsafe_allow_html=True)
-    footer_cols = st.columns([1, 1, 1])
-    skip_clicked = False
-    continue_clicked = False
-    with footer_cols[0]:
-        skip_clicked = st.button(
-            "Skip",
-            type="secondary",
-            use_container_width=True,
-            key="gcp_health_skip",
+    selected_value = st.session_state.get(f"gcp_{question_id}", values[0])
+    try:
+        index = values.index(selected_value)
+    except ValueError:
+        index = 0
+    with st.container(border=True):
+        choice = st.radio(
+            meta["label"],
+            options=values,
+            index=index,
+            key=f"gcp_{question_id}",
+            format_func=lambda value: option_map[value],
         )
-    with footer_cols[2]:
-        continue_clicked = st.button(
-            "Continue",
-            type="primary",
-            use_container_width=True,
-            key="gcp_health_continue",
-        )
-    st.markdown(
-        "</div><div class=\"sn-footer-note\">Respond as a person receiving care even if you’re filling it for someone else.</div></div>",
-        unsafe_allow_html=True,
-    )
+        if meta.get("description"):
+            st.caption(meta["description"])
+    return choice
 
-if continue_clicked or skip_clicked:
-    st.switch_page("pages/gcp_context_prefs.py")
+
+answers, _ = ensure_gcp_session()
+_ensure_widget_defaults(answers)
+
+st.title("Guided Care Plan — Health & Safety")
+st.caption("Step 2 of 5")
+
+render_stepper(2)
+
+error_placeholder = st.empty()
+
+with st.form("gcp_health_safety_form"):
+    selections = {qid: _render_radio(qid) for qid in SECTION_QUESTIONS}
+    submitted = st.form_submit_button("Continue to Context & Preferences", type="primary")
+
+if submitted:
+    missing = [qid for qid, value in selections.items() if value is None]
+    if missing:
+        error_placeholder.error("Answer each question before moving on.")
+    else:
+        answers.update(selections)
+        st.switch_page("pages/gcp_context_prefs.py")
+
+if st.button("Back to Daily Life"):
+    st.switch_page("pages/gcp_daily_life.py")
