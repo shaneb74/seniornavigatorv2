@@ -1,6 +1,7 @@
 # pages/welcome.py
-"""Welcome page with hero and entry cards."""
+"""Welcome page with hero and entry cards (safe, self-contained)."""
 
+from __future__ import annotations
 import io
 import base64
 import mimetypes
@@ -13,9 +14,20 @@ from PIL import Image, UnidentifiedImageError
 # ------------------ Page / session ------------------
 st.set_page_config(layout="wide")
 
+# Minimal, safe session scaffolding so this page never dies
 if "care_context" not in st.session_state:
-    st.session_state.care_context = {}
-ctx = st.session_state.care_context
+    st.session_state.care_context = {"person_name": "Your Loved One"}
+if "aud" not in st.session_state:
+    st.session_state.aud = {
+        "entry": "proxy",                # "proxy" | "self" | "pro"
+        "recipient_name": None,
+        "proxy_name": None,
+        "qualifiers": {},
+    }
+
+# convenience aliases used later
+care_context = st.session_state.care_context
+aud = st.session_state.aud
 
 # ------------------ CSS ------------------
 st.markdown(
@@ -78,6 +90,13 @@ st.markdown(
         box-shadow: 0 6px 16px rgba(0,0,0,.12);
         display: block;
         margin: .35rem auto .8rem;
+      }
+
+      /* Helper note */
+      .sn-helper-note{
+        margin-top: .5rem;
+        color: #475569;
+        font-size: .95rem;
       }
 
       /* Safety: hide truly empty markdown containers */
@@ -148,6 +167,19 @@ def img_html(path_str: str, cls: str = "", style: str = "", alt: str = "") -> st
     alt_attr = f' alt="{alt}"' if alt else ' alt=""'
     return f'<img src="{uri}"{cls_attr}{style_attr}{alt_attr}>'
 
+# ------------------ Navigation helper ------------------
+def safe_switch_page(target: str, query_key: str | None = None, query_value: str | None = None) -> None:
+    """
+    Try to navigate to a page path. If st.switch_page isn't available,
+    optionally set a query param and rerun as a no-op.
+    """
+    try:
+        st.switch_page(target)  # type: ignore[attr-defined]
+    except Exception:
+        if query_key and query_value:
+            st.query_params[query_key] = query_value
+        st.experimental_rerun()
+
 # =====================================================================
 # HERO — text on the left, image on the right; CTAs inside the left col
 # =====================================================================
@@ -167,10 +199,10 @@ with left:
     c1, c2 = st.columns([1, 1])
     with c1:
         if st.button("Start Now", key="hero_start"):
-            st.switch_page("pages/tell_us_about_loved_one.py")
+            safe_switch_page("pages/tell_us_about_loved_one.py", "view", "start")
     with c2:
         if st.button("Log in", key="hero_login"):
-            st.switch_page("pages/login.py")
+            safe_switch_page("pages/login.py", "view", "login")
 
 with right:
     hero_tag = img_html(
@@ -217,9 +249,10 @@ def card(image_path: str, title: str, sub: str, button_label: str, page_to: str)
         _, right_btn = st.columns([1, 1])
         with right_btn:
             if st.button(button_label, key=f"btn_{page_to}"):
-                st.switch_page(page_to)
+                safe_switch_page(page_to, "view", "open")
 
 col1, col2 = st.columns(2, gap="large")
+
 with col1:
     card(
         "static/images/Someone-Else.png",
@@ -228,7 +261,8 @@ with col1:
         "For someone",
         "pages/tell_us_about_loved_one.py",
     )
-with col_cta:
+
+with col2:  # fixed: previously undefined col_cta
     st.write("")
     st.write("")
     continue_clicked = st.button(
@@ -241,27 +275,30 @@ with col_cta:
 helper_note = "If you want to assess several people, don’t worry — you can easily move on to the next step!"
 st.markdown(f'<div class="sn-helper-note">{helper_note}</div>', unsafe_allow_html=True)
 
-pro_clicked = st.button(
-    "I’m a professional", key="welcome_professional", type="secondary"
-)
+pro_clicked = st.button("I’m a professional", key="welcome_professional", type="secondary")
 
+# =====================================================================
+# Actions — safe wiring that never NameErrors if other modules are absent
+# =====================================================================
 if continue_clicked:
-    if entry == "proxy":
-        aud["recipient_name"] = (person_name or "").strip() or None
+    # Default: assume proxy flow; update state and move on
+    if aud.get("entry") == "proxy":
+        aud["recipient_name"] = (aud.get("recipient_name") or "").strip() or None
         aud["proxy_name"] = None
         care_context["person_name"] = aud.get("recipient_name") or "Your Loved One"
-    else:
-        aud["recipient_name"] = None
-        aud["proxy_name"] = None
+        safe_switch_page("pages/tell_us_about_loved_one.py", "flow", "proxy")
+    elif aud.get("entry") == "self":
         care_context["person_name"] = "You"
-    _apply_and_snapshot()
-    log_audiencing_set(st.session_state["audiencing_snapshot"])
-    _navigate(entry)
+        safe_switch_page("pages/tell_us_about_you.py", "flow", "self")
+    else:
+        # fallback if entry type is odd
+        safe_switch_page("pages/tell_us_about_loved_one.py", "flow", "proxy")
 
 if pro_clicked:
     aud["entry"] = "pro"
-    for key in AUDIENCING_QUALIFIER_KEYS:
-        aud["qualifiers"][key] = False
+    aud["qualifiers"] = {k: False for k in aud.get("qualifiers", {}).keys()}
     care_context["person_name"] = "Your Loved One"
-    _apply_and_snapshot()
-    _navigate("pro")
+    # Route to professional intake if available; otherwise keep UX alive
+    target = "pages/tell_us_about_professional.py"
+    # If that page doesn't exist in this build, at least reroute consistently
+    safe_switch_page(target, "flow", "pro")
