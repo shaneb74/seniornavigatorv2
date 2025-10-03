@@ -1,6 +1,7 @@
 """Self-entry audiencing flow with qualifier toggles."""
-
 from __future__ import annotations
+
+
 from ui.theme import inject_theme
 
 import streamlit as st
@@ -14,10 +15,11 @@ from audiencing import (
     log_audiencing_set,
     snapshot_audiencing,
 
+
+)
 inject_theme()
 st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
-)
 
 st.set_page_config(page_title="Tell Us About You", layout="wide")
 

@@ -1,6 +1,7 @@
 """Guided Care Plan - Daily Life & Support section."""
-
 from __future__ import annotations
+
+
 
 import streamlit as st
 

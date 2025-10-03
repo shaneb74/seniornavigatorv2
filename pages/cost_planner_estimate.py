@@ -13,10 +13,11 @@ from cost_planner_shared import (
     recompute_costs,
     set_numeric,
 
+
+)
 inject_theme()
 st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
-)
 
 ensure_core_state()
 cp = st.session_state["cost_planner"]
