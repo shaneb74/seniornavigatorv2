@@ -1,6 +1,5 @@
 # pages/welcome.py
 import io
-import base64
 from pathlib import Path
 
 import streamlit as st
@@ -22,37 +21,28 @@ st.markdown(
     <style>
       .block-container { padding-top: 1.25rem; padding-bottom: 3rem; }
 
-      /* HERO */
-      .hero-wrap { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 3rem; align-items: center; }
-      @media (max-width: 1100px) { .hero-wrap { grid-template-columns: 1fr; gap: 1.25rem; } }
-
+      /* HERO text */
       .hero-h1 {
-        font-size: clamp(26px, 3.6vw, 40px);
-        line-height: 1.08;
+        font-size: clamp(28px, 4.2vw, 44px);
+        line-height: 1.06;
         font-weight: 800;
         letter-spacing: .2px;
-        margin: 0 0 .25rem 0;
+        margin: 0 0 .3rem 0;
       }
       .hero-h2 {
-        font-size: clamp(16px, 1.7vw, 18px);
+        font-size: clamp(16px, 1.8vw, 18px);
         color: rgba(0,0,0,0.72);
         font-weight: 500;
         margin: .5rem 0 1.0rem 0;
       }
 
-      /* Photo looks */
+      /* HERO photo “polaroid” look */
       .hero-photo {
         border-radius: 8px;
         background: #fff;
         box-shadow: 0 12px 22px rgba(0,0,0,.18);
         border: 10px solid #fff;
         transform: rotate(-3deg);
-        display: block;
-      }
-      .card-photo {
-        width: 100%;
-        border-radius: 14px;
-        box-shadow: 0 6px 16px rgba(0,0,0,.12);
         display: block;
       }
 
@@ -66,27 +56,34 @@ st.markdown(
         margin: .25rem 0 1rem 0;
       }
 
-      /* Cards */
-      .sn-card {
-        background: #fff;
+      /* Style Streamlit bordered containers as cards */
+      div[data-testid="stVerticalBlockBorderWrapper"] {
+        border: 1px solid rgba(0,0,0,.06);
         border-radius: 16px;
         box-shadow: 0 8px 24px rgba(0,0,0,.08);
-        padding: 0.9rem 0.9rem 1.1rem 0.9rem;
-        border: 1px solid rgba(0,0,0,.05);
       }
-      .sn-card h4 { margin: .35rem 0 .3rem 0; font-size: 17px; }
-      .sn-card .sub { color: rgba(0,0,0,.6); font-size: 14px; margin-bottom: .55rem; }
+      /* Ensure inner content has breathing room */
+      div[data-testid="stVerticalBlock"] > div:has(> div[data-testid="stVerticalBlockBorderWrapper"]) {
+        padding: 0 !important;
+      }
 
-      /* Safety net: hide truly empty markdown containers (prevents ghost bars) */
-      div[data-testid="stMarkdownContainer"]:empty { display: none !important; }
+      /* Card photo polish */
+      .card-photo img {
+        width: 100%;
+        border-radius: 14px;
+        box-shadow: 0 6px 16px rgba(0,0,0,.12);
+        display: block;
+      }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# ------------------ Image helpers ------------------
+# ------------------ Image loader (reliable on Cloud) ------------------
 def load_bytes(path_str: str) -> bytes | None:
-    """Read image as bytes and validate with PIL."""
+    """
+    Read image as bytes and validate with PIL.
+    """
     p = Path(path_str)
     if not p.exists():
         st.info(f"Add image at {path_str}")
@@ -101,44 +98,23 @@ def load_bytes(path_str: str) -> bytes | None:
         st.warning(f"Couldn't load {p.name}: {e}")
     return None
 
-def img_tag_base64(path_str: str, cls: str = "", width_px: int | None = None) -> str | None:
-    """Return a single <img> tag with base64 data URI (no external paths)."""
-    data = load_bytes(path_str)
-    if not data:
-        return None
-    # Guess mime from suffix
-    suffix = Path(path_str).suffix.lower()
-    mime = "image/png" if suffix == ".png" else "image/jpeg"
-    b64 = base64.b64encode(data).decode("ascii")
-    style = f"width:{width_px}px;" if isinstance(width_px, int) else ""
-    return f'<img class="{cls}" src="data:{mime};base64,{b64}" style="{style}">'
+# =====================================================================
+# HERO — text on the left, image on the right (all inside one row)
+# =====================================================================
+left, right = st.columns([7, 5], gap="large")
 
-# ------------------ HERO ------------------
-with st.container():
-    st.markdown('<div class="hero-wrap">', unsafe_allow_html=True)
-
-    # Left: text (single markdown block)
+with left:
     st.markdown(
         """
-        <div>
-          <div class="hero-h1">YOUR COMPASSIONATE<br>GUIDE TO SENIOR<br>CARE DECISIONS</div>
-          <div class="hero-h2">
-            Every care decision matters. We’re here to guide you — at no cost —
-            whether planning for yourself or a loved one.
-          </div>
+        <div class="hero-h1">YOUR COMPASSIONATE<br>GUIDE TO SENIOR<br>CARE DECISIONS</div>
+        <div class="hero-h2">
+          Every care decision matters. We’re here to guide you — at no cost —
+          whether planning for yourself or a loved one.
         </div>
         """,
         unsafe_allow_html=True,
     )
-
-    # Right: hero image (single markdown with base64 <img>)
-    hero_img = img_tag_base64("static/images/Hero.png", cls="hero-photo", width_px=420)
-    if hero_img:
-        st.markdown(hero_img, unsafe_allow_html=True)
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    # Buttons under text
+    # CTAs INSIDE the hero (left) column
     c1, c2 = st.columns([1, 1])
     with c1:
         if st.button("Start Now", key="hero_start"):
@@ -147,25 +123,41 @@ with st.container():
         if st.button("Log in", key="hero_login"):
             st.switch_page("pages/login.py")
 
-# ------------------ CARDS ------------------
+with right:
+    hero_b = load_bytes("static/images/Hero.png")
+    if hero_b:
+        # Use markdown to apply the polaroid class; explicit width prevents tiny image
+        st.markdown(
+            f'<img class="hero-photo" src="data:image/png;base64,{Image.open(io.BytesIO(hero_b))._repr_png_().decode() if hasattr(Image.open(io.BytesIO(hero_b)), "_repr_png_") else ""}" style="width:420px;">',
+            unsafe_allow_html=True,
+        )
+        # Fallback if PIL object doesn't expose _repr_png_, just use st.image
+        if not hero_b:
+            st.image(hero_b, width=420)
+
 st.markdown('<hr class="divider">', unsafe_allow_html=True)
 st.markdown('<div class="section-kicker">How we can help you</div>', unsafe_allow_html=True)
 
+# =====================================================================
+# CARDS — each card is a real Streamlit bordered container
+# =====================================================================
 def card(image_path: str, title: str, sub: str, button_label: str, page_to: str) -> None:
-    """Render one card: all visuals in ONE markdown call (no ghost wrappers), button via Streamlit."""
-    img_html = img_tag_base64(image_path, cls="card-photo")
-    html = f'''
-      <div class="sn-card">
-        {img_html or ""}
-        <h4><strong>{title}</strong></h4>
-        <div class="sub">{sub}</div>
-      </div>
-    '''
-    st.markdown(html, unsafe_allow_html=True)
-    _, right = st.columns([1, 1])
-    with right:
-        if st.button(button_label, key=f"btn_{page_to}"):
-            st.switch_page(page_to)
+    with st.container(border=True):
+        # Image first
+        b = load_bytes(image_path)
+        if b:
+            # Render image and give it a class so it gets rounded/shadowed
+            st.markdown('<div class="card-photo">', unsafe_allow_html=True)
+            st.image(b, width="stretch")  # fills the card width
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        # Text + CTA inside the same container (so the button is inside the card)
+        st.markdown(f"**{title}**")
+        st.caption(sub)
+        _, right_btn = st.columns([1, 1])
+        with right_btn:
+            if st.button(button_label, key=f"btn_{page_to}"):
+                st.switch_page(page_to)
 
 col1, col2 = st.columns(2, gap="large")
 with col1:
