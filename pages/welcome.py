@@ -13,57 +13,75 @@ if "care_context" not in st.session_state:
     st.session_state.care_context = {}
 ctx = st.session_state.care_context
 
-st.title("Welcome")
-st.caption("A simple starting point for families and professionals.")
+# (Hide the extra top heading to match the comp)
+# st.title("Welcome")
+# st.caption("A simple starting point for families and professionals.")
 
 # ------------------ CSS ------------------
 st.markdown(
     """
     <style>
-      .block-container { padding-top: 1.25rem; padding-bottom: 3rem; }
+      /* Keep layout crisp on large screens */
+      .block-container{
+        max-width: 1120px;
+        margin: 0 auto;
+        padding-top: 1.25rem;
+        padding-bottom: 3rem;
+      }
 
       /* HERO text */
-      .hero-h1 {
+      .hero-h1{
         font-size: clamp(28px, 4.2vw, 44px);
         line-height: 1.06;
         font-weight: 800;
         letter-spacing: .2px;
         margin: 0 0 .3rem 0;
       }
-      .hero-h2 {
+      .hero-h2{
         font-size: clamp(16px, 1.8vw, 18px);
         color: rgba(0,0,0,0.72);
         font-weight: 500;
         margin: .5rem 0 1.0rem 0;
       }
 
-      /* HERO photo “polaroid” look */
-      .hero-photo {
+      /* HERO photo “polaroid” look — slightly smaller, gentler tilt */
+      .hero-photo{
         border-radius: 8px;
         background: #fff;
-        box-shadow: 0 12px 22px rgba(0,0,0,.18);
+        box-shadow: 0 10px 20px rgba(0,0,0,.16);
         border: 10px solid #fff;
-        transform: rotate(-3deg);
+        transform: rotate(-2deg);
         display: block;
       }
 
-      .divider { margin: 1.5rem 0 1.25rem 0; border: none; border-top: 1px solid rgba(0,0,0,.08); }
-      .section-kicker {
+      .divider{ margin: 1.25rem 0 1rem; border: none; border-top: 1px solid rgba(0,0,0,.08); }
+      .section-kicker{
         font-size: clamp(18px, 2.2vw, 22px);
         font-weight: 800;
-        letter-spacing: .10em;
+        letter-spacing: .08em;
         text-transform: uppercase;
         color: #2a2a2a;
         margin: .25rem 0 1rem 0;
       }
 
-      /* Card polish (works with Streamlit bordered containers) */
-      .card-photo {
-        width: 100%;
+      /* Style Streamlit bordered containers as cards */
+      div[data-testid="stVerticalBlockBorderWrapper"]{
+        border: 1px solid rgba(0,0,0,.06);
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0,0,0,.08);
+      }
+
+      /* Card image: a bit smaller & centered */
+      .card-photo{
+        width: clamp(280px, 78%, 420px);
         border-radius: 14px;
         box-shadow: 0 6px 16px rgba(0,0,0,.12);
         display: block;
+        margin: .35rem auto .8rem;
       }
+
+      /* Safety: hide truly empty markdown containers */
+      div[data-testid="stMarkdownContainer"]:empty{ display:none !important; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -99,17 +117,18 @@ def data_uri(path_str: str) -> str | None:
         mime = "image/webp"
     return f"data:{mime};base64,{base64.b64encode(b).decode('ascii')}"
 
-def img_html(path_str: str, cls: str = "", style: str = "") -> str | None:
+def img_html(path_str: str, cls: str = "", style: str = "", alt: str = "") -> str | None:
     """Single <img> tag with base64 data (prevents URL/path issues)."""
     uri = data_uri(path_str)
     if not uri:
         return None
-    style_attr = f' style="{style}"' if style else ""
     cls_attr = f' class="{cls}"' if cls else ""
-    return f'<img src="{uri}"{cls_attr}{style_attr}>'
+    style_attr = f' style="{style}"' if style else ""
+    alt_attr = f' alt="{alt}"' if alt else ' alt=""'
+    return f'<img src="{uri}"{cls_attr}{style_attr}{alt_attr}>'
 
 # =====================================================================
-# HERO — text on the left, image on the right
+# HERO — text on the left, image on the right; CTAs inside the left col
 # =====================================================================
 left, right = st.columns([7, 5], gap="large")
 
@@ -124,7 +143,6 @@ with left:
         """,
         unsafe_allow_html=True,
     )
-    # CTAs INSIDE the hero (left) column
     c1, c2 = st.columns([1, 1])
     with c1:
         if st.button("Start Now", key="hero_start"):
@@ -134,7 +152,12 @@ with left:
             st.switch_page("pages/login.py")
 
 with right:
-    hero_tag = img_html("static/images/Hero.png", cls="hero-photo", style="width:420px;")
+    hero_tag = img_html(
+        "static/images/Hero.png",
+        cls="hero-photo",
+        style="width:400px;",  # slightly smaller than before
+        alt="Caregiver smiling with older adult"
+    )
     if hero_tag:
         st.markdown(hero_tag, unsafe_allow_html=True)
 
@@ -142,14 +165,14 @@ st.markdown('<hr class="divider">', unsafe_allow_html=True)
 st.markdown('<div class="section-kicker">How we can help you</div>', unsafe_allow_html=True)
 
 # =====================================================================
-# CARDS — each card is a bordered Streamlit container (button inside)
+# CARDS — each card is a bordered Streamlit container (CTA inside)
 # =====================================================================
 def card(image_path: str, title: str, sub: str, button_label: str, page_to: str) -> None:
     with st.container(border=True):
         tag = img_html(
             image_path,
             cls="card-photo",
-            style="width:clamp(300px, 80%, 440px);"  # <-- adjust here if you want
+            alt=title
         )
         if tag:
             st.markdown(tag, unsafe_allow_html=True)
@@ -159,7 +182,6 @@ def card(image_path: str, title: str, sub: str, button_label: str, page_to: str)
         with right_btn:
             if st.button(button_label, key=f"btn_{page_to}"):
                 st.switch_page(page_to)
-
 
 col1, col2 = st.columns(2, gap="large")
 with col1:
