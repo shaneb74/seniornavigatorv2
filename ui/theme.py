@@ -1,5 +1,7 @@
-from __future__ import annotations
+# ui/theme.py
+# Design tokens + global CSS. Exposes BOTH inject() and inject_theme().
 
+from __future__ import annotations
 import streamlit as st
 
 TOKENS = {
@@ -440,6 +442,18 @@ button[kind]:focus {{
 </style>
 """
 
+def _already_injected() -> bool:
+    return "_sn_theme_injected" in st.session_state
+
+def _mark_injected() -> None:
+    st.session_state["_sn_theme_injected"] = True
+
+def inject_theme() -> None:
+    """Primary API expected by app.py"""
+    if not _already_injected():
+        st.markdown(CSS, unsafe_allow_html=True)
+        _mark_injected()
+
 def inject() -> None:
-    """Inject the global Senior Navigator theme."""
-    st.markdown(CSS, unsafe_allow_html=True)
+    """Alias kept for older imports."""
+    inject_theme()
