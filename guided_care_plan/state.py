@@ -79,19 +79,21 @@ def render_stepper(current_step: int) -> None:
     """Render a simple progress stepper for the Guided Care Plan."""
 
     total_steps = len(STEP_TITLES)
-    current = max(0, min(current_step, total_steps))
-    ratio = current / total_steps if total_steps else 0
-    st.markdown(
-        f"<div class='sn-gcp-stepper'><div class='sn-gcp-progress' style='width:{ratio * 100:.0f}%;'></div></div>",
-        unsafe_allow_html=True,
-    )
+    if current_step < 0:
+        current_step = 0
+    if current_step > total_steps:
+        current_step = total_steps
 
-    steps_html = ["<div class='sn-gcp-steps'>"]
-    for idx, title in enumerate(STEP_TITLES, start=1):
-        cls = "sn-step-active" if idx == current_step else ""
-        steps_html.append(f"<span class='{cls}'>{idx}. {title}</span>")
-    steps_html.append("</div>")
-    st.markdown("".join(steps_html), unsafe_allow_html=True)
+    progress_ratio = current_step / total_steps
+    st.progress(progress_ratio)
+
+    cols = st.columns(total_steps)
+    for idx, (col, title) in enumerate(zip(cols, STEP_TITLES), start=1):
+        with col:
+            if idx <= current_step:
+                col.markdown(f"**{idx}. {title}**")
+            else:
+                col.caption(f"{idx}. {title}")
 
 
 def current_audiencing_snapshot() -> Dict[str, object]:
