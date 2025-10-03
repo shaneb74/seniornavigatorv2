@@ -330,10 +330,6 @@ button[kind]:focus {{
   gap:1.05rem;
 }}
 
-.sn-dashboard-card .sn-card-cta {{ display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; }}
-.sn-dashboard-card h3 {{ margin:0; font-size:1.15rem; font-weight:750; color:var(--ink); }}
-.sn-dashboard-card .sn-subtitle {{ color: var(--ink-muted); font-size:.98rem; }}
-
 .sn-dashboard-note {{
   display:flex; gap:.5rem; align-items:center; margin-top:16px;
 }}
@@ -495,7 +491,7 @@ div[data-testid="stFormSubmitButton"] > button,
 div[data-testid="formSubmitButton"] > button,          /* older/alternate */
 form button[type="submit"],
 form [data-testid="baseButton-primary"] > button,
-form [data-testid="baseButton-secondary"] > button {
+form [data-testid="baseButton-secondary"] > button {{
   background: var(--brand) !important;
   color: var(--brand-ink) !important;
   border: 1px solid transparent !important;
@@ -503,17 +499,17 @@ form [data-testid="baseButton-secondary"] > button {
   padding: 0.78rem 1.85rem !important;
   font-weight: 700 !important;
   box-shadow: none !important;
-}
+}}
 
 div[data-testid="stFormSubmitButton"] > button:hover,
 div[data-testid="formSubmitButton"] > button:hover,
 form button[type="submit"]:hover,
 form [data-testid="baseButton-primary"] > button:hover,
-form [data-testid="baseButton-secondary"] > button:hover {
+form [data-testid="baseButton-secondary"] > button:hover {{
   background: #0a4fc0 !important;
   color: var(--brand-ink) !important;
   transform: translateY(-1px);
-}
+}}
 
 </style>
 """
