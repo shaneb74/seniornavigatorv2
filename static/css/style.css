@@ -1,0 +1,31 @@
+/* === Minimal additive CSS for hero & promo images === */
+.hero-wrap { display:flex; justify-content:center; margin: 6px 0 18px; }
+.hero-img {
+  display:block;
+  max-width: 85%;
+  height:auto;
+  border-radius: 10px;
+  box-shadow: 0 12px 24px rgba(0,0,0,.12);
+  transform: rotate(-2deg);
+}
+.promo-row { display:flex; gap: 24px; align-items:flex-start; justify-content:center; flex-wrap:wrap; }
+.promo-img {
+  max-width: 60%;
+  height:auto;
+  border-radius: 12px;
+  box-shadow: 0 10px 20px rgba(0,0,0,.12);
+}
+/* keep pill radios looking like pills even if default css is present */
+[data-testid="stRadio"] [role="radiogroup"]{
+  display:flex; gap:10px; flex-wrap:wrap;
+}
+[data-testid="stRadio"] input[type="radio"]{ position:absolute; opacity:0; pointer-events:none; }
+[data-testid="stRadio"] [role="radio"], [data-testid="stRadio"] label{
+  display:inline-flex; align-items:center; padding:10px 14px;
+  border-radius:10px; background:#f3f4f6; color:#111827; border:1px solid #e5e7eb;
+  cursor:pointer; user-select:none;
+}
+[data-testid="stRadio"] [role="radio"][aria-checked="true"], 
+[data-testid="stRadio"] label:has(input:checked){
+  background:#111827; color:#fff; border-color:#111827;
+}
