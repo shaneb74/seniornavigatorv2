@@ -228,11 +228,40 @@ with col1:
         "For someone",
         "pages/tell_us_about_loved_one.py",
     )
-with col2:
-    card(
-        "static/images/Myself.png",
-        "I’m looking for support just for myself",
-        "For myself",
-        "For myself",
-        "pages/tell_us_about_you.py",
+with col_cta:
+    st.write("")
+    st.write("")
+    continue_clicked = st.button(
+        "Continue",
+        type="primary",
+        use_container_width=True,
+        key="welcome_continue",
     )
+
+helper_note = "If you want to assess several people, don’t worry — you can easily move on to the next step!"
+st.markdown(f'<div class="sn-helper-note">{helper_note}</div>', unsafe_allow_html=True)
+
+pro_clicked = st.button(
+    "I’m a professional", key="welcome_professional", type="secondary"
+)
+
+if continue_clicked:
+    if entry == "proxy":
+        aud["recipient_name"] = (person_name or "").strip() or None
+        aud["proxy_name"] = None
+        care_context["person_name"] = aud.get("recipient_name") or "Your Loved One"
+    else:
+        aud["recipient_name"] = None
+        aud["proxy_name"] = None
+        care_context["person_name"] = "You"
+    _apply_and_snapshot()
+    log_audiencing_set(st.session_state["audiencing_snapshot"])
+    _navigate(entry)
+
+if pro_clicked:
+    aud["entry"] = "pro"
+    for key in AUDIENCING_QUALIFIER_KEYS:
+        aud["qualifiers"][key] = False
+    care_context["person_name"] = "Your Loved One"
+    _apply_and_snapshot()
+    _navigate("pro")
