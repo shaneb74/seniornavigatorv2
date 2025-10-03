@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-sanitize_ascii.py — scan and optionally fix non-ASCII punctuation in source files.
+sanitize_ascii.py - scan and optionally fix non-ASCII punctuation in source files.
 
 Targets the usual gremlins:
-  - ’ ‘ “ ”  (smart quotes)
-  - – —      (en/em dashes)
-  - …         (ellipsis)
+  - ' ' " "  (smart quotes)
+  - - -      (en/em dashes)
+  - ...         (ellipsis)
   - \u00A0    (non-breaking space)
   - \u200B-\u200D (zero-width chars)
 Also flags BOMs.
@@ -37,13 +37,13 @@ DEFAULT_EXTS = {
 
 # Replacement map for the most common offenders
 REPLACEMENTS = {
-    "\u2018": "'",  # ‘ left single
-    "\u2019": "'",  # ’ right single / apostrophe
-    "\u201C": '"',  # “ left double
-    "\u201D": '"',  # ” right double
-    "\u2013": "-",  # – en dash
-    "\u2014": "-",  # — em dash
-    "\u2026": "...",# … ellipsis
+    "\u2018": "'",  # ' left single
+    "\u2019": "'",  # ' right single / apostrophe
+    "\u201C": '"',  # " left double
+    "\u201D": '"',  # " right double
+    "\u2013": "-",  # - en dash
+    "\u2014": "-",  # - em dash
+    "\u2026": "...",# ... ellipsis
     "\u00A0": " ",  # NBSP
     "\u200B": "",   # zero-width space
     "\u200C": "",   # zero-width non-joiner

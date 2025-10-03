@@ -13,7 +13,7 @@ st.title("Expert Advisor Review")
 st.write(
     "Great job completing your planning! Here, our expert advisor will review your Guided Care Plan, "
     "Cost Planner results, and personal information to ensure all modules were completed correctly. "
-    "We’ll highlight any missing steps or areas for you to revisit."
+    "We'll highlight any missing steps or areas for you to revisit."
 )
 
 st.success("All required modules are complete.")

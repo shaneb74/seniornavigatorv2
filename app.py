@@ -1,4 +1,4 @@
-# app.py — header + global CSS injector (full replacement for the opening block)
+# app.py - header + global CSS injector (full replacement for the opening block)
 
 from __future__ import annotations
 import streamlit as st
@@ -100,13 +100,13 @@ INTENDED = [
     # Tell-us flows
     ("pages/tell_us_about_you.py", "Tell Us About You", "ℹ️", False),
     ("pages/tell_us_about_loved_one.py", "Tell Us About Loved One", "ℹ️", False),
-    ("pages/professional_mode.py", "Professional Mode", "🧑‍⚕️", False),
+    ("pages/professional_mode.py", "Professional Mode", "🧑⚕️", False),
 
     # Guided Care Plan
     ("pages/gcp.py", "Guided Care Plan", "🗺️", False),
-    ("pages/gcp_daily_life.py", "GCP — Daily Life & Support", "🗺️", False),
-    ("pages/gcp_health_safety.py", "GCP — Health & Safety", "🗺️", False),
-    ("pages/gcp_context_prefs.py", "GCP — Context & Preferences", "🗺️", False),
+    ("pages/gcp_daily_life.py", "GCP - Daily Life & Support", "🗺️", False),
+    ("pages/gcp_health_safety.py", "GCP - Health & Safety", "🗺️", False),
+    ("pages/gcp_context_prefs.py", "GCP - Context & Preferences", "🗺️", False),
     ("pages/gcp_recommendation.py", "GCP Recommendation", "🗺️", False),
 
     # Cost Planner

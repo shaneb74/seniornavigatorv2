@@ -1,4 +1,4 @@
-# Handoff 1 — Audiencing Dev (Authoritative Contract)
+# Handoff 1 - Audiencing Dev (Authoritative Contract)
 
 Implements audience short-circuit flags and writes them to `st.session_state["audiencing"]`.
 Exposes `get_audience()` on the page and `apply_audiencing_sanitizer(state)` in the library.

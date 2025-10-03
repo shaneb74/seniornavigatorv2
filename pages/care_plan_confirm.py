@@ -32,7 +32,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 # Confirmation tile
 st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
 st.markdown("### Guided Care Plan", unsafe_allow_html=True)
-st.markdown("<p>Plan summary: In-home care, 10 hours/week, light supervision. Matches your loved one’s needs—safe, familiar.</p>", unsafe_allow_html=True)
+st.markdown("<p>Plan summary: In-home care, 10 hours/week, light supervision. Matches your loved one's needs-safe, familiar.</p>", unsafe_allow_html=True)
 st.checkbox("This looks right?", key="care_plan_confirm")
 st.button("Save Confirmation", key="save_care_plan", type="primary")
 st.markdown('</div>', unsafe_allow_html=True)

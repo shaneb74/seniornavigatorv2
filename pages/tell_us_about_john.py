@@ -26,13 +26,13 @@ ctx = st.session_state.care_context
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
 st.title("Tell Us About your loved one")
 st.markdown("<h2>A few quick taps to start.</h2>", unsafe_allow_html=True)
-st.markdown("<p>Help us guide your loved one’s care in under a minute.</p>", unsafe_allow_html=True)
+st.markdown("<p>Help us guide your loved one's care in under a minute.</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
 # Simple qualifying questions with tile style
 st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
 st.markdown("### About your loved one", unsafe_allow_html=True)
-st.markdown("<p>These questions help us tailor your loved one’s options—simple and private.</p>", unsafe_allow_html=True)
+st.markdown("<p>These questions help us tailor your loved one's options-simple and private.</p>", unsafe_allow_html=True)
 st.write("Did your loved one serve in the military?")
 st.button("Yes", key="military_yes", type="primary")
 st.button("No", key="military_no", type="primary")

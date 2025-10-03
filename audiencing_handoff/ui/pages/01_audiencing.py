@@ -23,7 +23,7 @@ def get_audience() -> dict:
     })
 
 def render():
-    st.header("Audiencing — quick setup")
+    st.header("Audiencing - quick setup")
 
     entry = st.segmented_control(
         "Who are you planning for?",

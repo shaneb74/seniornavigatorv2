@@ -5,7 +5,7 @@ if 'care_context' not in st.session_state:
     st.session_state.care_context = {}
 
 st.title("Call scheduled")
-st.caption("Thanks — your call is on the calendar. You can get a head start while you wait.")
+st.caption("Thanks - your call is on the calendar. You can get a head start while you wait.")
 
 st.markdown('---')
 col1, col2 = st.columns(2)

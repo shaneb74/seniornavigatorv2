@@ -56,7 +56,7 @@ st.markdown(
         margin: .5rem 0 1.0rem 0;
       }
 
-      /* HERO photo “polaroid” look */
+      /* HERO photo "polaroid" look */
       .hero-photo{
         border-radius: 8px;
         background: #fff;
@@ -143,7 +143,7 @@ def load_bytes(path_str: str) -> bytes | None:
         Image.open(io.BytesIO(data)).verify()
         return data
     except UnidentifiedImageError:
-        st.warning("Image exists but isn’t valid. Use PNG/JPG/WEBP.")
+        st.warning("Image exists but isn't valid. Use PNG/JPG/WEBP.")
     except Exception as e:
         st.warning(f"Couldn't load image: {e}")
     return None
@@ -181,7 +181,7 @@ def safe_switch_page(target: str, query_key: str | None = None, query_value: str
         st.experimental_rerun()
 
 # =====================================================================
-# HERO — text on the left, image on the right; CTAs inside the left col
+# HERO - text on the left, image on the right; CTAs inside the left col
 # =====================================================================
 left, right = st.columns([7, 5], gap="large")
 
@@ -190,7 +190,7 @@ with left:
         """
         <div class="hero-h1">YOUR COMPASSIONATE<br>GUIDE TO SENIOR<br>CARE DECISIONS</div>
         <div class="hero-h2">
-          Every care decision matters. We’re here to guide you — at no cost —
+          Every care decision matters. We're here to guide you - at no cost -
           whether planning for yourself or a loved one.
         </div>
         """,
@@ -226,7 +226,7 @@ st.markdown('<hr class="divider">', unsafe_allow_html=True)
 st.markdown('<div class="section-kicker">How we can help you</div>', unsafe_allow_html=True)
 
 # =====================================================================
-# CARDS — each card is a bordered Streamlit container (CTA inside)
+# CARDS - each card is a bordered Streamlit container (CTA inside)
 # =====================================================================
 def card(image_path: str, title: str, sub: str, button_label: str, page_to: str) -> None:
     with st.container(border=True):
@@ -274,13 +274,13 @@ with col2:
         "pages/tell_us_about_you.py",
     )
 
-helper_note = "If you want to assess several people, don’t worry — you can easily move on to the next step!"
+helper_note = "If you want to assess several people, don't worry - you can easily move on to the next step!"
 st.markdown(f'<div class="sn-helper-note">{helper_note}</div>', unsafe_allow_html=True)
 
-pro_clicked = st.button("I’m a professional", key="welcome_professional", type="secondary")
+pro_clicked = st.button("I'm a professional", key="welcome_professional", type="secondary")
 
 # =====================================================================
-# Actions — safe wiring that never NameErrors if other modules are absent
+# Actions - safe wiring that never NameErrors if other modules are absent
 # =====================================================================
 if 'continue_clicked' in locals() and continue_clicked:
     # Default: assume proxy flow; update state and move on

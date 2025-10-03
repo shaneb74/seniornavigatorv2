@@ -1,4 +1,4 @@
-"""Guided Care Plan – Health & Safety section."""
+"""Guided Care Plan - Health & Safety section."""
 
 from __future__ import annotations
 
@@ -49,7 +49,7 @@ def _render_radio(question_id: str) -> str:
 answers, _ = ensure_gcp_session()
 _ensure_widget_defaults(answers)
 
-st.title("Guided Care Plan — Health & Safety")
+st.title("Guided Care Plan - Health & Safety")
 st.caption("Step 2 of 5")
 
 render_stepper(2)

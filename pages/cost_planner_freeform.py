@@ -56,7 +56,7 @@ if cp["custom_line_items"]:
     removal_keys = []
     for idx, item in enumerate(cp["custom_line_items"]):
         cols = st.columns([3, 1])
-        cols[0].write(f"**{item['label']}** — {format_currency(item['amount'])}")
+        cols[0].write(f"**{item['label']}** - {format_currency(item['amount'])}")
         if cols[1].button("Remove", key=f"remove_custom_{idx}"):
             removal_keys.append(idx)
     if removal_keys:

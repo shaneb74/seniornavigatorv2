@@ -32,7 +32,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 # Upgrades options with tile style
 st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
 st.markdown("### Upgrade Options")
-st.markdown("<p>Select upgrades for your loved one’s home.</p>", unsafe_allow_html=True)
+st.markdown("<p>Select upgrades for your loved one's home.</p>", unsafe_allow_html=True)
 st.write("Grab bars?")
 st.button("Yes", key="cm_grab_yes", type="primary")
 st.button("No", key="cm_grab_no", type="primary")

@@ -1,4 +1,4 @@
-"""Guided Care Plan – Context & Preferences section."""
+"""Guided Care Plan - Context & Preferences section."""
 
 from __future__ import annotations
 
@@ -72,7 +72,7 @@ qualifiers = snapshot.get("qualifiers", {})
 
 _ensure_widget_defaults(answers, qualifiers)
 
-st.title("Guided Care Plan — Context & Preferences")
+st.title("Guided Care Plan - Context & Preferences")
 st.caption("Step 3 of 5")
 
 render_stepper(3)

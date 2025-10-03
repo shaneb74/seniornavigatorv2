@@ -25,8 +25,8 @@ ctx = st.session_state.care_context
 # Appointment Booking
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
 st.title("Schedule My Call")
-st.markdown("<h2>We’ll call you within 24 hours.</h2>", unsafe_allow_html=True)
-st.markdown("<p>Help us reach you—quick and easy.</p>", unsafe_allow_html=True)
+st.markdown("<h2>We'll call you within 24 hours.</h2>", unsafe_allow_html=True)
+st.markdown("<p>Help us reach you-quick and easy.</p>", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
 # Booking form with tile style

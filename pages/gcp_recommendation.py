@@ -1,4 +1,4 @@
-"""Guided Care Plan – Medical conditions and recommendation."""
+"""Guided Care Plan - Medical conditions and recommendation."""
 
 from __future__ import annotations
 
@@ -46,7 +46,7 @@ stepper_placeholder = st.empty()
 with stepper_placeholder.container():
     render_stepper(5 if has_result else 4)
 
-st.title("Guided Care Plan — Medical Check & Recommendation")
+st.title("Guided Care Plan - Medical Check & Recommendation")
 st.caption("Confirm medical conditions so we can finalize your plan.")
 
 submitted, selections = _render_chronic_selector(answers.get("chronic_conditions"))
@@ -111,7 +111,7 @@ if has_result:
             elif flag in {"supervision"}:
                 icon = "⚠️"
                 description = "Extended supervision needs signal higher care intensity."
-            st.write(f"{icon} {flag.replace('_', ' ').title()} — {description}")
+            st.write(f"{icon} {flag.replace('_', ' ').title()} - {description}")
 
     if chronic_conditions:
         st.markdown("#### Chronic conditions to plan for")

@@ -26,7 +26,7 @@ summary_cols[2].metric("Net out-of-pocket", format_currency(cp["net_out_of_pocke
 if cp.get("runway_months") is not None:
     summary_cols[3].metric("Runway", f"{cp['runway_months']:.1f} months")
 else:
-    summary_cols[3].metric("Runway", "—")
+    summary_cols[3].metric("Runway", "-")
 
 st.subheader("Category breakdown")
 breakdown_rows = []

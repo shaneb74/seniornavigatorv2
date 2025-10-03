@@ -1,4 +1,4 @@
-"""Guided Care Plan – Daily Life & Support section."""
+"""Guided Care Plan - Daily Life & Support section."""
 
 from __future__ import annotations
 
@@ -48,7 +48,7 @@ def _render_radio(question_id: str) -> str:
 answers, _ = ensure_gcp_session()
 _ensure_widget_defaults(answers)
 
-st.title("Guided Care Plan — Daily Life & Support")
+st.title("Guided Care Plan - Daily Life & Support")
 st.caption("Step 1 of 5")
 
 render_stepper(1)

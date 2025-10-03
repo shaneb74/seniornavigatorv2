@@ -1,5 +1,5 @@
 /* ============================================================================
-   CCA Senior Navigator — Single-source stylesheet
+   CCA Senior Navigator - Single-source stylesheet
    Place at: static/css/style.css
    ========================================================================== */
 
@@ -112,7 +112,7 @@ hr, .stMarkdown hr, .stHorizontalBlock{ border-color:var(--divider) !important; 
 [data-testid="stRadio"] [role="radiogroup"] > div[role="radio"]:hover{
   background:var(--pill-hover) !important;
 }
-/* Selected — aria & :has fallback */
+/* Selected - aria & :has fallback */
 [data-testid="stRadio"] [role="radiogroup"] > div[role="radio"][aria-checked="true"],
 [data-testid="stRadio"] [role="radiogroup"] > label:has(> input[type="radio"]:checked){
   background:var(--pill-selected) !important;

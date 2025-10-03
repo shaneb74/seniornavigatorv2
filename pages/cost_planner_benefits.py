@@ -96,7 +96,7 @@ with col_benefit1:
         set_numeric("offset_va_benefits", va)
     else:
         set_numeric("offset_va_benefits", 0.0)
-        st.caption("VA benefits hidden — not eligible per Audiencing.")
+        st.caption("VA benefits hidden - not eligible per Audiencing.")
 with col_benefit2:
     medicaid = st.number_input(
         "Medicaid coverage",
