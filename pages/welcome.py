@@ -24,13 +24,13 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# ---------- Helper for safe images (NO width=None) ----------
-def safe_image(path_str, width="stretch", css_class=None):
+# ---------- Helper for safe images ----------
+def safe_image(path_str, width=300, css_class=None):
     """
     Renders an image safely.
 
     width:
-      - int: pixel width (e.g., 520)
+      - int: pixel width (e.g., 300 or 520)
       - 'stretch': expand to container width
       - 'content': natural image width
     """
@@ -39,25 +39,12 @@ def safe_image(path_str, width="stretch", css_class=None):
         st.info(f"Add image at {path_str}")
         return
 
-    # If you want CSS styling, use a small HTML wrapper but still let Streamlit handle the image
-    # via its served URL. Otherwise just call st.image.
-    if isinstance(width, int):
-        if css_class:
-            st.markdown(f'<div class="{css_class}">', unsafe_allow_html=True)
-            st.image(str(p), width=width)
-            st.markdown("</div>", unsafe_allow_html=True)
-        else:
-            st.image(str(p), width=width)
+    if css_class:
+        st.markdown(f'<div class="{css_class}">', unsafe_allow_html=True)
+        st.image(str(p), width=width)
+        st.markdown("</div>", unsafe_allow_html=True)
     else:
-        # Accept only the new valid strings; default to 'stretch'
-        if width not in ("stretch", "content"):
-            width = "stretch"
-        if css_class:
-            st.markdown(f'<div class="{css_class}">', unsafe_allow_html=True)
-            st.image(str(p), width=width)
-            st.markdown("</div>", unsafe_allow_html=True)
-        else:
-            st.image(str(p), width=width)
+        st.image(str(p), width=width)
 
 # ---------- Hero row ----------
 left, right = st.columns([7, 5], gap="large")
@@ -80,7 +67,7 @@ Every care decision matters. We’re here to guide you — at no cost — whethe
             st.switch_page("pages/login.py")
 
 with right:
-    # Fixed pixel width for hero
+    # Hero at fixed pixel width
     safe_image("static/images/Hero.png", width=520)
 
 st.markdown("---")
@@ -92,8 +79,7 @@ t1, t2 = st.columns(2, gap="large")
 
 with t1:
     with st.container(border=True):
-        # Stretch to container width with rounded/shadow styling
-        safe_image("static/images/Someone-Else.png", width="stretch", css_class="card-photo")
+        safe_image("static/images/Someone-Else.png", width=300, css_class="card-photo")
         st.markdown("**I would like to support my loved ones**")
         st.caption("For someone")
         if st.button("Continue", key="tile_someone"):
@@ -101,8 +87,7 @@ with t1:
 
 with t2:
     with st.container(border=True):
-        # Stretch to container width with rounded/shadow styling
-        safe_image("static/images/Myself.png", width="stretch", css_class="card-photo")
+        safe_image("static/images/Myself.png", width=300, css_class="card-photo")
         st.markdown("**I’m looking for support just for myself**")
         st.caption("For myself")
         if st.button("Continue", key="tile_myself"):
