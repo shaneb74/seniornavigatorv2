@@ -2,8 +2,6 @@
 import streamlit as st
 from pathlib import Path
 
-from ui.theme import inject as inject_theme
-
 st.set_page_config(page_title="CCA Senior Navigator", layout="wide")
 
 # ========= Global CSS (single source of truth) =========
