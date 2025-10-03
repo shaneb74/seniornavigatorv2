@@ -42,6 +42,39 @@ def _inject_global_css() -> None:
 # Call once on startup (before you render anything)
 _inject_global_css()
 
+
+# ---- PRE-FLIGHT SYNTAX CHECK FOR PAGES ----
+def _syntax_preflight(paths=("pages",), stop_on_error=True):
+    import pathlib, io, tokenize, ast, streamlit as st
+    errors = []
+    for root in paths:
+        for p in pathlib.Path(root).rglob("*.py"):
+            try:
+                src = p.read_text(encoding="utf-8")
+            except Exception as e:
+                errors.append((p, 0, 0, f"read error: {e}", ""))
+                continue
+            try:
+                # Tokenize first to flush out invisible bad chars, then compile
+                tokenize.generate_tokens(io.StringIO(src).readline)
+                compile(src, str(p), "exec", dont_inherit=True)
+            except SyntaxError as e:
+                errors.append((p, e.lineno or 0, e.offset or 0, e.msg, e.text or ""))
+            except Exception as e:
+                # Not syntax, but still fatal at import time
+                errors.append((p, 0, 0, f"{type(e).__name__}: {e}", ""))
+    if errors:
+        st.error("Syntax/parse error(s) found. Fix these before running pages.")
+        for p, line, col, msg, txt in errors:
+            st.write(f"**{p}**")
+            st.code(f"line {line}, col {col}: {msg}\n{txt.rstrip()}\n{' '*(max(col-1,0))}^")
+            st.markdown("---")
+        if stop_on_error:
+            st.stop()
+
+# run it once at startup
+_syntax_preflight()
+
 # ========= Simple prototype auth flag (keep your original logic below) =========
 if "is_authenticated" not in st.session_state:
     st.session_state.is_authenticated = False
