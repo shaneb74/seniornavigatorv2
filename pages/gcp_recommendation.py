@@ -1,46 +1,131 @@
 import streamlit as st
 
-# Guard: ensure session state keys exist
-if 'care_context' not in st.session_state:
-    st.session_state.care_context = {
-        'gcp_answers': {},
-        'decision_trace': [],
-        'planning_mode': 'exploring',
-        'care_flags': {},
-        'person_name': 'Your Loved One'
-    }
+from audiencing import ensure_audiencing_state
+from guided_care_plan import ensure_gcp_session, evaluate_guided_care, get_question_meta, render_stepper
+from guided_care_plan.state import current_audiencing_snapshot
 
-ctx = st.session_state.care_context
-person_name = ctx.get('person_name', 'Your Loved One')
 
-# Placeholder recommendation values (to be replaced by engine later)
-recommendation = ctx.get('recommendation', 'Assisted Living')
-reason_text = ctx.get('recommendation_reason', None)
-
-st.title('Your Care Recommendation')
-
-# Personalized intro
-st.write(f"Based on what we know about **{person_name}**, this is their personalized expert recommendation.")
-
-# Big clear recommendation
-st.markdown(f"## 👉 {recommendation}")
-
-# Supporting explanation (template for now)
-if reason_text:
-    st.write(reason_text)
-else:
-    st.write(
-        "This recommendation is based on the information you shared about daily life, health, safety, and care preferences. "
-        "It highlights the option that provides the right balance of support, independence, and safety at this stage. "
-        "Every family is unique — this is a starting point to guide your conversations and next steps."
+def _ensure_care_context():
+    return st.session_state.setdefault(
+        "care_context",
+        {
+            "person_name": "Your Loved One",
+            "gcp_answers": {},
+            "gcp_recommendation": None,
+            "gcp_cost": None,
+        },
     )
 
-st.markdown('---')
 
-col1, col2 = st.columns(2)
-with col1:
-    if st.button('Back to Hub', key='reco_back_hub'):
-        st.switch_page('pages/hub.py')
-with col2:
-    if st.button('Open Cost Planner', key='reco_open_cost'):
-        st.switch_page('pages/cost_planner.py')
+def _render_chronic_selector(current_values):
+    meta = get_question_meta("chronic_conditions")
+    options = meta["options"]
+    default = current_values or ("None" in options and ["None"] or [])
+    with st.form("gcp_chronic_conditions_form"):
+        selections = st.multiselect(
+            meta["label"],
+            options=options,
+            default=default,
+            help=meta.get("description"),
+        )
+        submitted = st.form_submit_button("Generate my recommendation", type="primary")
+    return submitted, selections
+
+
+answers, gcp_result = ensure_gcp_session()
+care_context = _ensure_care_context()
+aud_state = ensure_audiencing_state()
+snapshot = current_audiencing_snapshot()
+
+has_result = bool(gcp_result.get("recommended_setting"))
+stepper_placeholder = st.empty()
+with stepper_placeholder.container():
+    render_stepper(5 if has_result else 4)
+
+st.title("Guided Care Plan — Medical Check & Recommendation")
+st.caption("Confirm medical conditions so we can finalize your plan.")
+
+submitted, selections = _render_chronic_selector(answers.get("chronic_conditions"))
+
+if submitted:
+    chosen = selections or ["None"]
+    answers["chronic_conditions"] = chosen
+    result = evaluate_guided_care(answers, aud_state)
+    gcp_result.update(result)
+    gcp_result["audiencing_snapshot"] = snapshot
+    st.session_state["gcp"] = gcp_result
+    care_context["gcp_answers"] = answers
+    care_context["gcp_recommendation"] = result["recommended_setting"]
+    care_context["gcp_cost"] = result.get("care_intensity")
+    st.success("Recommendation updated.")
+    has_result = True
+    stepper_placeholder.empty()
+    with stepper_placeholder.container():
+        render_stepper(5)
+
+if has_result:
+    recommendation = gcp_result["recommended_setting"]
+    intensity = gcp_result.get("care_intensity")
+    safety_flags = gcp_result.get("safety_flags", [])
+    chronic_conditions = gcp_result.get("chronic_conditions", [])
+    decision_trace = gcp_result.get("DecisionTrace", [])
+
+    friendly_setting = {
+        "home": "Stay at home with in-home support",
+        "assisted": "Assisted living support",
+        "memory": "Memory care support",
+    }.get(recommendation, recommendation)
+
+    intensity_copy = {
+        "low": "Low support needs",
+        "med": "Moderate support needs",
+        "high": "High support needs",
+    }.get(intensity, intensity)
+
+    st.markdown("---")
+    st.subheader("Your personalized recommendation")
+    st.markdown(f"### {friendly_setting}")
+    st.caption(intensity_copy)
+
+    if safety_flags:
+        st.markdown("#### Safety watchpoints")
+        for flag in safety_flags:
+            icon = "✅"
+            description = ""
+            if flag in {"falls", "fall"}:
+                icon = "⚠️"
+                description = "Recent falls call for supervision or home adjustments."
+            elif flag in {"behaviors"}:
+                icon = "⚠️"
+                description = "Behavior changes suggest a memory care environment."
+            elif flag in {"med_mgmt"}:
+                icon = "⚠️"
+                description = "Medication management support can reduce risk."
+            elif flag in {"cognition"}:
+                icon = "⚠️"
+                description = "Cognition changes benefit from structured support."
+            elif flag in {"supervision"}:
+                icon = "⚠️"
+                description = "Extended supervision needs signal higher care intensity."
+            st.write(f"{icon} {flag.replace('_', ' ').title()} — {description}")
+
+    if chronic_conditions:
+        st.markdown("#### Chronic conditions to plan for")
+        if chronic_conditions == ["None"]:
+            st.write("No chronic conditions noted.")
+        else:
+            st.write(", ".join(chronic_conditions))
+
+    if decision_trace:
+        st.markdown("#### DecisionTrace")
+        for step in decision_trace:
+            st.write(f"• {step}")
+
+    st.markdown("---")
+    if st.button("Go to Hub", type="primary"):
+        st.switch_page("pages/hub.py")
+    if st.button("Open Cost Planner", key="open_cost_planner"):
+        st.switch_page("pages/cost_planner.py")
+
+with st.expander("Debug: GCP snapshot", expanded=False):
+    st.json({"answers": answers, "gcp": gcp_result})

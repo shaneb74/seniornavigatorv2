@@ -1,35 +1,142 @@
+"""Self-entry audiencing flow with qualifier toggles."""
+
+from __future__ import annotations
+
 import streamlit as st
-from ui.ux_enhancements import apply_global_ux, render_stepper
 
-# Debug: non-visual logger
-def _debug_log(msg: str):
-    try:
-        print(f"[SNAV] {msg}")
-    except Exception:
-        pass
+from audiencing import (
+    URGENT_FEATURE_FLAG,
+    apply_audiencing_sanitizer,
+    compute_audiencing_route,
+)
 
-_debug_log('LOADED: tell_us_about_you.py')
+st.set_page_config(page_title="Tell Us About You", layout="wide")
 
-apply_global_ux(); render_stepper('main')
+st.title("Tell Us About You")
+st.caption("These quick yes/no toggles tailor what you see next.")
 
-if 'care_context' not in st.session_state:
-    st.session_state.care_context = {'audience_type': 'self', 'person_name': None, 'care_flags': {}, 'plan': {}}
-ctx = st.session_state.care_context
-# Guard: ensure expected keys exist
-if 'gcp_answers' not in ctx: ctx['gcp_answers'] = {}
-if 'decision_trace' not in ctx: ctx['decision_trace'] = []
-if 'planning_mode' not in ctx: ctx['planning_mode'] = 'exploring'
-if 'care_flags' not in ctx: ctx['care_flags'] = {}
+# ---------------------------------------------------------------------------
+# Ensure audiencing + care context defaults follow the shared contract
+# ---------------------------------------------------------------------------
+audiencing = st.session_state.setdefault(
+    "audiencing",
+    {
+        "entry": None,
+        "qualifiers": {
+            "is_veteran": False,
+            "has_partner": False,
+            "owns_home": False,
+            "on_medicaid": False,
+            "urgent": False,
+        },
+        "route": {"next": None},
+        "recipient_name": None,
+        "proxy_name": None,
+    },
+)
 
-ctx['audience_type'] = 'self'
+audiencing["entry"] = "self"
 
-st.header("Tell Us About You")
-name = st.text_input("Your name", value=ctx.get('person_name') or "", key="name_self")
-is_vet = st.radio("Served in the military?", ["No","Yes"], index=0, horizontal=True) == "Yes"
-on_med = st.radio("On Medicaid now?", ["No","Yes"], index=0, horizontal=True) == "Yes"
-owns_home = st.radio("Own a home?", ["No","Yes"], index=0, horizontal=True) == "Yes"
+qualifiers = audiencing.setdefault(
+    "qualifiers",
+    {
+        "is_veteran": False,
+        "has_partner": False,
+        "owns_home": False,
+        "on_medicaid": False,
+        "urgent": False,
+    },
+)
 
-if st.button("Next: Care Hub", disabled=(not name.strip())):
-    ctx['person_name'] = name.strip()
-    ctx['care_flags'].update({'is_veteran': is_vet, 'on_medicaid': on_med, 'owns_home': owns_home})
-    st.switch_page('pages/hub.py')
+for key in ("is_veteran", "has_partner", "owns_home", "on_medicaid", "urgent"):
+    qualifiers.setdefault(key, False)
+
+route = audiencing.setdefault("route", {"next": None})
+route.setdefault("next", None)
+
+audiencing.setdefault("recipient_name", None)
+audiencing.setdefault("proxy_name", None)
+
+col1, col2 = st.columns(2, gap="large")
+with col1:
+    is_veteran = st.toggle(
+        "Are you a veteran?",
+        value=qualifiers.get("is_veteran", False),
+        key="aud_self_is_veteran",
+    )
+    owns_home = st.toggle(
+        "Do you own your home?",
+        value=qualifiers.get("owns_home", False),
+        key="aud_self_owns_home",
+    )
+with col2:
+    has_partner = st.toggle(
+        "Do you have a partner?",
+        value=qualifiers.get("has_partner", False),
+        key="aud_self_has_partner",
+    )
+    on_medicaid = st.toggle(
+        "Are you on Medicaid?",
+        value=qualifiers.get("on_medicaid", False),
+        key="aud_self_on_medicaid",
+    )
+
+urgent_case = False
+if URGENT_FEATURE_FLAG:
+    urgent_case = st.toggle(
+        "Is this urgent?",
+        value=qualifiers.get("urgent", False),
+        key="aud_self_urgent",
+    )
+
+qualifiers.update(
+    {
+        "is_veteran": bool(is_veteran),
+        "has_partner": bool(has_partner),
+        "owns_home": bool(owns_home),
+        "on_medicaid": bool(on_medicaid),
+        "urgent": bool(urgent_case) if URGENT_FEATURE_FLAG else False,
+    }
+)
+
+audiencing["recipient_name"] = None
+audiencing["proxy_name"] = None
+
+# Normalize, compute the route, and prep the snapshot before rendering the CTA
+apply_audiencing_sanitizer(audiencing)
+audiencing["route"] = compute_audiencing_route(audiencing)
+
+care_context = st.session_state.setdefault(
+    "care_context",
+    {
+        "person_name": "Your Loved One",
+        "gcp_answers": {},
+        "gcp_recommendation": None,
+        "gcp_cost": None,
+    },
+)
+care_context["person_name"] = "You"
+
+st.session_state["audiencing_snapshot"] = {
+    "entry": audiencing["entry"],
+    "qualifiers": audiencing["qualifiers"].copy(),
+    "route": audiencing["route"].copy(),
+}
+
+st.write("")
+st.divider()
+
+if st.button(
+    "Go to your Concierge Care Hub",
+    type="primary",
+    use_container_width=True,
+):
+    st.session_state["last_event"] = {"type": "audiencing_set"}
+    st.switch_page("pages/hub.py")
+
+with st.expander("Debug: Audiencing state", expanded=False):
+    st.json(audiencing)
+    st.markdown("---")
+    st.json(st.session_state.get("audiencing_snapshot", {}))
+
+st.button("Back to Welcome", on_click=lambda: st.switch_page("pages/welcome.py"))
