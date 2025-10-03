@@ -1,86 +1,139 @@
 /* ============================================================================
-   CCA Senior Navigator – Consolidated Styles
-   Canonical path: static/css/style.css
-   Purpose: buttons, pill radios, cards, light layout polish
+   CCA Senior Navigator — Single-source stylesheet
+   Place at: static/css/style.css
    ========================================================================== */
 
-/* ---------- Design tokens ---------- */
+/* ---------- Root tokens ---------- */
 :root{
-  --bg: #ffffff;
-  --text: #111827;               /* near-black */
-  --muted: #6b7280;              /* slate-500 */
-  --border: #e5e7eb;             /* gray-200 */
-  --divider: #f3f4f6;            /* gray-100 */
-  --primary: #0B5CD8;            /* brand blue */
-  --btn-black: #111827;
-  --btn-black-hover:#0f172a;
+  --bg:#ffffff;
+  --text:#111827;
+  --muted:#6b7280;
+  --border:#e5e7eb;
+  --divider:#f3f4f6;
 
+  --blue:#0B5CD8;   /* CTA blue */
+  --black:#111827;
+
+  --btn-bg:#0B5CD8;
+  --btn-text:#ffffff;
+  --btn-bg-hover:#0a50be;
+
+  /* Pill radios */
   --pill-bg:#f3f4f6;
   --pill-text:#111827;
   --pill-brd:#e5e7eb;
+  --pill-hover:#e9eaec;
   --pill-selected:#111827;
   --pill-selected-text:#ffffff;
-
-  --card-bg:#ffffff;
-  --card-brd:#e5e7eb;
-  --card-radius:14px;
-
-  --ring: 0 0 0 3px rgba(17,24,39,.18);
+  --pill-radius:10px;
+  --pill-pad-y:10px;
+  --pill-pad-x:14px;
+  --pill-gap:8px;
 }
 
-/* ---------- Page base ---------- */
+/* ---------- App background ---------- */
 html, body, [data-testid="stAppViewContainer"]{
-  background: var(--bg) !important;
-  color: var(--text) !important;
+  background:var(--bg) !important;
+  color:var(--text) !important;
 }
-.block-container{ max-width: 1000px !important; padding-top: 2rem !important; padding-bottom: 2rem !important; }
-h1,h2,h3,h4{ color: var(--text) !important; letter-spacing:-0.01em; }
-small,.stCaption,[data-testid="stCaptionContainer"]{ color: var(--muted) !important; }
-hr,.stMarkdown hr{ border-color: var(--divider) !important; }
+.block-container{
+  max-width: 1100px !important;
+  padding-top: 1.8rem !important;
+  padding-bottom: 2.2rem !important;
+}
+
+/* ---------- Typography ---------- */
+h1, h2, h3, h4{ color:var(--text) !important; letter-spacing:-0.01em; }
+h1{ font-size:2.0rem !important; font-weight:700 !important; }
+h2{ font-size:1.5rem !important; font-weight:700 !important; }
+h3{ font-size:1.25rem !important; font-weight:600 !important; }
+p, .stMarkdown{ color:var(--text) !important; }
+[data-testid="stCaptionContainer"], small{ color:var(--muted) !important; }
+
+/* ---------- Dividers ---------- */
+hr, .stMarkdown hr, .stHorizontalBlock{ border-color:var(--divider) !important; }
 
 /* ---------- Buttons ---------- */
 .stButton > button{
-  background: var(--primary) !important;
-  color: #fff !important;
-  border:none !important;
+  background:var(--btn-bg) !important;
+  color:var(--btn-text) !important;
+  border:1px solid #0a4fbf !important;
   border-radius:12px !important;
   padding:10px 16px !important;
   font-weight:600 !important;
-  transition: opacity .15s ease, transform .02s ease;
+  transition:background .15s ease, transform .02s ease;
 }
-.stButton > button:hover{ opacity:.92 !important; }
+.stButton > button:hover{ background:var(--btn-bg-hover) !important; }
 .stButton > button:active{ transform:translateY(1px); }
-.stButton.secondary > button{ background:var(--btn-black) !important; color:#fff !important; }
-.stButton.secondary > button:hover{ background:var(--btn-black-hover) !important; }
 
-/* ---------- Cards ---------- */
-.stContainer,.card,.tile{
-  background:var(--card-bg)!important;
-  border:1px solid var(--card-brd)!important;
-  border-radius:var(--card-radius)!important;
-  box-shadow:0 1px 2px rgba(0,0,0,.04)!important;
+/* ---------- Containers with border=True ---------- */
+[data-testid="stContainer"]{
+  border-radius:14px !important;
 }
 
-/* ---------- Forms ---------- */
-input,textarea,select{ border-radius:10px !important; border:1px solid var(--border) !important; }
-input:focus,textarea:focus,select:focus{ outline:none !important; box-shadow: var(--ring) !important; }
+/* ---------- Sidebar polish ---------- */
+[data-testid="stSidebar"]{
+  background:#ffffff !important;
+  border-right:1px solid var(--divider) !important;
+}
 
-/* ---------- Pill radios ---------- */
-[data-testid="stRadio"] [role="radiogroup"]{ display:flex!important; flex-wrap:wrap!important; gap:10px!important; }
-[data-testid="stRadio"] input[type="radio"]{ position:absolute!important; opacity:0!important; pointer-events:none!important; }
+/* ---------- Alerts polish ---------- */
+[data-testid="stAlert"]{
+  border-radius:12px !important;
+  border:1px solid var(--border) !important;
+}
+
+/* ============================================================================
+   PILL RADIOS: streamlit st.radio -> pills
+   ========================================================================== */
+[data-testid="stRadio"] [role="radiogroup"]{
+  display:flex !important; flex-wrap:wrap !important; gap:var(--pill-gap) !important; align-items:center;
+}
+[data-testid="stRadio"] input[type="radio"]{
+  position:absolute !important; opacity:0 !important; pointer-events:none !important;
+}
+/* label & div variants */
 [data-testid="stRadio"] [role="radiogroup"] > label,
 [data-testid="stRadio"] [role="radiogroup"] > div[role="radio"]{
-  display:inline-flex!important; align-items:center!important; justify-content:center!important;
-  padding:10px 14px!important; border-radius:10px!important;
-  background:var(--pill-bg)!important; color:var(--pill-text)!important;
-  border:1.5px solid var(--pill-brd)!important; cursor:pointer!important;
-  transition:background .15s ease, color .15s ease;
+  display:inline-flex !important; align-items:center !important; justify-content:center !important;
+  padding:var(--pill-pad-y) var(--pill-pad-x) !important;
+  border-radius:var(--pill-radius) !important;
+  background:var(--pill-bg) !important;
+  color:var(--pill-text) !important;
+  border:1.5px solid var(--pill-brd) !important;
+  cursor:pointer !important; user-select:none !important;
+  transition:background .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+[data-testid="stRadio"] [role="radiogroup"] > label p,
+[data-testid="stRadio"] [role="radiogroup"] > div[role="radio"] p{
+  margin:0 !important; white-space:nowrap !important; font-weight:600 !important;
 }
 [data-testid="stRadio"] [role="radiogroup"] > label:hover,
-[data-testid="stRadio"] [role="radiogroup"] > div[role="radio"]:hover{ background:#eceff3 !important; }
+[data-testid="stRadio"] [role="radiogroup"] > div[role="radio"]:hover{
+  background:var(--pill-hover) !important;
+}
+/* Selected — aria & :has fallback */
 [data-testid="stRadio"] [role="radiogroup"] > div[role="radio"][aria-checked="true"],
 [data-testid="stRadio"] [role="radiogroup"] > label:has(> input[type="radio"]:checked){
-  background:var(--pill-selected)!important; color:var(--pill-selected-text)!important; border-color:var(--pill-selected)!important;
+  background:var(--pill-selected) !important;
+  color:var(--pill-selected-text) !important;
+  border-color:var(--pill-selected) !important;
 }
+/* hide inner icon blobs */
 [data-testid="stRadio"] [role="radiogroup"] > label > div:first-child,
-[data-testid="stRadio"] [role="radiogroup"] > div[role="radio"] > div:first-child{ display:none!important; }
+[data-testid="stRadio"] [role="radiogroup"] > div[role="radio"] > div:first-child{
+  display:none !important;
+}
+
+/* ============================================================================
+   Home page images
+   ========================================================================== */
+.home-hero{
+  display:block; width:100%; max-width:520px; height:auto;
+  border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.08);
+  transform:rotate(-2deg);
+}
+.card-photo{
+  width:100%; max-width:420px; height:auto; border-radius:12px;
+  box-shadow:0 8px 20px rgba(0,0,0,.08);
+}
