@@ -1,36 +1,99 @@
+"""Proxy-entry audiencing flow capturing names and qualifiers."""
+
+from __future__ import annotations
+
 import streamlit as st
-from ui.ux_enhancements import apply_global_ux, render_stepper
 
-# Debug: non-visual logger
-def _debug_log(msg: str):
-    try:
-        print(f"[SNAV] {msg}")
-    except Exception:
-        pass
+from audiencing import (
+    URGENT_FEATURE_FLAG,
+    apply_audiencing_sanitizer,
+    compute_audiencing_route,
+    ensure_audiencing_state,
+    log_audiencing_set,
+    snapshot_audiencing,
+)
 
-_debug_log('LOADED: tell_us_about_loved_one.py')
+st.set_page_config(page_title="Tell Us About Your Loved One", layout="wide")
 
-apply_global_ux(); render_stepper('main')
+state = ensure_audiencing_state()
+state["entry"] = "proxy"
+apply_audiencing_sanitizer(state)
+qualifiers = state["qualifiers"]
+people = state.setdefault("people", {"recipient_name": "", "proxy_name": ""})
 
-if 'care_context' not in st.session_state:
-    st.session_state.care_context = {'audience_type': 'proxy', 'person_name': None, 'care_flags': {}, 'plan': {}}
-ctx = st.session_state.care_context
-# Guard: ensure expected keys exist
-if 'gcp_answers' not in ctx: ctx['gcp_answers'] = {}
-if 'decision_trace' not in ctx: ctx['decision_trace'] = []
-if 'planning_mode' not in ctx: ctx['planning_mode'] = 'exploring'
-if 'care_flags' not in ctx: ctx['care_flags'] = {}
+st.title("Tell Us About Your Loved One")
+st.caption("These toggles make sure the right guidance shows up first.")
 
-ctx['audience_type'] = 'proxy'
+with st.form("audiencing_proxy_form"):
+    recipient_name = st.text_input(
+        "What is their name?",
+        value=people.get("recipient_name", ""),
+        help="We use this to personalize the Hub for them.",
+    )
+    proxy_name = st.text_input(
+        "What is your name?",
+        value=people.get("proxy_name", ""),
+        help="Optional, for caregiver-facing notes.",
+    )
 
-st.header("Tell Us About Your Loved One")
-name = st.text_input("Their name", value=ctx.get('person_name') or "", key="name_proxy")
-is_vet = st.radio("Served in the military?", ["No","Yes"], index=0, horizontal=True) == "Yes"
-on_med = st.radio("On Medicaid now?", ["No","Yes"], index=0, horizontal=True) == "Yes"
-owns_home = st.radio("Own a home?", ["No","Yes"], index=0, horizontal=True) == "Yes"
+    col1, col2 = st.columns(2, gap="large")
+    with col1:
+        is_veteran = st.toggle(
+            "Are they a veteran?",
+            value=qualifiers.get("is_veteran", False),
+            key="aud_proxy_is_veteran",
+        )
+        owns_home = st.toggle(
+            "Do they own their home?",
+            value=qualifiers.get("owns_home", False),
+            key="aud_proxy_owns_home",
+        )
+    with col2:
+        has_partner = st.toggle(
+            "Do they have a partner?",
+            value=qualifiers.get("has_partner", False),
+            key="aud_proxy_has_partner",
+        )
+        on_medicaid = st.toggle(
+            "Are they on Medicaid?",
+            value=qualifiers.get("on_medicaid", False),
+            key="aud_proxy_on_medicaid",
+        )
 
-if st.button('Care Hub', key='loved_one_to_hub', disabled=(not name.strip())):
-    st.switch_page('pages/hub.py')
-    ctx['person_name'] = name.strip()
-    ctx['care_flags'].update({'is_veteran': is_vet, 'on_medicaid': on_med, 'owns_home': owns_home})
-    st.switch_page('pages/hub.py')
+    urgent_case = False
+    if URGENT_FEATURE_FLAG:
+        urgent_case = st.toggle(
+            "Is this urgent?",
+            value=qualifiers.get("urgent", False),
+            key="aud_proxy_urgent",
+        )
+
+    submitted = st.form_submit_button("Continue", use_container_width=True)
+
+if submitted:
+    people["recipient_name"] = recipient_name.strip()
+    people["proxy_name"] = proxy_name.strip()
+    qualifiers.update(
+        {
+            "is_veteran": bool(is_veteran),
+            "has_partner": bool(has_partner),
+            "owns_home": bool(owns_home),
+            "on_medicaid": bool(on_medicaid),
+            "urgent": bool(urgent_case) if URGENT_FEATURE_FLAG else False,
+        }
+    )
+    apply_audiencing_sanitizer(state)
+    compute_audiencing_route(state)
+    snapshot = snapshot_audiencing(state)
+    st.session_state["audiencing_snapshot"] = snapshot
+    log_audiencing_set(snapshot)
+    st.switch_page("pages/hub.py")
+
+st.divider()
+
+with st.expander("Debug: Audiencing state", expanded=False):
+    st.json(state)
+    st.markdown("---")
+    st.json(st.session_state.get("audiencing_snapshot", {}))
+
+st.button("Back to Welcome", on_click=lambda: st.switch_page("pages/welcome.py"))
