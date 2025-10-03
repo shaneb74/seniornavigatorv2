@@ -1,5 +1,5 @@
 # pages/welcome.py
-"""Welcome page with hero and entry cards (safe, self-contained)."""
+"""Welcome page with hero and two entry cards (safe, self-contained)."""
 
 from __future__ import annotations
 import io
@@ -251,6 +251,7 @@ def card(image_path: str, title: str, sub: str, button_label: str, page_to: str)
             if st.button(button_label, key=f"btn_{page_to}"):
                 safe_switch_page(page_to, "view", "open")
 
+# ---------- Two-card row ----------
 col1, col2 = st.columns(2, gap="large")
 
 with col1:
@@ -262,8 +263,16 @@ with col1:
         "pages/tell_us_about_loved_one.py",
     )
 
-with col2:  # fixed: previously undefined col_cta
-    st.write("")
+with col2:
+    # Restored bottom-right image card
+    # If your asset uses a different filename (e.g., "Yourself.png"), change the path.
+    card(
+        "static/images/Self.png",
+        "I would like to plan for myself",
+        "For myself",
+        "For me",
+        "pages/tell_us_about_you.py",
+    )
     st.write("")
     continue_clicked = st.button(
         "Continue",
@@ -280,7 +289,7 @@ pro_clicked = st.button("I’m a professional", key="welcome_professional", type
 # =====================================================================
 # Actions — safe wiring that never NameErrors if other modules are absent
 # =====================================================================
-if continue_clicked:
+if 'continue_clicked' in locals() and continue_clicked:
     # Default: assume proxy flow; update state and move on
     if aud.get("entry") == "proxy":
         aud["recipient_name"] = (aud.get("recipient_name") or "").strip() or None
@@ -300,5 +309,4 @@ if pro_clicked:
     care_context["person_name"] = "Your Loved One"
     # Route to professional intake if available; otherwise keep UX alive
     target = "pages/tell_us_about_professional.py"
-    # If that page doesn't exist in this build, at least reroute consistently
     safe_switch_page(target, "flow", "pro")
