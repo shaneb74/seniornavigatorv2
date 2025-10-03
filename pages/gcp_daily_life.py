@@ -1,60 +1,69 @@
+"""Guided Care Plan – Daily Life & Support section."""
+
+from __future__ import annotations
+
 import streamlit as st
 
-if 'care_context' not in st.session_state:
-    st.session_state.care_context = {
-        'gcp_answers': {},
-        'decision_trace': [],
-        'planning_mode': 'exploring',
-        'care_flags': {}
-    }
-ctx = st.session_state.care_context
-answers = ctx.setdefault('gcp_answers', {})
+from guided_care_plan import ensure_gcp_session, get_question_meta, render_stepper
 
-st.title('Guided Care Plan — Daily Life & Support')
-st.caption('Step 1 of 3')
+SECTION_QUESTIONS = [
+    "daily_tasks_support",
+    "medication_management",
+    "caregiver_support",
+]
 
-st.markdown('---')
+answers, _ = ensure_gcp_session()
 
-adl_opts = ['Independent', 'Occasional reminders', 'Help with some tasks', 'Rely on help for most tasks']
-answers['adl_dependency'] = st.radio(
-    'How well can you manage everyday activities like bathing, dressing, or preparing meals on your own?',
-    adl_opts,
-    index=adl_opts.index(answers.get('adl_dependency', adl_opts[0])),
-    key='q_adl_dependency'
-)
-st.caption('ADLs include bathing, dressing, meals, and chores. This tells us the level of daily support.')
+st.set_page_config(page_title="GCP – Daily Life", layout="wide")
 
-cg_opts = ['I have support most of the time','I have support a few days a week','I have support occasionally','I don’t have regular support']
-answers['caregiver_support_level'] = st.radio(
-    'How much regular support do you have from a caregiver or family member?',
-    cg_opts,
-    index=cg_opts.index(answers.get('caregiver_support_level', cg_opts[0])),
-    key='q_caregiver_support'
-)
-st.caption('Strong support can offset higher daily needs.')
+st.markdown("""
+<h2 style="text-transform:uppercase; letter-spacing:0.08em; color:#6b7280; font-size:0.95rem;">Guided Care Plan</h2>
+<h1 style="margin-bottom:0.4rem;">Daily life & support</h1>
+<p style="max-width:660px; color:#475569;">Help us understand the routines and hands-on help available today.</p>
+""", unsafe_allow_html=True)
 
-med_opts = ['None','A few, easy to manage','Several, harder to manage','Not sure']
-answers['meds_complexity'] = st.radio(
-    'Do you take medications, and how manageable is the routine?',
-    med_opts,
-    index=med_opts.index(answers.get('meds_complexity', med_opts[0])),
-    key='q_meds_complexity'
-)
-st.caption('This helps us understand missed‑med risk when combined with cognition.')
+render_stepper(1)
 
-soc_opts = ['Frequent contact','Occasional contact','Rarely see others','Often alone']
-answers['social_isolation'] = st.radio(
-    'How often do you connect with friends, family, or activities?',
-    soc_opts,
-    index=soc_opts.index(answers.get('social_isolation', soc_opts[0])),
-    key='q_social_isolation'
-)
+for question_id in SECTION_QUESTIONS:
+    meta = get_question_meta(question_id)
+    option_map = {opt["value"]: opt["label"] for opt in meta["options"]}
+    values = list(option_map.keys())
+    default_value = answers.get(question_id, values[0])
+    if default_value not in values:
+        default_value = values[0]
+    st.markdown(f"<h3 style='margin-top:1.6rem;'>{meta['label']}</h3>", unsafe_allow_html=True)
+    st.markdown('<div class="sn-choice-group">', unsafe_allow_html=True)
+    selected = st.radio(
+        meta["label"],
+        options=values,
+        index=values.index(default_value),
+        key=f"gcp_{question_id}",
+        label_visibility="collapsed",
+        format_func=lambda value, m=option_map: m[value],
+    )
+    st.markdown("</div>", unsafe_allow_html=True)
+    if meta.get("description"):
+        st.caption(meta["description"])
+    answers[question_id] = selected
 
-st.markdown('---')
-col1, col2 = st.columns(2)
-with col1:
-    if st.button('Back', key='daily_back'):
-        st.switch_page('pages/gcp.py')
-with col2:
-    if st.button('Next', key='daily_next'):
-        st.switch_page('pages/gcp_health_safety.py')
+with st.container():
+    st.markdown('<div class="sn-sticky-footer"><div class="sn-footer-inner">', unsafe_allow_html=True)
+    footer_cols = st.columns([1, 1, 1])
+    skip_clicked = False
+    continue_clicked = False
+    with footer_cols[0]:
+        skip_clicked = st.button("Skip", type="secondary", use_container_width=True, key="gcp_daily_skip")
+    with footer_cols[2]:
+        continue_clicked = st.button(
+            "Continue",
+            type="primary",
+            use_container_width=True,
+            key="gcp_daily_continue",
+        )
+    st.markdown(
+        "</div><div class=\"sn-footer-note\">Respond as a person receiving care even if you’re filling it for someone else.</div></div>",
+        unsafe_allow_html=True,
+    )
+
+if continue_clicked or skip_clicked:
+    st.switch_page("pages/gcp_health_safety.py")
