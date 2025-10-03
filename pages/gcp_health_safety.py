@@ -6,6 +6,12 @@ import streamlit as st
 
 from guided_care_plan import ensure_gcp_session, get_question_meta, render_stepper
 
+from ui.theme import inject_theme
+
+def ensure_gcp_theme():
+    inject_theme()
+
+
 SECTION_QUESTIONS = [
     "falls_history",
     "cognition",
