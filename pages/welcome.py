@@ -1,7 +1,7 @@
 import streamlit as st
 from pathlib import Path
 
-# Session guard: keep state consistent
+# Keep state
 if "care_context" not in st.session_state:
     st.session_state.care_context = {}
 ctx = st.session_state.care_context
@@ -10,108 +10,90 @@ st.set_page_config(layout="wide")
 st.title("Welcome")
 st.caption("A simple starting point for families and professionals.")
 
-# ============================= CSS =============================
+# ---------- CSS (smaller hero + card polish) ----------
 st.markdown(
     """
     <style>
-      /* Layout tweaks */
-      .block-container { padding-top: 2rem; padding-bottom: 4rem; }
+      .block-container { padding-top: 1.5rem; padding-bottom: 3rem; }
 
-      /* HERO */
-      .hero-wrap { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 4rem; align-items: center; }
-      @media (max-width: 1100px) { .hero-wrap { grid-template-columns: 1fr; gap: 2rem; } }
+      /* Toned-down hero */
+      .hero-wrap { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 3rem; align-items: center; }
+      @media (max-width: 1100px) { .hero-wrap { grid-template-columns: 1fr; gap: 1.5rem; } }
 
       .hero-h1 {
-        font-size: clamp(28px, 5.6vw, 56px);
-        line-height: 1.05;
+        font-size: clamp(26px, 4.0vw, 42px);  /* smaller than before */
+        line-height: 1.08;
         font-weight: 800;
         letter-spacing: .2px;
         margin: 0 0 .25rem 0;
       }
       .hero-h2 {
-        font-size: clamp(20px, 2.2vw, 24px);
-        color: rgba(0,0,0,0.7);
+        font-size: clamp(16px, 1.8vw, 18px);
+        color: rgba(0,0,0,0.72);
         font-weight: 500;
-        margin: .5rem 0 1.25rem 0;
+        margin: .5rem 0 1.0rem 0;
       }
-      .hero-actions { display: flex; gap: .75rem; flex-wrap: wrap; }
-      .hero-photo {
-        width: min(520px, 100%);
-        margin: 0 auto;
-        position: relative;
-        transform: rotate(-3.2deg);
-        filter: drop-shadow(0 12px 20px rgba(0,0,0,.18));
-        border: 10px solid #fff;          /* photo border */
-        border-radius: 6px;
-        box-sizing: border-box;
-      }
+      .hero-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
 
-      /* Section divider */
-      .divider { margin: 2rem 0 1.5rem 0; border: none; border-top: 1px solid rgba(0,0,0,.08); }
-
-      /* Section heading */
+      .divider { margin: 1.5rem 0 1.25rem 0; border: none; border-top: 1px solid rgba(0,0,0,.08); }
       .section-kicker {
-        font-size: clamp(22px, 2.8vw, 28px);
+        font-size: clamp(18px, 2.2vw, 22px);
         font-weight: 800;
-        letter-spacing: .12em;
+        letter-spacing: .10em;
         text-transform: uppercase;
         color: #2a2a2a;
         margin: .25rem 0 1rem 0;
       }
 
-      /* Cards row */
-      .cards {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 2rem;
-      }
+      .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
       @media (max-width: 1000px) { .cards { grid-template-columns: 1fr; } }
 
       .card {
         background: #fff;
-        border-radius: 18px;
-        box-shadow: 0 8px 28px rgba(0,0,0,.08);
-        padding: 1rem 1rem 1.25rem 1rem;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0,0,0,.08);
+        padding: 0.8rem 0.8rem 1rem 0.8rem;
         border: 1px solid rgba(0,0,0,.05);
       }
-      .card-photo {
-        width: 100%;
-        border-radius: 16px;
-        display: block;
-        box-shadow: 0 6px 18px rgba(0,0,0,.12);
-        margin-bottom: .75rem;
-      }
-      .card h4 { margin: .25rem 0 .25rem 0; font-size: 18px; }
+      .card h4 { margin: .25rem 0 .25rem 0; font-size: 17px; }
       .card .sub { color: rgba(0,0,0,.6); font-size: 14px; margin-bottom: .5rem; }
 
-      /* Button row inside card */
-      .card-actions { display: flex; justify-content: flex-end; }
+      /* Apply border/shadow to st.image inside wrappers we mark */
+      .img-polaroid img {
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 10px 18px rgba(0,0,0,.18);
+        border: 8px solid #fff;   /* photo border look */
+      }
+      .img-card img {
+        width: 100%;
+        border-radius: 14px;
+        box-shadow: 0 6px 16px rgba(0,0,0,.12);
+      }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# ============================= Small helpers =============================
-def html_image(path: str, classes: str = "", style: str = ""):
-    """Render image via served /static path for pixel-perfect CSS sizing."""
-    p = Path(path)
+# ---------- Safe image helper: ALWAYS uses st.image ----------
+def show_image(path_str: str, *, width: int | str = "stretch", wrapper_class: str | None = None):
+    """Render image from static/… via st.image (works on Streamlit Cloud)."""
+    p = Path(path_str)
     if not p.exists():
-        st.info(f"Add image at {path}")
+        st.info(f"Add image at {path_str}")
         return
-    st.markdown(f'<img src="/{p.as_posix()}" class="{classes}" style="{style}">', unsafe_allow_html=True)
-
-def safe_image(path: str, width: int | str = 300):
-    """Pure Streamlit helper in case you prefer st.image() semantics."""
-    p = Path(path)
-    if not p.exists():
-        st.info(f"Add image at {path}")
-        return
+    if wrapper_class:
+        st.markdown(f'<div class="{wrapper_class}">', unsafe_allow_html=True)
+    # Accept int or the new string API ('stretch'/'content')
     st.image(str(p), width=width if isinstance(width, int) else width)
+    if wrapper_class:
+        st.markdown("</div>", unsafe_allow_html=True)
 
 # ============================= HERO =============================
 with st.container():
     st.markdown('<div class="hero-wrap">', unsafe_allow_html=True)
-    # Left column: typographic hero
+
+    # Left: text
     st.markdown(
         """
         <div>
@@ -120,18 +102,17 @@ with st.container():
             Every care decision matters. We’re here to guide you — at no cost —
             whether planning for yourself or a loved one.
           </div>
-          <div class="hero-actions">
-          </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
-    # Right column: tilted “photo”
-    st.markdown('<div style="display:flex;justify-content:center;">', unsafe_allow_html=True)
-    html_image("static/images/Hero.png", classes="hero-photo")
-    st.markdown("</div></div>", unsafe_allow_html=True)
 
-    # Real Streamlit buttons under the hero text (inside the layout flow)
+    # Right: hero image (smaller) — served with st.image
+    show_image("static/images/Hero.png", width=420, wrapper_class="img-polaroid")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # Buttons under text
     c1, c2 = st.columns([1, 1])
     with c1:
         if st.button("Start Now", key="hero_start"):
@@ -149,7 +130,7 @@ st.markdown('<div class="cards">', unsafe_allow_html=True)
 # Card 1
 with st.container():
     st.markdown('<div class="card">', unsafe_allow_html=True)
-    html_image("static/images/Someone-Else.png", classes="card-photo")
+    show_image("static/images/Someone-Else.png", width="stretch", wrapper_class="img-card")
     st.markdown("**I would like to support my loved ones**", unsafe_allow_html=True)
     st.markdown('<div class="sub">For someone</div>', unsafe_allow_html=True)
     col_a, col_b = st.columns([1, 1])
@@ -161,7 +142,7 @@ with st.container():
 # Card 2
 with st.container():
     st.markdown('<div class="card">', unsafe_allow_html=True)
-    html_image("static/images/Myself.png", classes="card-photo")
+    show_image("static/images/Myself.png", width="stretch", wrapper_class="img-card")
     st.markdown("**I’m looking for support just for myself**", unsafe_allow_html=True)
     st.markdown('<div class="sub">For myself</div>', unsafe_allow_html=True)
     col_c, col_d = st.columns([1, 1])
