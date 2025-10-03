@@ -11,44 +11,43 @@ CARE_INTENSITIES = ["low", "med", "high"]
 
 
 def _score_daily_life(answers: Dict[str, str]) -> int:
-    """Score daily life items to gauge baseline support."""
-
     score = 0
-    adl_score = {
-        "none": 0,
-        "one_two": 1,
-        "three_four": 2,
-        "most": 3,
-    }.get(answers.get("adl_help"), 0)
-    support_score = {
-        "robust": 0,
-        "intermittent": 1,
-        "limited": 2,
-        "none": 3,
-    }.get(answers.get("caregiver_support"), 0)
-    living_score = {
-        "own_home": 0,
-        "with_family": 1,
-        "senior_apartment": 1,
-        "assisted_setting": 2,
-        "other": 1,
-    }.get(answers.get("living_now"), 0)
-
-    score += adl_score + support_score + living_score
+    score_map = {
+        "daily_tasks_support": {
+            "independent": 0,
+            "light_support": 1,
+            "moderate_support": 2,
+            "extensive_support": 3,
+        },
+        "medication_management": {
+            "self_managed": 0,
+            "uses_reminders": 1,
+            "needs_help": 2,
+            "high_risk": 3,
+        },
+        "caregiver_support": {
+            "robust": 0,
+            "intermittent": 1,
+            "limited": 2,
+            "none": 3,
+        },
+    }
+    for key, mapping in score_map.items():
+        score += mapping.get(answers.get(key, ""), 0)
     return score
 
 
 def _score_health_safety(answers: Dict[str, str]) -> Tuple[int, List[str]]:
-    """Score safety indicators and capture notable flags."""
-
     score = 0
     flags: List[str] = []
 
-    falls = answers.get("falls", "none")
-    falls_score = {"none": 0, "one": 1, "multiple": 3}.get(falls, 0)
-    if falls_score:
+    falls = answers.get("falls_history", "none")
+    if falls == "multiple":
+        score += 3
         flags.append("falls")
-    score += falls_score
+    elif falls == "one":
+        score += 1
+        flags.append("falls")
 
     cognition = answers.get("cognition", "clear")
     cognition_score = {
@@ -57,53 +56,31 @@ def _score_health_safety(answers: Dict[str, str]) -> Tuple[int, List[str]]:
         "moderate_changes": 2,
         "significant_changes": 3,
     }.get(cognition, 0)
+    score += cognition_score
     if cognition_score >= 2:
         flags.append("cognition")
-    score += cognition_score
 
-    behaviors = answers.get("behavior_risks", "none")
+    behaviors = answers.get("behavior_signals", "none")
     behavior_score = {
         "none": 0,
         "occasional": 1,
         "frequent": 2,
         "high_risk": 3,
     }.get(behaviors, 0)
-    if behavior_score >= 2:
-        flags.append("behaviors")
     score += behavior_score
+    if behavior_score >= 2:
+        flags.append("behavior")
 
-    med_mgmt = answers.get("med_mgmt", "simple")
-    med_score = {
-        "simple": 0,
-        "organized": 1,
-        "help_needed": 2,
-        "complex": 3,
-    }.get(med_mgmt, 0)
-    if med_score >= 2:
-        flags.append("med_mgmt")
-    score += med_score
-
-    home = answers.get("home_safety", "safe")
-    home_score = {
-        "safe": 0,
-        "minor_updates": 1,
-        "needs_mods": 2,
-        "unsafe": 3,
-    }.get(home, 0)
-    if home_score >= 2:
-        flags.append("home_safety")
-    score += home_score
-
-    supervision = answers.get("supervision", "minimal")
+    supervision = answers.get("supervision_need", "minimal")
     supervision_score = {
         "minimal": 0,
         "daytime": 1,
         "extended": 2,
         "around_clock": 3,
     }.get(supervision, 0)
+    score += supervision_score
     if supervision_score >= 2:
         flags.append("supervision")
-    score += supervision_score
 
     return score, flags
 
@@ -119,24 +96,19 @@ def _derive_setting(
     total_score = daily_score + safety_score
     safety_flags: List[str] = []
 
-    if answers.get("falls") in {"one", "multiple"}:
+    if answers.get("falls_history") in {"one", "multiple"}:
         safety_flags.append("falls")
-    if answers.get("behavior_risks") in {"frequent", "high_risk"}:
+    if answers.get("behavior_signals") in {"frequent", "high_risk"}:
         safety_flags.append("behaviors")
-    if answers.get("med_mgmt") in {"help_needed", "complex"}:
+    if answers.get("medication_management") in {"needs_help", "high_risk"}:
         safety_flags.append("med_mgmt")
-    if answers.get("home_safety") in {"needs_mods", "unsafe"}:
-        safety_flags.append("home_safety")
 
-    if "Dementia or Alzheimer's" in chronic_conditions or answers.get("behavior_risks") == "high_risk":
+    if "Dementia or Alzheimer's" in chronic_conditions or answers.get("behavior_signals") == "high_risk":
         recommended = "memory"
-    elif total_score >= 11 or answers.get("supervision") == "around_clock":
+    elif total_score >= 9 or answers.get("supervision_need") == "around_clock":
         recommended = "assisted"
     else:
         recommended = "home"
-
-    if recommended == "home" and answers.get("living_now") == "assisted_setting":
-        recommended = "assisted"
 
     if total_score <= 4:
         intensity = "low"
@@ -156,22 +128,18 @@ def _derive_payment_context(audiencing: Dict[str, object]) -> str:
 
 
 def _derive_funding_confidence(answers: Dict[str, str], audiencing: Dict[str, object]) -> str:
-    chosen = answers.get("funding_confidence")
-    if chosen:
-        return str(chosen)
-
     caregiver = answers.get("caregiver_support", "robust")
     medicaid = (
         isinstance(audiencing, dict)
         and audiencing.get("qualifiers", {}).get("on_medicaid")
     )
     if medicaid:
-        return "concerned"
+        return "supported"
     if caregiver in {"robust", "intermittent"}:
-        return "confident"
+        return "stable"
     if caregiver == "limited":
-        return "balanced"
-    return "unsure"
+        return "watch"
+    return "stretched"
 
 
 def _build_decision_trace(
@@ -179,7 +147,6 @@ def _build_decision_trace(
     intensity: str,
     safety_flags: List[str],
     chronic_conditions: List[str],
-    preferences: List[str],
 ) -> List[str]:
     trace: List[str] = []
     if recommended_setting == "memory":
@@ -206,14 +173,6 @@ def _build_decision_trace(
             + ", ".join(cond for cond in chronic_conditions if cond != "None")
             + "."
         )
-
-    filtered_preferences = [pref for pref in preferences if pref != "No strong preference"]
-    if filtered_preferences:
-        trace.append(
-            "Preferences noted: "
-            + ", ".join(filtered_preferences)
-            + "."
-        )
     return trace
 
 
@@ -226,8 +185,7 @@ def evaluate_guided_care(
     audiencing = audiencing or {}
 
     normalized_answers = {key: answers.get(key) for key in QUESTION_ORDER}
-    chronic_conditions = list(normalized_answers.get("chronic") or [])
-    preferences = list(normalized_answers.get("preferences") or [])
+    chronic_conditions = list(normalized_answers.get("chronic_conditions") or [])
     if "None" in chronic_conditions and len(chronic_conditions) > 1:
         chronic_conditions = [cond for cond in chronic_conditions if cond != "None"]
 
@@ -246,7 +204,6 @@ def evaluate_guided_care(
         intensity,
         safety_flags,
         chronic_conditions,
-        preferences,
     )
 
     return {

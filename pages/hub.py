@@ -1,276 +1,185 @@
-"""Dashboard hub: high-fidelity layout."""
+"""Concierge Care Hub that adapts to the audiencing snapshot."""
+
 from __future__ import annotations
+
 import streamlit as st
 
-# ---------- PAGE CONFIG ----------
-st.set_page_config(page_title="Dashboard", layout="wide")
+from audiencing import (
+    URGENT_FEATURE_FLAG,
+    apply_audiencing_sanitizer,
+    ensure_audiencing_state,
+    reset_audiencing_state,
+    snapshot_audiencing,
+)
 
-# ---------- GLOBAL DASHBOARD CSS INJECTION ----------
-DASHBOARD_CSS = """
-<style>
-:root{
-  --brand:#0B5CD8;
-  --ink:#0f172a;
-  --muted:#4b5563;
-  --card:#ffffff;
-  --bg:#f8fafc;
-  --ring:rgba(11,92,216,.14);
-  --radius:16px;
-  --chip:#eef2ff;
-  --chip-ink:#1e3a8a;
-}
-body, .block-container { background: var(--bg); }
-.block-container { max-width: 1160px; padding-top: 8px; }
+# Page config must be set before any UI output
+st.set_page_config(page_title="Concierge Care Hub", layout="wide")
 
-header[data-testid="stHeader"] { background: transparent; }
-footer { visibility: hidden; }
+# ---------- Audiencing snapshot ----------
+state = ensure_audiencing_state()
+apply_audiencing_sanitizer(state)
+snapshot = snapshot_audiencing(state)
+st.session_state["audiencing_snapshot"] = snapshot
 
-.notice {
-  display:flex; align-items:center; gap:.5rem;
-  background:#eef6ff; color:#0b3e91; border:1px solid #cfe4ff;
-  padding:.625rem .9rem; border-radius:10px; font-size:.92rem; margin: 6px 0 18px;
-}
-.notice .x { margin-left:auto; opacity:.6; }
+# ---------- Session guard (fixed: closed parenthesis) ----------
+care_context = st.session_state.setdefault(
+    "care_context",
+    {
+        "person_name": "Your Loved One",
+        "gcp_answers": {},
+        "gcp_recommendation": None,  # 'In-home care' | 'Assisted living' | 'Memory care' | None
+        "gcp_cost": None,            # e.g., '$5,200/mo'
+    },
+)
+ctx = st.session_state.care_context
+person_name = ctx.get("person_name", "Your Loved One")
 
-.hstack{ display:flex; align-items:center; gap:.5rem; }
-.vstack{ display:flex; flex-direction:column; gap:.5rem; }
+st.title("Dashboard")  # keep your H1; match your design copy if needed
 
-.page-title {
-  letter-spacing:.08em; font-weight:800; font-size:2rem; color:var(--ink);
-  margin: 4px 0 14px;
-}
-
-.grid {
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-}
-
-.card {
-  background:var(--card);
-  border: 1px solid #e5e7eb;
-  border-radius: var(--radius);
-  padding: 18px;
-  box-shadow: 0 1px 0 rgba(16,24,40,.04), 0 1px 2px rgba(16,24,40,.06);
-}
-.card h3{
-  margin: 0 0 8px; font-size:1.15rem; font-weight:750; color:var(--ink);
-}
-.card p{
-  margin: 2px 0 14px; color:var(--muted); font-size:.98rem; line-height:1.45;
-}
-.badge{
-  display:inline-flex; align-items:center; gap:.35rem;
-  font-size:.78rem; padding:.28rem .55rem; border-radius:999px;
-  background: #eef2ff; color:#1e3a8a; border:1px solid #c7d2fe;
-}
-.badge .dot{
-  width:.45rem; height:.45rem; border-radius:50%; background:#6b8afd;
-}
-.status{
-  display:inline-flex; align-items:center; gap:.4rem; color:#16a34a;
-  font-size:.9rem; font-weight:600;
-}
-.status .tick{ width: .9rem; height: .9rem; border:2px solid #16a34a; border-radius:50%; display:inline-block; position:relative;}
-.status .tick:after{ content:""; position:absolute; width:.35rem; height:.2rem; border-left:2px solid #16a34a; border-bottom:2px solid #16a34a; transform: rotate(-45deg); left:.16rem; top:.25rem;}
-
-.btn {
-  display:inline-flex; align-items:center; justify-content:center; gap:.45rem;
-  font-weight:700; font-size:.95rem;
-  padding:.6rem .9rem; border-radius:10px; border:1px solid #d0d7e3; background:#f8fbff; color:#0b3e91;
-  transition: all .15s ease;
-}
-.btn.primary { background:var(--brand); color:white; border-color:transparent; }
-.btn:hover { box-shadow:0 0 0 4px var(--ring); transform: translateY(-1px); }
-
-.kicker { color:#79808d; font-size:.88rem; margin-left:.35rem; }
-
-.tile-row {
-  display:grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;
-}
-.tile {
-  background:var(--card);
-  border:1px solid #e5e7eb; border-radius:14px; padding:14px 16px;
-  display:flex; align-items:center; justify-content:space-between;
-}
-.tile .title { font-weight:700; color:var(--ink); }
-.tile .subtitle { color:var(--muted); font-size:.92rem; margin-top:2px; }
-.tile .btn { padding:.45rem .75rem; }
-.gradient {
-  background: radial-gradient(120% 120% at 85% 10%, #ffecec 0%, rgba(255,255,255,0) 40%),
-              radial-gradient(120% 120% at 10% 90%, #eef6ff 0%, rgba(255,255,255,0) 42%),
-              var(--card);
-}
-.hr { height: 1px; background:#e5e7eb; margin: 8px 0 10px; border-radius:1px; }
-</style>
-"""
-st.markdown(DASHBOARD_CSS, unsafe_allow_html=True)
-
-# ---------- TOP NOTICE ----------
+# ---------- Hub-only CSS fixes ----------
+# 1) Nuke any global "card decorators" that create empty rounded boxes above content.
+#    These often target Streamlit block wrappers or inject ::before/::after backgrounds.
 st.markdown(
     """
-    <div class="notice">
-      <span>Log in for a better experience — continue where you left off, with your information kept secure and confidential following HIPAA guidelines.</span>
-      <span class="x">✕</span>
-    </div>
+    <style>
+      /* Scope to this page only by wrapping all below in .hub-scope */
+      .hub-scope [data-testid="stVerticalBlock"],
+      .hub-scope [data-testid="stHorizontalBlock"] {
+        /* Remove any background/box/shadow/min-height global decorations */
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+        outline: none !important;
+        min-height: auto !important;
+      }
+      /* Kill pseudo-element decorations that some themes inject */
+      .hub-scope *::before,
+      .hub-scope *::after {
+        box-shadow: none !important;
+        background: none !important;
+      }
+
+      /* Our actual cards */
+      .sn-card {
+        background: #fff;
+        border: 1px solid rgba(2,6,23,0.08);
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(2,6,23,0.06);
+        padding: 22px;
+        margin: 24px 0;
+      }
+      .sn-title { font-weight: 800; font-size: 18px; margin: 0 0 6px 0; }
+      .sn-subtle { color: #475569; margin: 0 0 12px 0; }
+      .sn-status {
+        font-size: 12px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(2, 6, 23, 0.08);
+        background: #F8FAFC;
+        display: inline-block;
+      }
+      .sn-card .stButton>button {
+        padding: 10px 14px;
+        border-radius: 10px;
+        font-weight: 600;
+      }
+    </style>
     """,
     unsafe_allow_html=True,
 )
 
-# ---------- ASSESSMENT CONTEXT BAR ----------
-col_a, col_b = st.columns([0.8, 0.2])
-with col_a:
-    st.markdown('<div class="page-title">DASHBOARD</div>', unsafe_allow_html=True)
-with col_b:
-    # right-side tiny context chips
-    st.markdown(
-        """
-        <div style="display:flex; gap:.4rem; justify-content:flex-end; margin-top:6px;">
-          <span class="kicker">Assessment</span>
-          <span class="badge"><span class="dot"></span> For someone</span>
-          <span class="badge">John</span>
-          <span class="badge">Add +</span>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+# ---------- Page scope wrapper to confine the resets above ----------
+st.markdown('<div class="hub-scope">', unsafe_allow_html=True)
 
-st.write("")  # small spacer
+def card(
+    title: str,
+    subtitle: str,
+    cta_label: str,
+    cta_key: str,
+    on_click_page: str,
+    status: str | None = None,
+) -> None:
+    st.markdown('<div class="sn-card">', unsafe_allow_html=True)
+    # Use Streamlit columns for layout; they stay INSIDE our card because the card
+    # is a real DOM node, not a pseudo-element.
+    c1, c2, c3 = st.columns([6, 2, 2], vertical_alignment="center")
+    with c1:
+        st.markdown(f'<p class="sn-title">{title}</p>', unsafe_allow_html=True)
+        st.markdown(f'<p class="sn-subtle">{subtitle}</p>', unsafe_allow_html=True)
+    with c2:
+        if st.button(cta_label, key=cta_key):
+            st.switch_page(on_click_page)
+    with c3:
+        if status:
+            st.markdown(f'<span class="sn-status">{status}</span>', unsafe_allow_html=True)
+        else:
+            st.markdown("&nbsp;", unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-# ---------- CARD GRID ----------
-st.markdown('<div class="grid">', unsafe_allow_html=True)
+# ---------- Guided Care Plan ----------
+gcp_completed = bool(ctx.get("gcp_recommendation")) or bool(ctx.get("gcp_answers"))
+rec_text = ctx.get("gcp_recommendation") or "Understand the situation"
+cost_text = ctx.get("gcp_cost") or "In progress"
 
-# Card 1: Understand the situation (Guided Care Plan)
-st.markdown(
-    """
-    <div class="card">
-      <div class="hstack" style="justify-content:space-between;">
-        <h3>Understand the situation</h3>
-        <span class="badge">🧭 Guided Care Plan</span>
-      </div>
-      <p>
-        <span class="hstack" style="gap:.5rem;">
-          <span style="opacity:.9;">Recommendation</span>
-          <strong>In-Home Care</strong>
-        </span>
-      </p>
-      <div class="hstack" style="gap:.6rem;">
-        <a class="btn" href="?view=see_responses">See responses</a>
-        <a class="btn" href="?view=start_over">Start over</a>
-        <span class="status"><span class="tick"></span> Completed</span>
-      </div>
-    </div>
-    """,
-    unsafe_allow_html=True,
+card(
+    title="Guided Care Plan",
+    subtitle=(
+        f"{rec_text} • {cost_text}"
+        if gcp_completed
+        else f"See what we learned from your answers and refine the recommendation for {person_name}."
+    ),
+    cta_label=("Open" if gcp_completed else "Start guided plan"),
+    cta_key="hub_gcp_start",
+    on_click_page="pages/gcp.py",
+    status=("Completed ✅" if gcp_completed else "In progress"),
 )
 
-# Card 2: Understand the costs (Cost Estimator)
-st.markdown(
-    """
-    <div class="card">
-      <div class="hstack" style="justify-content:space-between;">
-        <h3>Understand the costs</h3>
-        <span class="badge">🧮 Cost Estimator</span>
-      </div>
-      <p>Assess the cost structure for various care options for John. The cost estimate will automatically update based on your selected choices.</p>
-      <div class="hstack" style="gap:.6rem;">
-        <a class="btn primary" href="?view=start_costs">Start</a>
-        <span class="kicker">Next step ✺</span>
-      </div>
-    </div>
-    """,
-    unsafe_allow_html=True,
+# ---------- Cost Planner ----------
+card(
+    title="Cost Estimator",
+    subtitle=(
+        f"Assess the total cost scenarios across options for {person_name}. "
+        f"The estimate will update based on your guided plan."
+    ),
+    cta_label="Open estimator",
+    cta_key="hub_open_cp",
+    on_click_page="pages/cost_planner.py",
 )
 
-# Card 3: Connect with an advisor
-st.markdown(
-    """
-    <div class="card">
-      <div class="hstack" style="justify-content:space-between;">
-        <h3>Connect with an advisor to plan the care</h3>
-        <span class="badge">🎧 Get Connected</span>
-      </div>
-      <p>Whenever you’re ready to meet with an advisor.</p>
-      <a class="btn primary" href="?view=get_connected">Get connected</a>
-    </div>
-    """,
-    unsafe_allow_html=True,
+# ---------- Plan for My Advisor ----------
+card(
+    title="Plan for My Advisor",
+    subtitle="Book time with a concierge advisor and share your plan.",
+    cta_label="Get connected",
+    cta_key="hub_pfma",
+    on_click_page="pages/pfma.py",
 )
 
-# Card 4: FAQs & Answers (AI Agent) with soft gradient
-st.markdown(
-    """
-    <div class="card gradient">
-      <div class="hstack" style="justify-content:space-between;">
-        <h3>FAQs &amp; Answers</h3>
-        <span class="badge">✨ AI Agent</span>
-      </div>
-      <p>Receive instant, tailored assistance from our advanced AI chat.</p>
-      <a class="btn" href="?view=ai_open">Open</a>
-    </div>
-    """,
-    unsafe_allow_html=True,
+# ---------- Medication Management ----------
+card(
+    title="Medication Management",
+    subtitle="Keep meds on track with simple reminders and checks.",
+    cta_label="Open",
+    cta_key="hub_meds",
+    on_click_page="pages/medication_management.py",
 )
 
-st.markdown('</div>', unsafe_allow_html=True)  # end grid
-
-# ---------- START FROM SCRATCH ----------
-st.markdown(
-    """
-    <div class="hstack" style="gap:.5rem; margin-top:14px;">
-      <span class="badge">↻ Start from scratch</span>
-      <span class="kicker">Chose this option if you would like remove saved progress for John and start fresh.</span>
-    </div>
-    <div class="hr"></div>
-    """,
-    unsafe_allow_html=True,
+# ---------- Risk Navigator ----------
+card(
+    title="Risk Navigator",
+    subtitle="Quick safety check to reduce avoidable risks at home.",
+    cta_label="Run check",
+    cta_key="hub_risk",
+    on_click_page="pages/risk_navigator.py",
 )
 
-# ---------- ADDITIONAL SERVICES ROW ----------
-st.markdown(
-    """
-    <div style="font-weight:800; margin: 2px 0 8px; color:var(--ink);">Additional services</div>
-    <div class="tile-row">
-      <div class="tile">
-        <div class="vstack">
-          <div class="title">AI Health Check</div>
-          <div class="subtitle">Get insights about John overall body health</div>
-        </div>
-        <a class="btn" href="?view=health_open">Open</a>
-      </div>
-      <div class="tile">
-        <div class="vstack">
-          <div class="title">Learning Center</div>
-          <div class="subtitle">Media Center</div>
-        </div>
-        <a class="btn" href="?view=media_open">Open</a>
-      </div>
-    </div>
-    """,
-    unsafe_allow_html=True,
+# ---------- Assessment (last) ----------
+card(
+    title="Assessment",
+    subtitle="Additional screening tools and forms.",
+    cta_label="Open assessment",
+    cta_key="hub_assess",
+    on_click_page="pages/care_plan_confirm.py",
 )
 
-# ---------- NAVIGATION FALLBACKS ----------
-# If your app uses st.switch_page, wire query params to it here.
-view = st.query_params.get("view")
-if view:
-    # Replace these with your actual page routes if available.
-    try:
-        if view == "start_costs":
-            st.switch_page("pages/02_Cost_Estimator.py")
-        elif view == "get_connected":
-            st.switch_page("pages/05_Get_Connected.py")
-        elif view == "ai_open":
-            st.switch_page("pages/06_AI_Agent.py")
-        elif view == "see_responses":
-            st.switch_page("pages/01_Guided_Care_Plan.py")
-        elif view == "start_over":
-            # placeholder for reset logic
-            st.experimental_rerun()
-        elif view == "health_open":
-            st.switch_page("pages/07_AI_Health_Check.py")
-        elif view == "media_open":
-            st.switch_page("pages/08_Learning_Center.py")
-    except Exception:
-        # If switch_page is not available, we simply render the hub.
-        pass
+st.markdown("</div>", unsafe_allow_html=True)  # end .hub-scope
