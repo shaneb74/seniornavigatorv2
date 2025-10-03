@@ -1,7 +1,6 @@
-# pages/welcome.py
-import io
-import base64
-from pathlib import Path
+"""Unified welcome screen with segmented entry selection."""
+
+from __future__ import annotations
 
 import streamlit as st
 from PIL import Image, UnidentifiedImageError

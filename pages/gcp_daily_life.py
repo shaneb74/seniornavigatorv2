@@ -1,3 +1,7 @@
+"""Guided Care Plan – Daily Life & Support section."""
+
+from __future__ import annotations
+
 import streamlit as st
 
 from guided_care_plan import ensure_gcp_session, get_question_meta, render_stepper

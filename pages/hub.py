@@ -4,9 +4,24 @@ from __future__ import annotations
 
 import streamlit as st
 
-# ---------- Session guard ----------
-if "care_context" not in st.session_state:
-    st.session_state.care_context = {
+from audiencing import (
+    URGENT_FEATURE_FLAG,
+    apply_audiencing_sanitizer,
+    ensure_audiencing_state,
+    reset_audiencing_state,
+    snapshot_audiencing,
+)
+
+st.set_page_config(page_title="Concierge Care Hub", layout="wide")
+
+state = ensure_audiencing_state()
+apply_audiencing_sanitizer(state)
+snapshot = snapshot_audiencing(state)
+st.session_state["audiencing_snapshot"] = snapshot
+
+care_context = st.session_state.setdefault(
+    "care_context",
+    {
         "person_name": "Your Loved One",
         "gcp_answers": {},
         "gcp_recommendation": None,

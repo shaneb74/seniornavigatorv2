@@ -1,3 +1,7 @@
+"""Guided Care Plan intro with unified styling."""
+
+from __future__ import annotations
+
 import streamlit as st
 
 from guided_care_plan import ensure_gcp_session, render_stepper
@@ -26,6 +30,18 @@ Answer twelve short questions across daily life, safety, and context. We’ll us
 snapshot to surface a personalized care recommendation, highlight safety considerations, and point you back
 to the Concierge Care Hub with the right next steps.
     """
+<div class="sn-card" style="margin-top:1.4rem;">
+  <p style="font-size:1rem; color:#475569; margin-bottom:0.6rem;">
+    You’re planning for <strong>{person}</strong>. We’ll reuse your audiencing details and apply the Guided Care Plan logic to highlight safety considerations, recommend a setting, and connect cost planning.
+  </p>
+  <ul style="color:#475569; line-height:1.7; margin-left:1.2rem;">
+    <li>Five sections with plain-language questions.</li>
+    <li>Automatically applies your household, benefits, and Medicaid context.</li>
+    <li>Produces a DecisionTrace for advisors and cost planning.</li>
+  </ul>
+</div>
+""".format(person=person_name),
+    unsafe_allow_html=True,
 )
 
 st.markdown("---")
