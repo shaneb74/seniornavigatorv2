@@ -48,11 +48,8 @@ def render_card(
 ) -> None:
     """Render a dashboard card with consistent layout and controls."""
 
-    form_key = f"hub_card_{key}"
-    primary_clicked = False
-    secondary_clicked = False
-
-    with st.form(key=form_key):
+    with st.container():
+        st.markdown("<div class='hub-card'>", unsafe_allow_html=True)
         st.markdown(
             f"""
             <div class="hub-card-header">
@@ -65,33 +62,29 @@ def render_card(
             """,
             unsafe_allow_html=True,
         )
-
         if chips:
             chip_html = "".join(status_chip(c) for c in chips)
-            st.markdown(
-                f"<div class='hub-chip-row'>{chip_html}</div>", unsafe_allow_html=True
-            )
-
+            st.markdown(f"<div class='hub-chip-row'>{chip_html}</div>", unsafe_allow_html=True)
         st.markdown(
             f"<div class='hub-card-body'>{description}</div>",
             unsafe_allow_html=True,
         )
 
+        # Buttons row
         button_cols = st.columns(2 if secondary_label else 1, gap="small")
         with button_cols[0]:
-            primary_clicked = st.form_submit_button(
-                primary_label, use_container_width=True
-            )
+            st.markdown("<div class='hub-button hub-button-primary'>", unsafe_allow_html=True)
+            if st.button(primary_label, key=f"{key}_primary"):
+                primary_action()
+            st.markdown("</div>", unsafe_allow_html=True)
         if secondary_label and secondary_action:
             with button_cols[1]:
-                secondary_clicked = st.form_submit_button(
-                    secondary_label, use_container_width=True
-                )
+                st.markdown("<div class='hub-button hub-button-secondary'>", unsafe_allow_html=True)
+                if st.button(secondary_label, key=f"{key}_secondary"):
+                    secondary_action()
+                st.markdown("</div>", unsafe_allow_html=True)
 
-    if primary_clicked:
-        primary_action()
-    if secondary_clicked and secondary_action:
-        secondary_action()
+        st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ---------- Page-level styling ----------
@@ -174,7 +167,12 @@ st.markdown(
         color: #334155;
         box-shadow: 0 12px 30px -24px rgba(15, 23, 42, 0.55);
       }}
-      form[data-testid="stForm"][aria-label^="hub_card_"] {{
+      .hub-card-grid {{
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.25rem;
+      }}
+      .hub-card {{
         background: #ffffff;
         border-radius: 22px;
         border: 1px solid rgba(148, 163, 184, 0.28);
@@ -182,19 +180,8 @@ st.markdown(
         box-shadow: 0 24px 44px -32px rgba(15, 23, 42, 0.45);
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
         min-height: 260px;
-        margin-bottom: 1.25rem;
-        width: 100%;
-      }}
-      form[data-testid="stForm"][aria-label^="hub_card_"] .stFormSubmitter {{
-        margin: 0;
-      }}
-      form[data-testid="stForm"][aria-label^="hub_card_"] .stColumn {{
-        display: flex;
-      }}
-      form[data-testid="stForm"][aria-label^="hub_card_"] .stFormSubmitButton {{
-        width: 100%;
+        gap: 0.6rem;
       }}
       .hub-card-header {{
         display: flex;
@@ -230,7 +217,6 @@ st.markdown(
         color: #1f2937;
       }}
       .hub-card-body {{
-        margin: 0;
         font-size: 0.94rem;
         color: #42556b;
         line-height: 1.55;
@@ -251,34 +237,62 @@ st.markdown(
         letter-spacing: 0.05em;
         text-transform: uppercase;
       }}
-      form[data-testid="stForm"][aria-label^="hub_card_"] .stFormSubmitButton>button {{
+      .hub-button .stButton>button {{
+        width: 100%;
         border-radius: 12px;
         padding: 0.7rem 1rem;
         font-weight: 600;
         letter-spacing: 0.01em;
         border: 1px solid transparent;
       }}
-      form[data-testid="stForm"][aria-label^="hub_card_"] .stFormSubmitButton>button {{
+      .hub-button-primary .stButton>button {{
         background: linear-gradient(135deg, #4f46e5, #6366f1);
         color: #ffffff;
         box-shadow: 0 18px 30px -20px rgba(79, 70, 229, 0.8);
       }}
-      form[data-testid="stForm"][aria-label^="hub_card_"] .stFormSubmitButton>button:hover {{
+      .hub-button-primary .stButton>button:hover {{
         background: linear-gradient(135deg, #4338ca, #4f46e5);
         border-color: rgba(79, 70, 229, 0.45);
       }}
-      form[data-testid="stForm"][aria-label^="hub_card_"] .stColumn:nth-child(2) .stFormSubmitButton>button {{
+      .hub-button-secondary .stButton>button {{
         background: rgba(79, 70, 229, 0.08);
         border-color: rgba(79, 70, 229, 0.28);
         color: #3730a3;
         box-shadow: none;
       }}
-      form[data-testid="stForm"][aria-label^="hub_card_"] .stColumn:nth-child(2) .stFormSubmitButton>button:hover {{
+      .hub-button-secondary .stButton>button:hover {{
         background: rgba(79, 70, 229, 0.18);
       }}
+      .hub-additional {{
+        background: #ffffff;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.28);
+        padding: 1.2rem 1.5rem;
+        box-shadow: 0 18px 34px -30px rgba(15, 23, 42, 0.42);
+      }}
+      .hub-additional h3 {{
+        margin: 0 0 0.8rem 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #1f2937;
+      }}
+      .hub-additional .stButton>button {{
+        width: 100%;
+        border-radius: 999px;
+        padding: 0.55rem 0.85rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        background: #f5f7ff;
+        border: 1px solid rgba(148, 163, 184, 0.45);
+        color: #1f2a4c;
+        box-shadow: none;
+      }}
+      .hub-additional .stButton>button:hover {{
+        background: #eef2ff;
+      }}
       @media (max-width: 640px) {{
-        form[data-testid="stForm"][aria-label^="hub_card_"] {{
-          margin-bottom: 1rem;
+        .hub-card-grid {{
+          grid-template-columns: 1fr;
         }}
       }}
     </style>
@@ -337,96 +351,74 @@ else:
     gcp_chips.append("Guided plan")
 gcp_chips.append("Completed" if gcp_completed else "In progress")
 
-cards = [
-    dict(
-        key="gcp",
-        icon="🧭",
-        title="Understand the situation",
-        subtitle="Guided Care Plan",
-        description=f"See what we learned from your answers and refine the recommendation for {person_name}.",
-        chips=gcp_chips,
-        primary_label="See responses" if gcp_completed else "Start guided plan",
-        primary_action=lambda: st.switch_page("pages/gcp.py"),
-        secondary_label="Start over" if gcp_completed else None,
-        secondary_action=reset_guided_plan if gcp_completed else None,
-    ),
-    dict(
-        key="costs",
-        icon="💰",
-        title="Understand the costs",
-        subtitle="Cost Estimator",
-        description=f"Assess the total cost scenarios across options for {person_name}. The cost estimate will automatically update based on your guided plan.",
-        chips=["Cost planner"],
-        primary_label="Open estimator",
-        primary_action=lambda: st.switch_page("pages/cost_planner.py"),
-    ),
-    dict(
-        key="advisor",
-        icon="🤝",
-        title="Connect with an advisor to plan the care",
-        subtitle="Care Team",
-        description=f"Talk with a concierge advisor, share important details about {person_name}, and map next steps together.",
-        chips=["Get connected"],
-        primary_label="Get connected",
-        primary_action=lambda: st.switch_page("pages/pfma.py"),
-    ),
-    dict(
-        key="faqs",
-        icon="💬",
-        title="FAQs &amp; Answers",
-        subtitle="AI Assistant",
-        description="Receive instant, tailored guidance about benefits, housing, safety, and more.",
-        chips=["AI agent"],
-        primary_label="Open",
-        primary_action=lambda: st.switch_page("pages/ai_advisor.py"),
-    ),
-    dict(
-        key="risk",
-        icon="🛡️",
-        title="Spot areas of concern",
-        subtitle="Risk Navigator",
-        description=f"Review fall risk, memory concerns, and safety watchpoints so you can advocate for {person_name}.",
-        chips=["Care insights"],
-        primary_label="Open navigator",
-        primary_action=lambda: st.switch_page("pages/risk_navigator.py"),
-    ),
-    dict(
-        key="meds",
-        icon="💊",
-        title="Check medications and interactions",
-        subtitle="Medication Check",
-        description=f"Upload a list and get an interaction review along with questions to ask for {person_name}.",
-        chips=["Medication review"],
-        primary_label="Review medications",
-        primary_action=lambda: st.switch_page("pages/medication_management.py"),
-    ),
-    dict(
-        key="export",
-        icon="📄",
-        title="Share or save your plans",
-        subtitle="Export Center",
-        description="Download summaries and export the guided plan for care partners or providers.",
-        chips=["PDF &amp; email"],
-        primary_label="Open export tools",
-        primary_action=lambda: st.switch_page("pages/export_results.py"),
-    ),
-    dict(
-        key="learning",
-        icon="🎓",
-        title="Learn from trusted experts",
-        subtitle="Learning Center",
-        description="Browse curated articles and partner resources to stay confident in every step.",
-        chips=["Resource hub"],
-        primary_label="Browse resources",
-        primary_action=lambda: st.switch_page("pages/trusted_partners.py"),
-    ),
-]
+st.markdown("<div class='hub-card-grid'>", unsafe_allow_html=True)
 
-for idx in range(0, len(cards), 2):
-    row_cards = cards[idx : idx + 2]
-    row_cols = st.columns(len(row_cards), gap="large")
-    for col, card_config in zip(row_cols, row_cards):
-        with col:
-            render_card(**card_config)
+render_card(
+    key="gcp",
+    icon="🧭",
+    title="Understand the situation",
+    subtitle="Guided Care Plan",
+    description=f"See what we learned from your answers and refine the recommendation for {person_name}.",
+    chips=gcp_chips,
+    primary_label="See responses" if gcp_completed else "Start guided plan",
+    primary_action=lambda: st.switch_page("pages/gcp.py"),
+    secondary_label="Start over" if gcp_completed else None,
+    secondary_action=reset_guided_plan if gcp_completed else None,
+)
+
+render_card(
+    key="costs",
+    icon="💰",
+    title="Understand the costs",
+    subtitle="Cost Estimator",
+    description=f"Assess the total cost scenarios across options for {person_name}. The cost estimate will automatically update based on your guided plan.",
+    chips=["Cost planner"],
+    primary_label="Open estimator",
+    primary_action=lambda: st.switch_page("pages/cost_planner.py"),
+)
+
+render_card(
+    key="advisor",
+    icon="🤝",
+    title="Connect with an advisor to plan the care",
+    subtitle="Care Team",
+    description=f"Talk with a concierge advisor, share important details about {person_name}, and map next steps together.",
+    chips=["Get connected"],
+    primary_label="Get connected",
+    primary_action=lambda: st.switch_page("pages/pfma.py"),
+)
+
+render_card(
+    key="faqs",
+    icon="💬",
+    title="FAQs &amp; Answers",
+    subtitle="AI Assistant",
+    description="Receive instant, tailored guidance about benefits, housing, safety, and more.",
+    chips=["AI agent"],
+    primary_label="Open",
+    primary_action=lambda: st.switch_page("pages/ai_advisor.py"),
+)
+
+st.markdown("</div>", unsafe_allow_html=True)
+
+
+# ---------- Additional services ----------
+with st.container():
+    st.markdown("<div class='hub-additional'>", unsafe_allow_html=True)
+    st.markdown("<h3>Additional services</h3>", unsafe_allow_html=True)
+    pill_data = [
+        ("🛡️ Risk Navigator", "pages/risk_navigator.py", "hub_risk_pill"),
+        ("💊 Medication Check", "pages/medication_management.py", "hub_meds_pill"),
+        ("📄 Save or export plans", "pages/export_results.py", "hub_export_pill"),
+        ("🎓 Learning Center", "pages/trusted_partners.py", "hub_learning_pill"),
+    ]
+    for idx in range(0, len(pill_data), 2):
+        row = pill_data[idx : idx + 2]
+        cols = st.columns(len(row), gap="small")
+        for col, (label, target, key) in zip(cols, row):
+            with col:
+                if st.button(label, key=key):
+                    st.switch_page(target)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown("</div>", unsafe_allow_html=True)
