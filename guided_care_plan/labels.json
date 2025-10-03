@@ -1,0 +1,141 @@
+{
+  "questions": {
+    "who_for": {
+      "label": "Who are you planning for?",
+      "description": "Helps us personalize the language and support.",
+      "options": [
+        {"value": "self", "label": "I'm planning for myself"},
+        {"value": "parent", "label": "A parent"},
+        {"value": "partner", "label": "A spouse or partner"},
+        {"value": "relative", "label": "Another family member"},
+        {"value": "friend", "label": "A friend or neighbor"}
+      ]
+    },
+    "living_now": {
+      "label": "Where do they live today?",
+      "description": "Gives us the starting point for support planning.",
+      "options": [
+        {"value": "own_home", "label": "In their own home"},
+        {"value": "with_family", "label": "With family"},
+        {"value": "senior_apartment", "label": "Senior or independent living"},
+        {"value": "assisted_setting", "label": "Assisted or memory care"},
+        {"value": "other", "label": "Somewhere else"}
+      ]
+    },
+    "caregiver_support": {
+      "label": "How much caregiver support is available?",
+      "description": "Consistent hands-on help can change the path.",
+      "options": [
+        {"value": "robust", "label": "Reliable support every day"},
+        {"value": "intermittent", "label": "Help most days"},
+        {"value": "limited", "label": "Help now and then"},
+        {"value": "none", "label": "No regular help"}
+      ]
+    },
+    "adl_help": {
+      "label": "How many daily activities need help?",
+      "description": "Bathing, dressing, meals, and similar tasks.",
+      "options": [
+        {"value": "none", "label": "Independent with daily tasks"},
+        {"value": "one_two", "label": "Needs help with 1–2 tasks"},
+        {"value": "three_four", "label": "Needs help with 3–4 tasks"},
+        {"value": "most", "label": "Needs help with most tasks"}
+      ]
+    },
+    "cognition": {
+      "label": "How is memory and thinking?",
+      "description": "Support intensity depends on cognition changes.",
+      "options": [
+        {"value": "clear", "label": "Clear and steady"},
+        {"value": "mild_changes", "label": "Some mild changes"},
+        {"value": "moderate_changes", "label": "Noticeable changes"},
+        {"value": "significant_changes", "label": "Significant changes"}
+      ]
+    },
+    "behavior_risks": {
+      "label": "Any wandering or unsafe behaviors?",
+      "description": "Helps us flag safety supports.",
+      "options": [
+        {"value": "none", "label": "No concerning behaviors"},
+        {"value": "occasional", "label": "Occasional restlessness"},
+        {"value": "frequent", "label": "Frequent wandering or risks"},
+        {"value": "high_risk", "label": "High risk or police/fire involvement"}
+      ]
+    },
+    "falls": {
+      "label": "Falls in the last 12 months?",
+      "description": "Recent falls change the support we recommend.",
+      "options": [
+        {"value": "none", "label": "No falls"},
+        {"value": "one", "label": "One fall"},
+        {"value": "multiple", "label": "More than one fall"}
+      ]
+    },
+    "med_mgmt": {
+      "label": "How complex are medications to manage?",
+      "description": "We look at reminders, dosing, and safety.",
+      "options": [
+        {"value": "simple", "label": "Simple — easy to manage"},
+        {"value": "organized", "label": "Organized with reminders"},
+        {"value": "help_needed", "label": "Needs help to stay on track"},
+        {"value": "complex", "label": "Complex or high risk"}
+      ]
+    },
+    "home_safety": {
+      "label": "Is the home setup safe (stairs/bath/etc.)?",
+      "description": "Includes lighting, grab bars, and accessible spaces.",
+      "options": [
+        {"value": "safe", "label": "Yes, it feels safe"},
+        {"value": "minor_updates", "label": "Mostly, just a few updates"},
+        {"value": "needs_mods", "label": "Needs several modifications"},
+        {"value": "unsafe", "label": "No, it is not safe right now"}
+      ]
+    },
+    "supervision": {
+      "label": "Do they have needed supervision at home?",
+      "description": "Covers both day and overnight coverage.",
+      "options": [
+        {"value": "minimal", "label": "Independent most of the day"},
+        {"value": "daytime", "label": "Needs daytime check-ins"},
+        {"value": "extended", "label": "Needs most of the day covered"},
+        {"value": "around_clock", "label": "Needs 24/7 supervision"}
+      ]
+    },
+    "chronic": {
+      "label": "Any chronic conditions?",
+      "description": "Select all that apply.",
+      "options": [
+        "Diabetes",
+        "Hypertension",
+        "COPD",
+        "CHF",
+        "Stroke",
+        "Parkinson's",
+        "Dementia or Alzheimer's",
+        "None"
+      ]
+    },
+    "preferences": {
+      "label": "Any strong preferences?",
+      "description": "Choose the statements that fit best.",
+      "options": [
+        "Stay in the current home",
+        "Live near family",
+        "Prefer a smaller setting",
+        "Enjoy a vibrant community",
+        "Open to any option",
+        "No strong preference"
+      ]
+    },
+    "funding_confidence": {
+      "label": "How confident do you feel about paying for care?",
+      "description": "Used to guide the Cost Planner and advisor support.",
+      "options": [
+        {"value": "confident", "label": "Confident — funding is in place"},
+        {"value": "balanced", "label": "Balancing things but mostly okay"},
+        {"value": "concerned", "label": "Concerned about covering costs"},
+        {"value": "unsure", "label": "Not sure yet"}
+      ]
+    }
+  }
+}

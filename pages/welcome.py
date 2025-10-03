@@ -1,202 +1,148 @@
-# pages/welcome.py
-import io
-import base64
-from pathlib import Path
+"""Unified welcome screen with segmented entry selection."""
+
+from __future__ import annotations
 
 import streamlit as st
-from PIL import Image, UnidentifiedImageError
 
-# ------------------ Page / session ------------------
-st.set_page_config(layout="wide")
-
-if "care_context" not in st.session_state:
-    st.session_state.care_context = {}
-ctx = st.session_state.care_context
-
-# (Hide the extra top heading to match the comp)
-# st.title("Welcome")
-# st.caption("A simple starting point for families and professionals.")
-
-# ------------------ CSS ------------------
-st.markdown(
-    """
-    <style>
-      /* Keep layout crisp on large screens */
-      .block-container{
-        max-width: 1120px;
-        margin: 0 auto;
-        padding-top: 1.25rem;
-        padding-bottom: 3rem;
-      }
-
-      /* HERO text */
-      .hero-h1{
-        font-size: clamp(28px, 4.2vw, 44px);
-        line-height: 1.06;
-        font-weight: 800;
-        letter-spacing: .2px;
-        margin: 0 0 .3rem 0;
-      }
-      .hero-h2{
-        font-size: clamp(16px, 1.8vw, 18px);
-        color: rgba(0,0,0,0.72);
-        font-weight: 500;
-        margin: .5rem 0 1.0rem 0;
-      }
-
-      /* HERO photo “polaroid” look — slightly smaller, gentler tilt */
-      .hero-photo{
-        border-radius: 8px;
-        background: #fff;
-        box-shadow: 0 10px 20px rgba(0,0,0,.16);
-        border: 10px solid #fff;
-        transform: rotate(-2deg);
-        display: block;
-      }
-
-      .divider{ margin: 1.25rem 0 1rem; border: none; border-top: 1px solid rgba(0,0,0,.08); }
-      .section-kicker{
-        font-size: clamp(18px, 2.2vw, 22px);
-        font-weight: 800;
-        letter-spacing: .08em;
-        text-transform: uppercase;
-        color: #2a2a2a;
-        margin: .25rem 0 1rem 0;
-      }
-
-      /* Style Streamlit bordered containers as cards */
-      div[data-testid="stVerticalBlockBorderWrapper"]{
-        border: 1px solid rgba(0,0,0,.06);
-        border-radius: 16px;
-        box-shadow: 0 8px 24px rgba(0,0,0,.08);
-      }
-
-      /* Card image: a bit smaller & centered */
-      .card-photo{
-        width: clamp(280px, 82%, 420px);
-        border-radius: 14px;
-        box-shadow: 0 6px 16px rgba(0,0,0,.12);
-        display: block;
-        margin: .35rem auto .8rem;
-      }
-
-      /* Safety: hide truly empty markdown containers */
-      div[data-testid="stMarkdownContainer"]:empty{ display:none !important; }
-    </style>
-    """,
-    unsafe_allow_html=True,
+from audiencing import (
+    AUDIENCING_QUALIFIER_KEYS,
+    apply_audiencing_sanitizer,
+    compute_audiencing_route,
+    ensure_audiencing_state,
+    log_audiencing_set,
+    snapshot_audiencing,
 )
 
-# ------------------ Image helpers ------------------
-def load_bytes(path_str: str) -> bytes | None:
-    """Read image as bytes and validate with PIL."""
-    p = Path(path_str)
-    if not p.exists():
-        st.info(f"Add image at {path_str}")
-        return None
-    try:
-        data = p.read_bytes()
-        Image.open(io.BytesIO(data)).verify()
-        return data
-    except UnidentifiedImageError:
-        st.warning(f"{p.name} exists but isn't a valid image file. Use PNG/JPG/WEBP.")
-    except Exception as e:
-        st.warning(f"Couldn't load {p.name}: {e}")
-    return None
+st.set_page_config(page_title="Welcome", layout="wide")
 
-def data_uri(path_str: str) -> str | None:
-    """Return a data: URI for the image (base64) or None if missing/invalid."""
-    b = load_bytes(path_str)
-    if not b:
-        return None
-    ext = Path(path_str).suffix.lower()
-    mime = "image/png"
-    if ext in (".jpg", ".jpeg"):
-        mime = "image/jpeg"
-    elif ext == ".webp":
-        mime = "image/webp"
-    return f"data:{mime};base64,{base64.b64encode(b).decode('ascii')}"
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 
-def img_html(path_str: str, cls: str = "", style: str = "", alt: str = "") -> str | None:
-    """Single <img> tag with base64 data (prevents URL/path issues)."""
-    uri = data_uri(path_str)
-    if not uri:
-        return None
-    cls_attr = f' class="{cls}"' if cls else ""
-    style_attr = f' style="{style}"' if style else ""
-    alt_attr = f' alt="{alt}"' if alt else ' alt=""'
-    return f'<img src="{uri}"{cls_attr}{style_attr}{alt_attr}>'
-
-# =====================================================================
-# HERO — text on the left, image on the right; CTAs inside the left col
-# =====================================================================
-left, right = st.columns([7, 5], gap="large")
-
-with left:
-    st.markdown(
-        """
-        <div class="hero-h1">YOUR COMPASSIONATE<br>GUIDE TO SENIOR<br>CARE DECISIONS</div>
-        <div class="hero-h2">
-          Every care decision matters. We’re here to guide you — at no cost —
-          whether planning for yourself or a loved one.
-        </div>
-        """,
-        unsafe_allow_html=True,
+def _seed_defaults() -> None:
+    state = ensure_audiencing_state()
+    state.setdefault("entry", "proxy")
+    qualifiers = state.setdefault("qualifiers", {})
+    for key in AUDIENCING_QUALIFIER_KEYS:
+        qualifiers.setdefault(key, False)
+    state.setdefault("route", {"next": None})
+    state.setdefault("recipient_name", None)
+    state.setdefault("proxy_name", None)
+    st.session_state.setdefault(
+        "care_context",
+        {
+            "person_name": "Your Loved One",
+            "gcp_answers": {},
+            "gcp_recommendation": None,
+            "gcp_cost": None,
+        },
     )
-    c1, c2 = st.columns([1, 1])
-    with c1:
-        if st.button("Start Now", key="hero_start"):
-            st.switch_page("pages/tell_us_about_loved_one.py")
-    with c2:
-        if st.button("Log in", key="hero_login"):
-            st.switch_page("pages/login.py")
 
-with right:
-    hero_tag = img_html(
-        "static/images/Hero.png",
-        cls="hero-photo",
-        style="width:400px;",  # slightly smaller than before
-        alt="Caregiver smiling with older adult"
+
+def _apply_and_snapshot() -> None:
+    aud = st.session_state["audiencing"]
+    apply_audiencing_sanitizer(aud)
+    compute_audiencing_route(aud)
+    st.session_state["audiencing_snapshot"] = snapshot_audiencing(aud)
+
+
+def _navigate(entry: str) -> None:
+    if entry == "self":
+        st.switch_page("pages/tell_us_about_you.py")
+    elif entry == "proxy":
+        st.switch_page("pages/tell_us_about_loved_one.py")
+    else:
+        log_audiencing_set(st.session_state.get("audiencing_snapshot", {}))
+        st.switch_page("pages/hub.py")
+
+
+# ---------------------------------------------------------------------------
+# Layout
+# ---------------------------------------------------------------------------
+
+_seed_defaults()
+aud = st.session_state["audiencing"]
+care_context = st.session_state["care_context"]
+
+st.markdown("""
+<div style="display:flex; flex-direction:column; gap:1.4rem;">
+  <div>
+    <h1 style="margin-bottom:0.6rem;">We’re here to help you find the support your loved ones need.</h1>
+    <p style="font-size:1.05rem; color:#4b5563; max-width:640px;">
+      Choose who you’re planning for to personalize the guidance, then take the next step in just a couple of minutes.
+    </p>
+  </div>
+</div>
+""", unsafe_allow_html=True)
+
+segment_default = st.session_state.get("welcome_segment", "For someone")
+st.markdown('<div class="sn-segmented">', unsafe_allow_html=True)
+segment_choice = st.radio(
+    "Audience selector",
+    options=("For someone", "For me"),
+    index=(0 if segment_default == "For someone" else 1),
+    horizontal=True,
+    label_visibility="collapsed",
+    key="welcome_segment",
+)
+st.markdown("</div>", unsafe_allow_html=True)
+
+entry = "proxy" if segment_choice == "For someone" else "self"
+aud["entry"] = entry
+
+if entry == "self":
+    care_context["person_name"] = "You"
+    prompt_label = "What’s your name?"
+else:
+    prompt_label = "What’s their name?"
+
+if entry == "proxy":
+    default_name = aud.get("recipient_name") or ""
+else:
+    default_name = care_context.get("person_name") if care_context.get("person_name") not in (None, "Your Loved One") else ""
+
+col_field, col_cta = st.columns([4, 2], gap="large")
+with col_field:
+    person_name = st.text_input(
+        prompt_label,
+        value=default_name,
+        placeholder="Add a name so we can personalize guidance",
+        key="welcome_person_name",
     )
-    if hero_tag:
-        st.markdown(hero_tag, unsafe_allow_html=True)
-
-st.markdown('<hr class="divider">', unsafe_allow_html=True)
-st.markdown('<div class="section-kicker">How we can help you</div>', unsafe_allow_html=True)
-
-# =====================================================================
-# CARDS — each card is a bordered Streamlit container (CTA inside)
-# =====================================================================
-def card(image_path: str, title: str, sub: str, button_label: str, page_to: str) -> None:
-    with st.container(border=True):
-        tag = img_html(
-            image_path,
-            cls="card-photo",
-            alt=title
-        )
-        if tag:
-            st.markdown(tag, unsafe_allow_html=True)
-        st.markdown(f"**{title}**")
-        st.caption(sub)
-        _, right_btn = st.columns([1, 1])
-        with right_btn:
-            if st.button(button_label, key=f"btn_{page_to}"):
-                st.switch_page(page_to)
-
-col1, col2 = st.columns(2, gap="large")
-with col1:
-    card(
-        "static/images/Someone-Else.png",
-        "I would like to support my loved ones",
-        "For someone",
-        "For someone",
-        "pages/tell_us_about_loved_one.py",
+with col_cta:
+    st.write("")
+    st.write("")
+    continue_clicked = st.button(
+        "Continue",
+        type="primary",
+        use_container_width=True,
+        key="welcome_continue",
     )
-with col2:
-    card(
-        "static/images/Myself.png",
-        "I’m looking for support just for myself",
-        "For myself",
-        "For myself",
-        "pages/tell_us_about_you.py",
-    )
+
+helper_note = "If you want to assess several people, don’t worry — you can easily move on to the next step!"
+st.markdown(f'<div class="sn-helper-note">{helper_note}</div>', unsafe_allow_html=True)
+
+pro_clicked = st.button(
+    "I’m a professional", key="welcome_professional", type="secondary"
+)
+
+if continue_clicked:
+    if entry == "proxy":
+        aud["recipient_name"] = (person_name or "").strip() or None
+        aud["proxy_name"] = None
+        care_context["person_name"] = aud.get("recipient_name") or "Your Loved One"
+    else:
+        aud["recipient_name"] = None
+        aud["proxy_name"] = None
+        care_context["person_name"] = "You"
+    _apply_and_snapshot()
+    log_audiencing_set(st.session_state["audiencing_snapshot"])
+    _navigate(entry)
+
+if pro_clicked:
+    aud["entry"] = "pro"
+    for key in AUDIENCING_QUALIFIER_KEYS:
+        aud["qualifiers"][key] = False
+    care_context["person_name"] = "Your Loved One"
+    _apply_and_snapshot()
+    _navigate("pro")
