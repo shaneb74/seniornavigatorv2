@@ -1,4 +1,4 @@
-"""Self-entry audiencing flow with unified design system."""
+"""Self-entry audiencing flow with qualifier toggles."""
 
 from __future__ import annotations
 
@@ -9,125 +9,86 @@ from audiencing import (
     apply_audiencing_sanitizer,
     compute_audiencing_route,
     ensure_audiencing_state,
+    log_audiencing_set,
     snapshot_audiencing,
 )
 
-st.set_page_config(page_title="Tell us about yourself", layout="wide")
+st.set_page_config(page_title="Tell Us About You", layout="wide")
 
-# ---------------------------------------------------------------------------
-# Session defaults
-# ---------------------------------------------------------------------------
-audiencing = ensure_audiencing_state()
-audiencing["entry"] = "self"
-audiencing["recipient_name"] = None
-audiencing["proxy_name"] = None
-qualifiers = audiencing["qualifiers"]
-route = audiencing.setdefault("route", {"next": None, "meta": {}})
-route.setdefault("next", None)
+state = ensure_audiencing_state()
+state["entry"] = "self"
+apply_audiencing_sanitizer(state)
+qualifiers = state["qualifiers"]
+people = state.setdefault("people", {"recipient_name": "", "proxy_name": ""})
 
-care_context = st.session_state.setdefault(
-    "care_context",
-    {
-        "person_name": "Your Loved One",
-        "gcp_answers": {},
-        "gcp_recommendation": None,
-        "gcp_cost": None,
-    },
-)
-care_context["person_name"] = "You"
+st.title("Tell Us About You")
+st.caption("These quick yes/no toggles tailor what you see next.")
 
-# ---------------------------------------------------------------------------
-# Layout
-# ---------------------------------------------------------------------------
-st.markdown("""
-<div style="display:flex; flex-direction:column; gap:0.8rem;">
-  <div>
-    <h1>Tell us about yourself</h1>
-    <p style="max-width:640px; color:#475569;">These quick details help us personalize which guidance shows up first.</p>
-  </div>
-</div>
-""", unsafe_allow_html=True)
-
-qualifier_cards = [
-    {
-        "key": "is_veteran",
-        "label": "Are you a veteran?",
-        "hint": "Impacts benefits and offsets.",
-    },
-    {
-        "key": "has_partner",
-        "label": "Do you have a partner?",
-        "hint": "Determines household setup.",
-    },
-    {
-        "key": "owns_home",
-        "label": "Do you own your home?",
-        "hint": "Affects housing and home modifications.",
-    },
-    {
-        "key": "on_medicaid",
-        "label": "Are you on Medicaid?",
-        "hint": "We will show you the right path.",
-    },
-]
-
-if URGENT_FEATURE_FLAG:
-    qualifier_cards.append(
-        {
-            "key": "urgent",
-            "label": "Is this urgent?",
-            "hint": "We’ll prioritize faster options if needed.",
-        }
+with st.form("audiencing_self_form"):
+    name = st.text_input(
+        "What should we call you?",
+        value=people.get("recipient_name", ""),
+        help="Optional. We use this name in the Hub to personalize your plan.",
     )
 
-columns = st.columns(2, gap="large")
-for idx, card in enumerate(qualifier_cards):
-    col = columns[idx % 2]
-    with col:
-        st.markdown('<div class="sn-field-card">', unsafe_allow_html=True)
-        toggle_value = st.toggle(
-            card["label"],
-            value=bool(qualifiers.get(card["key"], False)),
-            key=f"aud_self_{card['key']}",
+    col1, col2 = st.columns(2, gap="large")
+    with col1:
+        is_veteran = st.toggle(
+            "Are you a veteran?",
+            value=qualifiers.get("is_veteran", False),
+            key="aud_self_is_veteran",
         )
-        st.markdown(
-            f"<div class='sn-field-hint'>{card['hint']}</div>",
-            unsafe_allow_html=True,
+        owns_home = st.toggle(
+            "Do you own your home?",
+            value=qualifiers.get("owns_home", False),
+            key="aud_self_owns_home",
         )
-        st.markdown("</div>", unsafe_allow_html=True)
-        qualifiers[card["key"]] = bool(toggle_value)
-
-# Normalize, compute route, and snapshot
-qualifiers.setdefault("urgent", False)
-if not URGENT_FEATURE_FLAG:
-    qualifiers["urgent"] = False
-
-apply_audiencing_sanitizer(audiencing)
-compute_audiencing_route(audiencing)
-
-st.session_state["audiencing_snapshot"] = snapshot_audiencing(audiencing)
-
-with st.container():
-    st.markdown('<div class="sn-sticky-footer"><div class="sn-footer-inner">', unsafe_allow_html=True)
-    footer_cols = st.columns([1, 1, 1])
-    continue_clicked = False
-    with footer_cols[1]:
-        continue_clicked = st.button(
-            "Go to your Concierge Care Hub",
-            type="primary",
-            use_container_width=True,
-            key="aud_self_continue",
+    with col2:
+        has_partner = st.toggle(
+            "Do you have a partner?",
+            value=qualifiers.get("has_partner", False),
+            key="aud_self_has_partner",
         )
-    st.markdown('</div><div class="sn-footer-note">You can adjust these details anytime.</div></div>', unsafe_allow_html=True)
+        on_medicaid = st.toggle(
+            "Are you on Medicaid?",
+            value=qualifiers.get("on_medicaid", False),
+            key="aud_self_on_medicaid",
+        )
 
-if continue_clicked:
-    st.session_state["last_event"] = {"type": "audiencing_set"}
+    urgent_case = False
+    if URGENT_FEATURE_FLAG:
+        urgent_case = st.toggle(
+            "Is this urgent?",
+            value=qualifiers.get("urgent", False),
+            key="aud_self_urgent",
+        )
+
+    submitted = st.form_submit_button("Continue", use_container_width=True)
+
+if submitted:
+    people["recipient_name"] = name.strip()
+    people["proxy_name"] = ""
+    qualifiers.update(
+        {
+            "is_veteran": bool(is_veteran),
+            "has_partner": bool(has_partner),
+            "owns_home": bool(owns_home),
+            "on_medicaid": bool(on_medicaid),
+            "urgent": bool(urgent_case) if URGENT_FEATURE_FLAG else False,
+        }
+    )
+    apply_audiencing_sanitizer(state)
+    compute_audiencing_route(state)
+    snapshot = snapshot_audiencing(state)
+    st.session_state["audiencing_snapshot"] = snapshot
+    log_audiencing_set(snapshot)
     st.switch_page("pages/hub.py")
 
+st.divider()
+
 with st.expander("Debug: Audiencing state", expanded=False):
-    st.json(audiencing)
+    st.json(state)
     st.markdown("---")
     st.json(st.session_state.get("audiencing_snapshot", {}))
 
-if st.button("Back to Welcome", type="secondary"):
-    st.switch_page("pages/welcome.py")
+st.button("Back to Welcome", on_click=lambda: st.switch_page("pages/welcome.py"))

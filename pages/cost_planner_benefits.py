@@ -1,5 +1,4 @@
-"""Insurance costs and benefit offsets drawer with unified styling."""
-
+"""Insurance costs and benefit offsets drawer."""
 from __future__ import annotations
 
 import streamlit as st
@@ -17,19 +16,11 @@ cp = st.session_state["cost_planner"]
 aud = st.session_state["audiencing"]
 quals = aud.get("qualifiers", {})
 
-st.set_page_config(page_title="Cost Planner • Insurance", layout="wide")
+st.title("Insurance & benefit offsets")
+st.caption("Log insurance premiums and the income or benefits that offset monthly costs.")
 
-st.markdown("""
-<h2 style="text-transform:uppercase; letter-spacing:0.08em; color:#6b7280; font-size:0.9rem;">Cost Planner</h2>
-<h1 style="margin-bottom:0.4rem;">Insurance & offsets</h1>
-<p style="max-width:640px; color:#475569;">Log insurance premiums and the income or benefits that offset monthly costs.</p>
-""", unsafe_allow_html=True)
-
-st.markdown('<div class="sn-card" style="margin-top:1.2rem;">', unsafe_allow_html=True)
-st.markdown("<span class='sn-chip'>Drawer</span>", unsafe_allow_html=True)
-st.markdown("<h3 style='margin-top:0.6rem;'>Insurance premiums</h3>", unsafe_allow_html=True)
-
-col_1, col_2, col_3 = st.columns(3, gap="large")
+st.subheader("Insurance premiums")
+col_1, col_2, col_3 = st.columns(3)
 with col_1:
     health = st.number_input(
         "Health insurance premiums",
@@ -58,9 +49,8 @@ with col_3:
     )
     set_numeric("insurance_other", other_ins)
 
-st.markdown("<h3 style='margin-top:1.6rem;'>Income & benefits</h3>", unsafe_allow_html=True)
-
-col_income1, col_income2 = st.columns(2, gap="large")
+st.subheader("Income & benefits")
+col_income1, col_income2 = st.columns(2)
 with col_income1:
     inc_ss = st.number_input(
         "Social Security income",
@@ -93,7 +83,7 @@ with col_income2:
     )
     set_numeric("offset_other_income", inc_other)
 
-col_benefit1, col_benefit2, col_benefit3 = st.columns(3, gap="large")
+col_benefit1, col_benefit2, col_benefit3 = st.columns(3)
 with col_benefit1:
     if quals.get("is_veteran"):
         va = st.number_input(
@@ -128,25 +118,18 @@ with col_benefit3:
     set_numeric("offset_ltc_benefits", ltc_payout)
 
 recompute_costs()
-st.markdown(
-    f"<p style='margin-top:1.4rem; font-weight:600;'>Offsets subtotal: {format_currency(cp['subtotals']['offsets'])}</p>",
-    unsafe_allow_html=True,
-)
 
-st.markdown("</div>", unsafe_allow_html=True)
+st.metric("Offsets subtotal", format_currency(cp["subtotals"]["offsets"]))
 
-with st.container():
-    st.markdown('<div class="sn-sticky-footer"><div class="sn-footer-inner">', unsafe_allow_html=True)
-    footer_cols = st.columns([1, 1, 1])
-    back_clicked = False
-    next_clicked = False
-    with footer_cols[0]:
-        back_clicked = st.button("Back", type="secondary", use_container_width=True)
-    with footer_cols[2]:
-        next_clicked = st.button("Next step", type="primary", use_container_width=True)
-    st.markdown('</div><div class="sn-footer-note">Next step ✺</div></div>', unsafe_allow_html=True)
+st.markdown("---")
 
-if back_clicked:
-    st.switch_page("pages/cost_planner_daily_aids.py")
-if next_clicked:
-    st.switch_page("pages/cost_planner_freeform.py")
+col_hub, col_back, col_next = st.columns([1, 1, 1])
+with col_hub:
+    if st.button("Return to Hub", type="secondary"):
+        st.switch_page("pages/hub.py")
+with col_back:
+    if st.button("Back: Medical"):
+        st.switch_page("pages/cost_planner_daily_aids.py")
+with col_next:
+    if st.button("Next: Debts & Other", type="primary"):
+        st.switch_page("pages/cost_planner_freeform.py")

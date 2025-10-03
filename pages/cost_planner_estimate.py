@@ -1,5 +1,4 @@
-"""Cost Planner entry screen with unified TurboTax-style design."""
-
+"""Cost Planner entry: establish mode, household, and audience context."""
 from __future__ import annotations
 
 import streamlit as st
@@ -19,52 +18,45 @@ aud = st.session_state["audiencing"]
 gcp = st.session_state.get("gcp", {})
 qualifiers = aud.get("qualifiers", {})
 
-st.set_page_config(page_title="Cost Planner", layout="wide")
-
-st.markdown("""
-<h2 style="text-transform:uppercase; letter-spacing:0.08em; color:#6b7280; font-size:0.95rem;">Cost Planner</h2>
-<h1 style="margin-bottom:0.4rem;">Understand the costs</h1>
-<p style="max-width:660px; color:#475569;">Assess the cost structure across options. The estimate will update as you go.</p>
-""", unsafe_allow_html=True)
+st.title("Cost Planner")
+st.caption("TurboTax-style walkthrough to understand monthly costs, offsets, and runway.")
 
 entry, badges = audiencing_badges()
-alert = [f"Planning for <strong>{entry}</strong> audience."]
+alert_lines = [
+    f"Planning for **{entry}** audience.",
+]
 if badges:
-    alert.append("Badges: " + ", ".join(badges))
-st.markdown(
-    f"<div class='sn-banner'>💡 <div>{' '.join(alert)}</div></div>",
-    unsafe_allow_html=True,
-)
+    alert_lines.append(" • ".join(badges))
+st.info(" \n".join(alert_lines))
 
 if qualifiers.get("on_medicaid"):
-    st.markdown(
-        "<div class='sn-banner'>🩺 <div>Medicaid coverage detected. We’ll default to the Medicaid payment context and log a short-circuit entry.</div></div>",
-        unsafe_allow_html=True,
+    st.warning(
+        "Medicaid coverage detected. We'll default costs to the Medicaid payment context and log a short-circuit entry.",
+        icon="💡",
     )
 
 recommended = gcp.get("recommended_setting")
 if recommended:
-    st.markdown(
-        "<div class='sn-banner sn-banner--success'>🧭 <div>Guided Care Plan recommends <strong>{}</strong> with {} care intensity.</div></div>".format(
-            recommended.title(), gcp.get("care_intensity", "unknown")
-        ),
-        unsafe_allow_html=True,
+    st.success(
+        f"Guided Care Plan recommends **{recommended.title()}** with {gcp.get('care_intensity', 'unknown')} care intensity.",
+        icon="🧭",
     )
 
-st.markdown('<div class="sn-card" style="margin-top:1.4rem;">', unsafe_allow_html=True)
-col_mode, col_household = st.columns(2, gap="large")
+col_mode, col_household = st.columns([2, 2])
 with col_mode:
     mode_label = {
-        "tinkering": "I’m exploring rough numbers",
+        "tinkering": "I'm exploring rough numbers",
         "planning": "I need a real plan with runway",
     }
-    selected_mode = st.radio(
+    mode_choice = st.radio(
         "Planner mode",
         options=["tinkering", "planning"],
+        format_func=lambda val: mode_label[val],
         index=["tinkering", "planning"].index(cp.get("mode", "tinkering")),
-        format_func=lambda value: mode_label[value],
+        horizontal=False,
     )
-    cp["mode"] = selected_mode
+    if mode_choice != cp.get("mode"):
+        cp["mode"] = mode_choice
 
 with col_household:
     household_label = {
@@ -72,17 +64,18 @@ with col_household:
         "split": "Split household",
     }
     disable_partner = not qualifiers.get("has_partner")
-    selected_household = st.radio(
+    household_choice = st.radio(
         "Household",
         options=["single", "split"],
+        format_func=lambda val: household_label[val],
         index=["single", "split"].index(cp.get("household", "single")),
-        format_func=lambda value: household_label[value],
+        horizontal=False,
         disabled=disable_partner,
         help="Partners must be enabled in Audiencing to plan for a split household." if disable_partner else None,
     )
-    cp["household"] = selected_household if not disable_partner else "single"
+    cp["household"] = household_choice if not disable_partner else "single"
 
-st.markdown("<hr style='margin:1.6rem 0;'/>", unsafe_allow_html=True)
+st.markdown("---")
 
 if cp["mode"] == "planning":
     assets_default = get_numeric("assets_total")
@@ -91,20 +84,21 @@ if cp["mode"] == "planning":
         min_value=0.0,
         step=500.0,
         value=float(assets_default),
-        help="Enter savings that could be used to cover care. We’ll calculate runway based on net out-of-pocket.",
+        help="Enter savings that could be used to cover care. We'll calculate runway based on net out-of-pocket.",
     )
     set_numeric("assets_total", assets_value)
 else:
     set_numeric("assets_total", 0.0)
 
 recompute_costs()
-subtotals = cp["subtotals"]
-metric_cols = st.columns(3)
-metric_cols[0].metric("Monthly costs", format_currency(cp["monthly_total"]))
-metric_cols[1].metric("Offsets", format_currency(subtotals["offsets"]))
-metric_cols[2].metric("Net out-of-pocket", format_currency(cp["net_out_of_pocket"]))
 
-st.markdown("</div>", unsafe_allow_html=True)
+subtotals = cp["subtotals"]
+summary_cols = st.columns(3)
+summary_cols[0].metric("Monthly costs", format_currency(cp["monthly_total"]))
+summary_cols[1].metric("Offsets", format_currency(subtotals["offsets"]))
+summary_cols[2].metric("Net out-of-pocket", format_currency(cp["net_out_of_pocket"]))
+
+st.markdown("---")
 
 with st.expander("Debug: Cost Planner session state", expanded=False):
     st.json(
@@ -117,18 +111,12 @@ with st.expander("Debug: Cost Planner session state", expanded=False):
         }
     )
 
-with st.container():
-    st.markdown('<div class="sn-sticky-footer"><div class="sn-footer-inner">', unsafe_allow_html=True)
-    footer_cols = st.columns([1, 1, 1])
-    back_clicked = False
-    next_clicked = False
-    with footer_cols[0]:
-        back_clicked = st.button("Return to Hub", type="secondary", use_container_width=True)
-    with footer_cols[2]:
-        next_clicked = st.button("Next step", type="primary", use_container_width=True)
-    st.markdown('</div><div class="sn-footer-note">Next step ✺</div></div>', unsafe_allow_html=True)
+st.markdown("---")
 
-if back_clicked:
-    st.switch_page("pages/hub.py")
-if next_clicked:
-    st.switch_page("pages/cost_planner_housing.py")
+col_left, col_right = st.columns(2)
+with col_left:
+    if st.button("Return to Hub", type="secondary"):
+        st.switch_page("pages/hub.py")
+with col_right:
+    if st.button("Start Housing", type="primary"):
+        st.switch_page("pages/cost_planner_housing.py")
