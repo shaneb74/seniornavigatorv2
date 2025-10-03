@@ -12,22 +12,25 @@ from audiencing import (
     snapshot_audiencing,
 )
 
+# Page config must be set before any UI output
 st.set_page_config(page_title="Concierge Care Hub", layout="wide")
 
+# ---------- Audiencing snapshot ----------
 state = ensure_audiencing_state()
 apply_audiencing_sanitizer(state)
 snapshot = snapshot_audiencing(state)
 st.session_state["audiencing_snapshot"] = snapshot
 
+# ---------- Session guard (fixed: closed parenthesis) ----------
 care_context = st.session_state.setdefault(
     "care_context",
     {
         "person_name": "Your Loved One",
         "gcp_answers": {},
-        "gcp_recommendation": None,
-        "gcp_cost": None,
-    }
-
+        "gcp_recommendation": None,  # 'In-home care' | 'Assisted living' | 'Memory care' | None
+        "gcp_cost": None,            # e.g., '$5,200/mo'
+    },
+)
 ctx = st.session_state.care_context
 person_name = ctx.get("person_name", "Your Loved One")
 
@@ -88,7 +91,14 @@ st.markdown(
 # ---------- Page scope wrapper to confine the resets above ----------
 st.markdown('<div class="hub-scope">', unsafe_allow_html=True)
 
-def card(title: str, subtitle: str, cta_label: str, cta_key: str, on_click_page: str, status: str | None = None):
+def card(
+    title: str,
+    subtitle: str,
+    cta_label: str,
+    cta_key: str,
+    on_click_page: str,
+    status: str | None = None,
+) -> None:
     st.markdown('<div class="sn-card">', unsafe_allow_html=True)
     # Use Streamlit columns for layout; they stay INSIDE our card because the card
     # is a real DOM node, not a pseudo-element.
@@ -104,7 +114,7 @@ def card(title: str, subtitle: str, cta_label: str, cta_key: str, on_click_page:
             st.markdown(f'<span class="sn-status">{status}</span>', unsafe_allow_html=True)
         else:
             st.markdown("&nbsp;", unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ---------- Guided Care Plan ----------
 gcp_completed = bool(ctx.get("gcp_recommendation")) or bool(ctx.get("gcp_answers"))
@@ -113,8 +123,11 @@ cost_text = ctx.get("gcp_cost") or "In progress"
 
 card(
     title="Guided Care Plan",
-    subtitle=(f"{rec_text} • {cost_text}" if gcp_completed
-              else f"See what we learned from your answers and refine the recommendation for {person_name}."),
+    subtitle=(
+        f"{rec_text} • {cost_text}"
+        if gcp_completed
+        else f"See what we learned from your answers and refine the recommendation for {person_name}."
+    ),
     cta_label=("Open" if gcp_completed else "Start guided plan"),
     cta_key="hub_gcp_start",
     on_click_page="pages/gcp.py",
@@ -124,11 +137,13 @@ card(
 # ---------- Cost Planner ----------
 card(
     title="Cost Estimator",
-    subtitle=f"Assess the total cost scenarios across options for {person_name}. The estimate will update based on your guided plan.",
+    subtitle=(
+        f"Assess the total cost scenarios across options for {person_name}. "
+        f"The estimate will update based on your guided plan."
+    ),
     cta_label="Open estimator",
     cta_key="hub_open_cp",
     on_click_page="pages/cost_planner.py",
-    status=None,
 )
 
 # ---------- Plan for My Advisor ----------
@@ -138,7 +153,6 @@ card(
     cta_label="Get connected",
     cta_key="hub_pfma",
     on_click_page="pages/pfma.py",
-    status=None,
 )
 
 # ---------- Medication Management ----------
@@ -148,7 +162,6 @@ card(
     cta_label="Open",
     cta_key="hub_meds",
     on_click_page="pages/medication_management.py",
-    status=None,
 )
 
 # ---------- Risk Navigator ----------
@@ -158,7 +171,6 @@ card(
     cta_label="Run check",
     cta_key="hub_risk",
     on_click_page="pages/risk_navigator.py",
-    status=None,
 )
 
 # ---------- Assessment (last) ----------
@@ -168,7 +180,6 @@ card(
     cta_label="Open assessment",
     cta_key="hub_assess",
     on_click_page="pages/care_plan_confirm.py",
-    status=None,
 )
 
-st.markdown('</div>', unsafe_allow_html=True)  # end .hub-scope
+st.markdown("</div>", unsafe_allow_html=True)  # end .hub-scope
