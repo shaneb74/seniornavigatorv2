@@ -1,4 +1,7 @@
-# pages/hub.py
+"""Concierge Care Hub that adapts to the audiencing snapshot."""
+
+from __future__ import annotations
+
 import streamlit as st
 
 # ---------- Session guard ----------
