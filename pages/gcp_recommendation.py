@@ -8,6 +8,12 @@ from audiencing import ensure_audiencing_state
 from guided_care_plan import ensure_gcp_session, evaluate_guided_care, get_question_meta, render_stepper
 from guided_care_plan.state import current_audiencing_snapshot
 
+from ui.theme import inject_theme
+
+def ensure_gcp_theme():
+    inject_theme()
+
+
 
 def _ensure_care_context():
     return st.session_state.setdefault(
