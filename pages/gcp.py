@@ -1,3 +1,7 @@
+import streamlit as st
+from ui.theme import inject_theme
+
+
 inject_theme()
 st.markdown('<div class="sn-scope gcp">', unsafe_allow_html=True)
 

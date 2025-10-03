@@ -3,11 +3,11 @@
 sanitize_ascii.py - scan and optionally fix non-ASCII punctuation in source files.
 
 Targets the usual gremlins:
-  - ' ' " "  (smart quotes)
-  - - -      (en/em dashes)
-  - ...         (ellipsis)
-  - \u00A0    (non-breaking space)
-  - \u200B-\u200D (zero-width chars)
+  - " " ' '  (smart quotes)
+  - - -      (en/em dashes and hyphen variants)
+  - ...        (ellipsis)
+  - \u00A0   (non-breaking space) and other odd spaces
+  - \u200B-\u200D, \uFEFF (zero-width chars / BOM)
 Also flags BOMs.
 
 Usage:
@@ -29,71 +29,66 @@ import pathlib
 import sys
 import difflib
 
-# File extensions to scan by default (add more if you like)
+# File extensions to scan by default
 DEFAULT_EXTS = {
     ".py", ".md", ".txt", ".html", ".css", ".js", ".ts", ".tsx", ".json",
     ".yaml", ".yml",
 }
 
-# Replacement map for the most common offenders
-# Replacement map for the most common offenders
+# Replacement map for the most common offenders (expanded)
 REPLACEMENTS = {
     # Quotes
-    "\u2018": "'",   # left single
-    "\u2019": "'",   # right single / apostrophe
-    "\u201A": "'",   # single low-9 quote
-    "\u201B": "'",   # single high-reversed-9
-    "\u201C": '"',   # left double
-    "\u201D": '"',   # right double
-    "\u201E": '"',   # double low-9 quote
-    "\u201F": '"',   # double high-reversed-9
+    "\u2018": "'",
+    "\u2019": "'",
+    "\u201A": "'",
+    "\u201B": "'",
+    "\u201C": '"',
+    "\u201D": '"',
+    "\u201E": '"',
+    "\u201F": '"',
 
     # Dashes and minus-like
-    "\u2010": "-",   # hyphen
-    "\u2011": "-",   # non-breaking hyphen
-    "\u2012": "-",   # figure dash
-    "\u2013": "-",   # en dash
-    "\u2014": "-",   # em dash
-    "\u2015": "-",   # horizontal bar
-    "\u2212": "-",   # minus sign
+    "\u2010": "-",
+    "\u2011": "-",
+    "\u2012": "-",
+    "\u2013": "-",
+    "\u2014": "-",
+    "\u2015": "-",
+    "\u2212": "-",
 
     # Ellipsis
-    "\u2026": "...", # ellipsis
+    "\u2026": "...",
 
-    # Spaces
-    "\u00A0": " ",   # NBSP
-    "\u202F": " ",   # narrow NBSP
-    "\u2000": " ",   # en quad
-    "\u2001": " ",   # em quad
-    "\u2002": " ",   # en space
-    "\u2003": " ",   # em space
-    "\u2004": " ",   # three-per-em space
-    "\u2005": " ",   # four-per-em space
-    "\u2006": " ",   # six-per-em space
-    "\u2007": " ",   # figure space
-    "\u2008": " ",   # punctuation space
-    "\u2009": " ",   # thin space
-    "\u200A": " ",   # hair space
+    # Spaces (odd/non-breaking varieties)
+    "\u00A0": " ",
+    "\u202F": " ",
+    "\u2000": " ",
+    "\u2001": " ",
+    "\u2002": " ",
+    "\u2003": " ",
+    "\u2004": " ",
+    "\u2005": " ",
+    "\u2006": " ",
+    "\u2007": " ",
+    "\u2008": " ",
+    "\u2009": " ",
+    "\u200A": " ",
 
-    # Zero-width / invisible
-    "\u200B": "",    # zero-width space
-    "\u200C": "",    # zero-width non-joiner
-    "\u200D": "",    # zero-width joiner
-    "\uFEFF": "",    # zero-width no-break space / BOM
+    # Zero-width / invisible / BOM
+    "\u200B": "",
+    "\u200C": "",
+    "\u200D": "",
+    "\uFEFF": "",
 
     # Misc symbols
-    "\u2022": "*",   # bullet
-    "\u25E6": "*",   # white bullet
+    "\u2022": "*",
+    "\u25E6": "*",
 }
 
-
-# Characters we consider problematic (for reporting)
 PROBLEMATIC = set(REPLACEMENTS.keys())
 
-# Files/dirs to ignore
 IGNORE_DIRS = {".git", ".venv", "venv", "node_modules", ".mypy_cache", ".ruff_cache", "__pycache__"}
 IGNORE_FILES = {"package-lock.json"}
-
 
 def iter_files(root: pathlib.Path, extensions: set[str]) -> list[pathlib.Path]:
     files: list[pathlib.Path] = []
@@ -108,30 +103,25 @@ def iter_files(root: pathlib.Path, extensions: set[str]) -> list[pathlib.Path]:
             files.append(p)
     return files
 
-
 def find_issues(text: str) -> list[tuple[int, int, str]]:
-    """Return list of (line_no, col_no, char) for each problematic char or BOM."""
+    """Return list of (line_no, col_no, char) for each problematic char or BOM indicator."""
     issues = []
-    # Flag BOM at beginning
+    # Flag BOM at beginning explicitly
     if text.startswith("\ufeff"):
-        issues.append((1, 1, "BOM(\\ufeff)"))
+        issues.append((1, 1, "\ufeff"))
     for i, line in enumerate(text.splitlines(keepends=False), start=1):
         for j, ch in enumerate(line, start=1):
             if ch in PROBLEMATIC:
                 issues.append((i, j, ch))
     return issues
 
-
 def apply_fixes(text: str) -> str:
     out = text
-    # Strip BOM if present
-    if out.startswith("\ufeff"):
-        out = out.lstrip("\ufeff")
-    # Replace mapped chars
+    # Replace everywhere, and strip leading BOMs
+    out = out.lstrip("\ufeff")
     for bad, good in REPLACEMENTS.items():
         out = out.replace(bad, good)
     return out
-
 
 def main() -> int:
     ap = argparse.ArgumentParser()
@@ -162,8 +152,8 @@ def main() -> int:
         total_files += 1
         total_issues += len(issues)
         print(f"\n{p}  ({len(issues)} issue(s))")
-        for (ln, col, ch) in issues[:50]:  # cap to avoid spam
-            disp = ch if ch != "\ufeff" else "BOM"
+        for (ln, col, ch) in issues[:50]:
+            disp = "BOM" if ch == "\ufeff" else ch
             print(f"  line {ln:>4}, col {col:>3}: U+{ord(ch):04X} '{disp}'")
 
         if args.write:
@@ -191,7 +181,6 @@ def main() -> int:
             print(f"Updated {changed_files} file(s).")
 
     return 0
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

@@ -9,8 +9,10 @@ from guided_care_plan.state import current_audiencing_snapshot
 
 from ui.theme import inject_theme
 
+
 inject_theme()
 st.markdown('<div class="sn-scope gcp">', unsafe_allow_html=True)
+
 
 BASE_QUESTIONS = ["living_situation"]
 CONDITIONAL_QUESTIONS = {

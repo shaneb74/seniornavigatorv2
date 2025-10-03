@@ -6,14 +6,16 @@ from ui.theme import inject_theme
 import streamlit as st
 
 from audiencing import (
-inject_theme()
-st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
     URGENT_FEATURE_FLAG,
     apply_audiencing_sanitizer,
     ensure_audiencing_state,
     reset_audiencing_state,
     snapshot_audiencing,
+
+inject_theme()
+st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
+
 )
 
 # Page config must be set before any UI output

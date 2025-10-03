@@ -5,14 +5,16 @@ from ui.theme import inject_theme
 import streamlit as st
 
 from cost_planner_shared import (
-inject_theme()
-st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
     ensure_core_state,
     expert_flag,
     format_currency,
     get_numeric,
     recompute_costs,
+
+inject_theme()
+st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
+
 )
 
 ensure_core_state()

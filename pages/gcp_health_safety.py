@@ -8,8 +8,10 @@ from guided_care_plan import ensure_gcp_session, get_question_meta, render_stepp
 
 from ui.theme import inject_theme
 
+
 inject_theme()
 st.markdown('<div class="sn-scope gcp">', unsafe_allow_html=True)
+
 
 SECTION_QUESTIONS = [
     "falls_history",

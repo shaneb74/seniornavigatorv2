@@ -5,8 +5,6 @@ from ui.theme import inject_theme
 import streamlit as st
 
 from cost_planner_shared import (
-inject_theme()
-st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
     audiencing_badges,
     ensure_core_state,
@@ -14,6 +12,10 @@ st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
     get_numeric,
     recompute_costs,
     set_numeric,
+
+inject_theme()
+st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
+
 )
 
 ensure_core_state()
