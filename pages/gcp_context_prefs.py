@@ -1,52 +1,90 @@
+"""Guided Care Plan – Context & Preferences section."""
+
+from __future__ import annotations
+
 import streamlit as st
 
-if 'care_context' not in st.session_state:
-    st.session_state.care_context = {
-        'gcp_answers': {},
-        'decision_trace': [],
-        'planning_mode': 'exploring',
-        'care_flags': {}
-    }
-ctx = st.session_state.care_context
-answers = ctx.setdefault('gcp_answers', {})
+from guided_care_plan import ensure_gcp_session, get_question_meta, render_stepper
 
-st.title('Guided Care Plan — Context & Preferences')
-st.caption('Step 3 of 3')
+answers, _ = ensure_gcp_session()
 
-st.markdown('---')
+st.set_page_config(page_title="GCP – Context & Preferences", layout="wide")
 
-fund_opts = ['Very confident','Somewhat confident','Somewhat concerned','Very concerned']
-answers['funding_confidence'] = st.radio(
-    'How would you describe your financial situation when it comes to paying for care?',
-    fund_opts,
-    index=fund_opts.index(answers.get('funding_confidence', fund_opts[1])),
-    key='q_funding_confidence'
+st.markdown("""
+<h2 style="text-transform:uppercase; letter-spacing:0.08em; color:#6b7280; font-size:0.95rem;">Guided Care Plan</h2>
+<h1 style="margin-bottom:0.4rem;">Context & Preferences</h1>
+<p style="max-width:660px; color:#475569;">Share any ongoing health conditions and the preferences that should shape the plan.</p>
+""", unsafe_allow_html=True)
+
+render_stepper(3)
+
+# Chronic conditions (multi-select)
+chronic_meta = get_question_meta("chronic")
+chronic_options = chronic_meta["options"]
+stored_chronic = answers.get("chronic") or []
+if not stored_chronic and "None" in chronic_options:
+    stored_chronic = ["None"]
+
+st.markdown('<div class="sn-card" style="margin-top:1.4rem;">', unsafe_allow_html=True)
+st.markdown(f"<h3>{chronic_meta['label']}</h3>", unsafe_allow_html=True)
+selected_chronic = st.multiselect(
+    chronic_meta["label"],
+    options=chronic_options,
+    default=stored_chronic,
+    help=chronic_meta.get("description"),
+    key="gcp_chronic",
+    label_visibility="collapsed",
 )
-st.caption('This helps right-size options for budget.')
+if not selected_chronic and "None" in chronic_options:
+    selected_chronic = ["None"]
+answers["chronic"] = selected_chronic
+st.markdown("</div>", unsafe_allow_html=True)
 
-geo_opts = ['Very easy','Fairly easy','Somewhat difficult','Very difficult']
-answers['geographic_access'] = st.radio(
-    'How accessible are services like pharmacies, grocery stores, and doctors from your home?',
-    geo_opts,
-    index=geo_opts.index(answers.get('geographic_access', geo_opts[0])),
-    key='q_geo_access'
+# Preferences (multi-select)
+preferences_meta = get_question_meta("preferences")
+preferences_options = preferences_meta["options"]
+stored_preferences = answers.get("preferences") or []
+if not stored_preferences and "No strong preference" in preferences_options:
+    stored_preferences = ["No strong preference"]
+
+st.markdown('<div class="sn-card" style="margin-top:1.4rem;">', unsafe_allow_html=True)
+st.markdown(f"<h3>{preferences_meta['label']}</h3>", unsafe_allow_html=True)
+selected_preferences = st.multiselect(
+    preferences_meta["label"],
+    options=preferences_options,
+    default=stored_preferences,
+    help=preferences_meta.get("description"),
+    key="gcp_preferences",
+    label_visibility="collapsed",
 )
-st.caption('Think drive time, transit availability, and how quickly you can get prescriptions or appointments.')
+if not selected_preferences and "No strong preference" in preferences_options:
+    selected_preferences = ["No strong preference"]
+answers["preferences"] = selected_preferences
+st.markdown("</div>", unsafe_allow_html=True)
 
-move_opts = ['I prefer to stay home',"I'd rather stay home but open if needed","I'm comfortable either way","I'm comfortable moving"]
-answers['move_willingness'] = st.radio(
-    'If care is recommended, how open are you to changing where care happens?',
-    move_opts,
-    index=move_opts.index(answers.get('move_willingness', move_opts[0])),
-    key='q_move_willingness'
-)
-st.caption('This frames recommendations. It does not override safety.')
+with st.container():
+    st.markdown('<div class="sn-sticky-footer"><div class="sn-footer-inner">', unsafe_allow_html=True)
+    footer_cols = st.columns([1, 1, 1])
+    skip_clicked = False
+    continue_clicked = False
+    with footer_cols[0]:
+        skip_clicked = st.button(
+            "Skip",
+            type="secondary",
+            use_container_width=True,
+            key="gcp_context_skip",
+        )
+    with footer_cols[2]:
+        continue_clicked = st.button(
+            "Continue",
+            type="primary",
+            use_container_width=True,
+            key="gcp_context_continue",
+        )
+    st.markdown(
+        "</div><div class=\"sn-footer-note\">Respond as a person receiving care even if you’re filling it for someone else.</div></div>",
+        unsafe_allow_html=True,
+    )
 
-st.markdown('---')
-col1, col2 = st.columns(2)
-with col1:
-    if st.button('Back', key='context_back'):
-        st.switch_page('pages/gcp_health_safety.py')
-with col2:
-    if st.button('Get my recommendation', key='context_next_get_reco'):
-        st.switch_page('pages/gcp_recommendation.py')
+if continue_clicked or skip_clicked:
+    st.switch_page("pages/gcp_recommendation.py")
