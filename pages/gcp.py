@@ -1,14 +1,15 @@
+from __future__ import annotations
+
 import streamlit as st
 from ui.theme import inject_theme
 
-
 inject_theme()
+
 st.markdown('<div class="sn-scope gcp">', unsafe_allow_html=True)
 
 # pages/gcp.py
 """Guided Care Plan intro with unified styling."""
 
-from __future__ import annotations
 import streamlit as st
 
 from guided_care_plan import ensure_gcp_session, render_stepper
