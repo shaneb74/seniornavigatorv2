@@ -1,3 +1,4 @@
+# app.py
 import streamlit as st
 from pathlib import Path
 
@@ -5,12 +6,14 @@ st.set_page_config(page_title="CCA Senior Navigator", layout="centered")
 
 # ========= Global CSS (single source of truth) =========
 def _inject_global_css():
-    css_path = Path("static/css/style.css")
+    # Use the single canonical file we agreed on
+    css_path = Path("static/style.css")
     if css_path.exists():
-        v = int(css_path.stat().st_mtime)  # cache-bust
+        # cache-bust on change
+        v = int(css_path.stat().st_mtime)
         st.markdown(f"<style>{css_path.read_text()}</style><!-- v:{v} -->", unsafe_allow_html=True)
     else:
-        st.warning("Missing CSS: static/css/style.css")
+        st.warning("Missing CSS: static/style.css")
 
 _inject_global_css()
 
@@ -23,7 +26,11 @@ def ensure_page(path: str, title: str, icon: str, default: bool = False):
     p = Path(path)
     if not p.exists():
         return None, path
-    page = st.Page(path, title=title, icon=icon, default=bool(default)) if default else st.Page(path, title=title, icon=icon)
+    page = (
+        st.Page(path, title=title, icon=icon, default=True)
+        if default
+        else st.Page(path, title=title, icon=icon)
+    )
     return page, None
 
 # ========= Pages to register (order controls left-nav order) =========
