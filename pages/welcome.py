@@ -1,5 +1,6 @@
 # pages/welcome.py
 import io
+import base64
 from pathlib import Path
 
 import streamlit as st
@@ -39,6 +40,22 @@ st.markdown(
         margin: .5rem 0 1.0rem 0;
       }
 
+      /* Photo looks */
+      .hero-photo {
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 12px 22px rgba(0,0,0,.18);
+        border: 10px solid #fff;
+        transform: rotate(-3deg);
+        display: block;
+      }
+      .card-photo {
+        width: 100%;
+        border-radius: 14px;
+        box-shadow: 0 6px 16px rgba(0,0,0,.12);
+        display: block;
+      }
+
       .divider { margin: 1.5rem 0 1.25rem 0; border: none; border-top: 1px solid rgba(0,0,0,.08); }
       .section-kicker {
         font-size: clamp(18px, 2.2vw, 22px);
@@ -57,30 +74,19 @@ st.markdown(
         padding: 0.9rem 0.9rem 1.1rem 0.9rem;
         border: 1px solid rgba(0,0,0,.05);
       }
-      .sn-photo img {
-        border-radius: 14px;
-        box-shadow: 0 6px 16px rgba(0,0,0,.12);
-        display: block;
-      }
-      /* Hero photo “polaroid” look */
-      .img-polaroid img {
-        border-radius: 8px;
-        background: #fff;
-        box-shadow: 0 12px 22px rgba(0,0,0,.18);
-        border: 10px solid #fff;
-        transform: rotate(-3deg);
-      }
+      .sn-card h4 { margin: .35rem 0 .3rem 0; font-size: 17px; }
+      .sn-card .sub { color: rgba(0,0,0,.6); font-size: 14px; margin-bottom: .55rem; }
+
+      /* Safety net: hide truly empty markdown containers (prevents ghost bars) */
+      div[data-testid="stMarkdownContainer"]:empty { display: none !important; }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-# ------------------ Image loader (reliable on Cloud) ------------------
+# ------------------ Image helpers ------------------
 def load_bytes(path_str: str) -> bytes | None:
-    """
-    Read image as bytes and validate with PIL.
-    Works regardless of working directory or URL routing.
-    """
+    """Read image as bytes and validate with PIL."""
     p = Path(path_str)
     if not p.exists():
         st.info(f"Add image at {path_str}")
@@ -95,31 +101,23 @@ def load_bytes(path_str: str) -> bytes | None:
         st.warning(f"Couldn't load {p.name}: {e}")
     return None
 
-# ------------------ Card helper ------------------
-def card(image_path: str, title: str, sub: str, button_label: str, page_to: str) -> None:
-    with st.container():
-        st.markdown('<div class="sn-card">', unsafe_allow_html=True)
-
-        b = load_bytes(image_path)
-        if b:
-            # Explicit width so images never render tiny
-            st.markdown('<div class="sn-photo">', unsafe_allow_html=True)
-            st.image(b, width=520)  # adjust if you want larger/smaller
-            st.markdown('</div>', unsafe_allow_html=True)
-
-        st.markdown(f"**{title}**")
-        st.caption(sub)
-        _, right = st.columns([1, 1])
-        with right:
-            if st.button(button_label, key=f"btn_{page_to}"):
-                st.switch_page(page_to)
-        st.markdown('</div>', unsafe_allow_html=True)
+def img_tag_base64(path_str: str, cls: str = "", width_px: int | None = None) -> str | None:
+    """Return a single <img> tag with base64 data URI (no external paths)."""
+    data = load_bytes(path_str)
+    if not data:
+        return None
+    # Guess mime from suffix
+    suffix = Path(path_str).suffix.lower()
+    mime = "image/png" if suffix == ".png" else "image/jpeg"
+    b64 = base64.b64encode(data).decode("ascii")
+    style = f"width:{width_px}px;" if isinstance(width_px, int) else ""
+    return f'<img class="{cls}" src="data:{mime};base64,{b64}" style="{style}">'
 
 # ------------------ HERO ------------------
 with st.container():
     st.markdown('<div class="hero-wrap">', unsafe_allow_html=True)
 
-    # Left: text
+    # Left: text (single markdown block)
     st.markdown(
         """
         <div>
@@ -133,16 +131,14 @@ with st.container():
         unsafe_allow_html=True,
     )
 
-    # Right: hero image (bytes → st.image) with explicit width
-    hero_b = load_bytes("static/images/Hero.png")
-    if hero_b:
-        st.markdown('<div class="img-polaroid">', unsafe_allow_html=True)
-        st.image(hero_b, width=420)  # adjust to taste
-        st.markdown("</div>", unsafe_allow_html=True)
+    # Right: hero image (single markdown with base64 <img>)
+    hero_img = img_tag_base64("static/images/Hero.png", cls="hero-photo", width_px=420)
+    if hero_img:
+        st.markdown(hero_img, unsafe_allow_html=True)
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    # Buttons under text (native Streamlit)
+    # Buttons under text
     c1, c2 = st.columns([1, 1])
     with c1:
         if st.button("Start Now", key="hero_start"):
@@ -154,6 +150,22 @@ with st.container():
 # ------------------ CARDS ------------------
 st.markdown('<hr class="divider">', unsafe_allow_html=True)
 st.markdown('<div class="section-kicker">How we can help you</div>', unsafe_allow_html=True)
+
+def card(image_path: str, title: str, sub: str, button_label: str, page_to: str) -> None:
+    """Render one card: all visuals in ONE markdown call (no ghost wrappers), button via Streamlit."""
+    img_html = img_tag_base64(image_path, cls="card-photo")
+    html = f'''
+      <div class="sn-card">
+        {img_html or ""}
+        <h4><strong>{title}</strong></h4>
+        <div class="sub">{sub}</div>
+      </div>
+    '''
+    st.markdown(html, unsafe_allow_html=True)
+    _, right = st.columns([1, 1])
+    with right:
+        if st.button(button_label, key=f"btn_{page_to}"):
+            st.switch_page(page_to)
 
 col1, col2 = st.columns(2, gap="large")
 with col1:
