@@ -9,6 +9,14 @@ ctx = st.session_state.care_context
 st.title("Welcome")
 st.caption("A simple starting point for families and professionals.")
 
+# ---------- Helper for safe images ----------
+def safe_image(path_str: str, *, width: int | None = None):
+    p = Path(path_str)
+    if p.exists():
+        st.image(str(p), width=width)
+    else:
+        st.info(f"Add image at {path_str}")
+
 # ---------- Hero row ----------
 left, right = st.columns([7, 5], gap="large")
 
@@ -30,12 +38,7 @@ Every care decision matters. We’re here to guide you — at no cost — whethe
             st.switch_page("pages/login.py")
 
 with right:
-    # Prefer Streamlit sizing (robust on Cloud)
-    hero_path = Path("static/images/Hero.png")
-    if hero_path.exists():
-        st.image(str(hero_path), width=520)
-    else:
-        st.info("Add hero image at static/images/Hero.png")
+    safe_image("static/images/Hero.png", width=520)
 
 st.markdown("---")
 
@@ -46,13 +49,7 @@ t1, t2 = st.columns(2, gap="large")
 
 with t1:
     with st.container(border=True):
-        p = Path("static/images/Someone-Else.png")
-        if p.exists():
-            # Use CSS class rendering for a bit of style
-            st.markdown(f'<img src="{p.as_posix()}" class="card-photo"/>', unsafe_allow_html=True)
-        else:
-            st.info("Add image at static/images/Someone-Else.png")
-
+        safe_image("static/images/Someone-Else.png")
         st.markdown("**I would like to support my loved ones**")
         st.caption("For someone")
         if st.button("Continue", key="tile_someone"):
@@ -60,12 +57,7 @@ with t1:
 
 with t2:
     with st.container(border=True):
-        p = Path("static/images/Myself.png")
-        if p.exists():
-            st.markdown(f'<img src="{p.as_posix()}" class="card-photo"/>', unsafe_allow_html=True)
-        else:
-            st.info("Add image at static/images/Myself.png")
-
+        safe_image("static/images/Myself.png")
         st.markdown("**I’m looking for support just for myself**")
         st.caption("For myself")
         if st.button("Continue", key="tile_myself"):
