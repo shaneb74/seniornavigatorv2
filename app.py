@@ -47,7 +47,7 @@ _inject_global_css()
 # Pre-flight syntax check for page modules
 # ==========================================
 def _syntax_preflight(paths=("pages",), stop_on_error=True):
-    import pathlib, io, tokenize, ast
+    import pathlib, io, tokenize
 
     errors = []
     for root in paths:
@@ -64,7 +64,6 @@ def _syntax_preflight(paths=("pages",), stop_on_error=True):
             except SyntaxError as e:
                 errors.append((p, e.lineno or 0, e.offset or 0, e.msg, e.text or ""))
             except Exception as e:
-                # Not syntax, but still fatal at import time
                 errors.append((p, 0, 0, f"{type(e).__name__}: {e}", ""))
 
     if errors:
@@ -87,6 +86,33 @@ if "is_authenticated" not in st.session_state:
     st.session_state.is_authenticated = False
 
 # ==========================================
+# First-load boot redirect (force Welcome once per session)
+# ==========================================
+def _force_welcome_once() -> None:
+    """
+    On the first run of a new session, clear query params so the router
+    chooses the default page (Welcome). Subsequent runs in the same
+    session keep the user's current page.
+    """
+    if st.session_state.get("_boot_forced_welcome"):
+        return
+
+    # Mark before rerun to avoid loops
+    st.session_state["_boot_forced_welcome"] = True
+
+    # Clear any URL hints (?page=...) that would deep-link past Welcome
+    try:
+        st.query_params.clear()  # Streamlit ≥ 1.33
+    except Exception:
+        try:
+            st.experimental_set_query_params()  # older API
+        except Exception:
+            pass
+
+    # Rerun so navigation resolves to the default page
+    st.rerun()
+
+# ==========================================
 # Page registration helpers
 # ==========================================
 def ensure_page(path: str, title: str, icon: str, default: bool = False):
@@ -104,23 +130,16 @@ def ensure_page(path: str, title: str, icon: str, default: bool = False):
 # Pages to register (controls nav order)
 # ==========================================
 INTENDED = [
-    # Entry & Hub
     ("pages/welcome.py", "Welcome", "👋", True),
     ("pages/hub.py", "Your Concierge Care Hub", "🏠", False),
-
-    # Tell-us flows
     ("pages/tell_us_about_you.py", "Tell Us About You", "ℹ️", False),
     ("pages/tell_us_about_loved_one.py", "Tell Us About Loved One", "ℹ️", False),
     ("pages/professional_mode.py", "Professional Mode", "🧑", False),
-
-    # Guided Care Plan
     ("pages/gcp.py", "Guided Care Plan", "🗺️", False),
     ("pages/gcp_daily_life.py", "GCP - Daily Life & Support", "🗺️", False),
     ("pages/gcp_health_safety.py", "GCP - Health & Safety", "🗺️", False),
     ("pages/gcp_context_prefs.py", "GCP - Context & Preferences", "🗺️", False),
     ("pages/gcp_recommendation.py", "GCP Recommendation", "🗺️", False),
-
-    # Cost Planner
     ("pages/cost_planner.py", "Cost Planner: Mode", "💰", False),
     ("pages/cost_planner_estimate.py", "Cost Planner: Estimate", "💰", False),
     ("pages/cost_planner_estimate_summary.py", "Cost Planner: Quick Summary", "💰", False),
@@ -133,8 +152,6 @@ INTENDED = [
     ("pages/expert_review.py", "Expert Review", "🔎", False),
     ("pages/cost_planner_evaluation.py", "Cost Planner: Evaluation", "🔍", False),
     ("pages/cost_planner_skipped.py", "Cost Planner: Skipped", "⚠️", False),
-
-    # PFMA + booking
     ("pages/pfma.py", "Plan for My Advisor", "🧭", False),
     ("pages/appointment_booking.py", "Appointment Booking", "📞", False),
     ("pages/appointment_interstitial.py", "Call Scheduled", "⏰", False),
@@ -145,8 +162,6 @@ INTENDED = [
     ("pages/pfma_confirm_household_legal.py", "PFMA • Household & Legal", "🏠", False),
     ("pages/pfma_confirm_benefits_coverage.py", "PFMA • Benefits & Coverage", "💳", False),
     ("pages/pfma_confirm_personal_info.py", "PFMA • Personal Info", "👤", False),
-
-    # Misc
     ("pages/login.py", "Login", "🔐", False),
     ("pages/ai_advisor.py", "AI Advisor", "🤖", False),
     ("pages/waiting_room.py", "Waiting Room", "⏳", False),
@@ -166,6 +181,9 @@ for args in INTENDED:
 
 if missing:
     st.sidebar.warning("Missing pages detected:\n" + "\n".join(f"- {m}" for m in missing))
+
+# Kick the session back to Welcome on first load
+_force_welcome_once()
 
 if pages:
     pg = st.navigation(pages)
