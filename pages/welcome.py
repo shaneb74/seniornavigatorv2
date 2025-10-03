@@ -1,5 +1,6 @@
 # pages/welcome.py
 import io
+import base64
 from pathlib import Path
 
 import streamlit as st
@@ -56,19 +57,8 @@ st.markdown(
         margin: .25rem 0 1rem 0;
       }
 
-      /* Style Streamlit bordered containers as cards */
-      div[data-testid="stVerticalBlockBorderWrapper"] {
-        border: 1px solid rgba(0,0,0,.06);
-        border-radius: 16px;
-        box-shadow: 0 8px 24px rgba(0,0,0,.08);
-      }
-      /* Ensure inner content has breathing room */
-      div[data-testid="stVerticalBlock"] > div:has(> div[data-testid="stVerticalBlockBorderWrapper"]) {
-        padding: 0 !important;
-      }
-
-      /* Card photo polish */
-      .card-photo img {
+      /* Card polish (works with Streamlit bordered containers) */
+      .card-photo {
         width: 100%;
         border-radius: 14px;
         box-shadow: 0 6px 16px rgba(0,0,0,.12);
@@ -79,11 +69,9 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ------------------ Image loader (reliable on Cloud) ------------------
+# ------------------ Image helpers ------------------
 def load_bytes(path_str: str) -> bytes | None:
-    """
-    Read image as bytes and validate with PIL.
-    """
+    """Read image as bytes and validate with PIL."""
     p = Path(path_str)
     if not p.exists():
         st.info(f"Add image at {path_str}")
@@ -98,8 +86,30 @@ def load_bytes(path_str: str) -> bytes | None:
         st.warning(f"Couldn't load {p.name}: {e}")
     return None
 
+def data_uri(path_str: str) -> str | None:
+    """Return a data: URI for the image (base64) or None if missing/invalid."""
+    b = load_bytes(path_str)
+    if not b:
+        return None
+    ext = Path(path_str).suffix.lower()
+    mime = "image/png"
+    if ext in (".jpg", ".jpeg"):
+        mime = "image/jpeg"
+    elif ext == ".webp":
+        mime = "image/webp"
+    return f"data:{mime};base64,{base64.b64encode(b).decode('ascii')}"
+
+def img_html(path_str: str, cls: str = "", style: str = "") -> str | None:
+    """Single <img> tag with base64 data (prevents URL/path issues)."""
+    uri = data_uri(path_str)
+    if not uri:
+        return None
+    style_attr = f' style="{style}"' if style else ""
+    cls_attr = f' class="{cls}"' if cls else ""
+    return f'<img src="{uri}"{cls_attr}{style_attr}>'
+
 # =====================================================================
-# HERO — text on the left, image on the right (all inside one row)
+# HERO — text on the left, image on the right
 # =====================================================================
 left, right = st.columns([7, 5], gap="large")
 
@@ -124,34 +134,21 @@ with left:
             st.switch_page("pages/login.py")
 
 with right:
-    hero_b = load_bytes("static/images/Hero.png")
-    if hero_b:
-        # Use markdown to apply the polaroid class; explicit width prevents tiny image
-        st.markdown(
-            f'<img class="hero-photo" src="data:image/png;base64,{Image.open(io.BytesIO(hero_b))._repr_png_().decode() if hasattr(Image.open(io.BytesIO(hero_b)), "_repr_png_") else ""}" style="width:420px;">',
-            unsafe_allow_html=True,
-        )
-        # Fallback if PIL object doesn't expose _repr_png_, just use st.image
-        if not hero_b:
-            st.image(hero_b, width=420)
+    hero_tag = img_html("static/images/Hero.png", cls="hero-photo", style="width:420px;")
+    if hero_tag:
+        st.markdown(hero_tag, unsafe_allow_html=True)
 
 st.markdown('<hr class="divider">', unsafe_allow_html=True)
 st.markdown('<div class="section-kicker">How we can help you</div>', unsafe_allow_html=True)
 
 # =====================================================================
-# CARDS — each card is a real Streamlit bordered container
+# CARDS — each card is a bordered Streamlit container (button inside)
 # =====================================================================
 def card(image_path: str, title: str, sub: str, button_label: str, page_to: str) -> None:
     with st.container(border=True):
-        # Image first
-        b = load_bytes(image_path)
-        if b:
-            # Render image and give it a class so it gets rounded/shadowed
-            st.markdown('<div class="card-photo">', unsafe_allow_html=True)
-            st.image(b, width="stretch")  # fills the card width
-            st.markdown('</div>', unsafe_allow_html=True)
-
-        # Text + CTA inside the same container (so the button is inside the card)
+        tag = img_html(image_path, cls="card-photo")  # full width via CSS
+        if tag:
+            st.markdown(tag, unsafe_allow_html=True)
         st.markdown(f"**{title}**")
         st.caption(sub)
         _, right_btn = st.columns([1, 1])
