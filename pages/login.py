@@ -26,7 +26,7 @@ with col3:
 st.divider()
 st.subheader("Or use your email")
 email = st.text_input("Email address", placeholder="you@example.com")
-pwd = st.text_input("Password", type="password", placeholder="••••••••")
+pwd = st.text_input("Password", type="password", placeholder="********")
 agree = st.checkbox("I consent and have proper authorization if signing up for someone else.")
 
 if st.button("Sign in", type="primary", disabled=not(email and pwd and agree)):

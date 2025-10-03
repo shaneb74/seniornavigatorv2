@@ -26,9 +26,9 @@ with st.container(border=True):
     with cols[0]:
         st.subheader("Cost of Care Planner")
         if est_completed and est_monthly:
-            summary = f"{est_setting or 'In-home care'} • ${est_monthly:,}/mo"
+            summary = f"{est_setting or 'In-home care'} * ${est_monthly:,}/mo"
             if est_zip:
-                summary += f" • ZIP {est_zip}"
+                summary += f" * ZIP {est_zip}"
             st.caption(summary)
         else:
             st.caption("Get a quick monthly estimate based on setting, ZIP, and a few simple details.")
@@ -56,7 +56,7 @@ def module_tile(title, caption, key, page):
         with cols[2]:
             st.caption(" ")
 
-module_tile("Home Care Support", "Hourly in‑home caregiving and companion support.", "open_home_care", "pages/cost_planner_home_care.py")
+module_tile("Home Care Support", "Hourly in-home caregiving and companion support.", "open_home_care", "pages/cost_planner_home_care.py")
 module_tile("Daily Living Aids", "Equipment and supplies that support daily safety and independence.", "open_daily_aids", "pages/cost_planner_daily_aids.py")
 module_tile("Housing Path", "Assisted living, memory care, or other residential options.", "open_housing", "pages/cost_planner_housing.py")
 module_tile("Benefits Check", "VA, Medicaid, LTC insurance, and other offsets.", "open_benefits", "pages/cost_planner_benefits.py")

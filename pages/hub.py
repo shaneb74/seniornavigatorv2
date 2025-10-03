@@ -128,7 +128,7 @@ cost_text = ctx.get("gcp_cost") or "In progress"
 card(
     title="Guided Care Plan",
     subtitle=(
-        f"{rec_text} • {cost_text}"
+        f"{rec_text} * {cost_text}"
         if gcp_completed
         else f"See what we learned from your answers and refine the recommendation for {person_name}."
     ),

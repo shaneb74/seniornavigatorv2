@@ -49,7 +49,7 @@ else:
 st.subheader("Decision log")
 if cp["decision_log"]:
     for entry in cp["decision_log"]:
-        st.write(f"• {entry}")
+        st.write(f"* {entry}")
 else:
     st.caption("No decisions logged yet.")
 

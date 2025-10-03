@@ -127,7 +127,7 @@ if has_result:
     if decision_trace:
         st.markdown("#### DecisionTrace")
         for step in decision_trace:
-            st.write(f"• {step}")
+            st.write(f"* {step}")
 
     st.markdown("---")
     if st.button("Go to Hub", type="primary"):

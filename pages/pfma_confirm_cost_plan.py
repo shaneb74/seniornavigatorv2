@@ -25,9 +25,9 @@ zip_code = estimate.get('zip')
 
 line = f"{setting}"
 if isinstance(monthly, (int, float)) and monthly > 0:
-    line += f" • ${monthly:,.0f}/mo"
+    line += f" * ${monthly:,.0f}/mo"
 if zip_code:
-    line += f" • ZIP {zip_code}"
+    line += f" * ZIP {zip_code}"
 
 st.write(line or "Quick estimate details will appear here.")
 

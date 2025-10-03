@@ -30,7 +30,7 @@ alert_lines = [
     f"Planning for **{entry}** audience.",
 ]
 if badges:
-    alert_lines.append(" • ".join(badges))
+    alert_lines.append(" * ".join(badges))
 st.info(" \n".join(alert_lines))
 
 if qualifiers.get("on_medicaid"):

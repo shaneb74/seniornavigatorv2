@@ -49,7 +49,7 @@ st.dataframe(breakdown_rows, use_container_width=True, hide_index=True)
 if cp.get("custom_line_items"):
     st.subheader("Custom line items")
     for item in cp["custom_line_items"]:
-        st.write(f"• {item['label']}: {format_currency(item['amount'])}")
+        st.write(f"* {item['label']}: {format_currency(item['amount'])}")
 
 if cp.get("notes"):
     st.info(cp["notes"], icon="📝")

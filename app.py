@@ -1,4 +1,4 @@
-# app.py — Senior Navigator app bootstrap with robust CSS injection
+# app.py - Senior Navigator app bootstrap with robust CSS injection
 from __future__ import annotations
 
 from pathlib import Path
@@ -155,13 +155,13 @@ INTENDED = [
     ("pages/pfma.py", "Plan for My Advisor", "🧭", False),
     ("pages/appointment_booking.py", "Appointment Booking", "📞", False),
     ("pages/appointment_interstitial.py", "Call Scheduled", "⏰", False),
-    ("pages/pfma_confirm_care_plan.py", "PFMA • Care Plan Confirmer", "✅", False),
-    ("pages/pfma_confirm_cost_plan.py", "PFMA • Cost Plan Confirmer", "💰", False),
-    ("pages/pfma_confirm_care_needs.py", "PFMA • Care Needs", "🩺", False),
-    ("pages/pfma_confirm_care_prefs.py", "PFMA • Care Preferences", "🎯", False),
-    ("pages/pfma_confirm_household_legal.py", "PFMA • Household & Legal", "🏠", False),
-    ("pages/pfma_confirm_benefits_coverage.py", "PFMA • Benefits & Coverage", "💳", False),
-    ("pages/pfma_confirm_personal_info.py", "PFMA • Personal Info", "👤", False),
+    ("pages/pfma_confirm_care_plan.py", "PFMA * Care Plan Confirmer", "✅", False),
+    ("pages/pfma_confirm_cost_plan.py", "PFMA * Cost Plan Confirmer", "💰", False),
+    ("pages/pfma_confirm_care_needs.py", "PFMA * Care Needs", "🩺", False),
+    ("pages/pfma_confirm_care_prefs.py", "PFMA * Care Preferences", "🎯", False),
+    ("pages/pfma_confirm_household_legal.py", "PFMA * Household & Legal", "🏠", False),
+    ("pages/pfma_confirm_benefits_coverage.py", "PFMA * Benefits & Coverage", "💳", False),
+    ("pages/pfma_confirm_personal_info.py", "PFMA * Personal Info", "👤", False),
     ("pages/login.py", "Login", "🔐", False),
     ("pages/ai_advisor.py", "AI Advisor", "🤖", False),
     ("pages/waiting_room.py", "Waiting Room", "⏳", False),

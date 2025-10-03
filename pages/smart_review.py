@@ -32,7 +32,7 @@ if ctx['care_flags'].get('is_veteran'):
 
 for msg,drawer in suspects or [('No specific flags yet', None)]:
     cols = st.columns([6,1,1,2])
-    with cols[0]: st.write('• ' + msg)
+    with cols[0]: st.write('* ' + msg)
     with cols[1]:
         if st.button('Add', key=f'add_{msg}'):
             ctx['review_log'].append({'msg': msg, 'action': 'add'})
