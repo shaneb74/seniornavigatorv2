@@ -273,13 +273,6 @@ with col2:
         "For me",
         "pages/tell_us_about_you.py",
     )
-    st.write("")
-    continue_clicked = st.button(
-        "Continue",
-        type="primary",
-        use_container_width=True,
-        key="welcome_continue",
-    )
 
 helper_note = "If you want to assess several people, don’t worry — you can easily move on to the next step!"
 st.markdown(f'<div class="sn-helper-note">{helper_note}</div>', unsafe_allow_html=True)
