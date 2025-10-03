@@ -1,0 +1,40 @@
+/* === Minimal, safe overrides: fix contrast for radio "pills" globally === */
+:root{
+  --pill-bg: #f3f4f6;
+  --pill-text: #111827;
+  --pill-brd: #e5e7eb;
+  --pill-selected: #111827;
+  --pill-selected-text: #ffffff;
+}
+
+/* Render Streamlit radios as pills with readable contrast */
+[data-testid="stRadio"] [role="radiogroup"]{
+  display:flex; flex-wrap:wrap; gap:8px;
+}
+[data-testid="stRadio"] input[type="radio"]{ position:absolute; opacity:0; pointer-events:none; }
+/* label & div role=radio variants */
+[data-testid="stRadio"] [role="radiogroup"] > label,
+[data-testid="stRadio"] [role="radiogroup"] > div[role="radio"]{
+  display:inline-flex; align-items:center; justify-content:center;
+  padding:10px 14px; border-radius:10px;
+  background: var(--pill-bg); color: var(--pill-text);
+  border: 1.5px solid var(--pill-brd);
+  user-select:none; cursor:pointer;
+  transition: background .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+[data-testid="stRadio"] [role="radiogroup"] > label:hover,
+[data-testid="stRadio"] [role="radiogroup"] > div[role="radio"]:hover{
+  background:#e9eaec;
+}
+/* Selected states (covers both DOM shapes) */
+[data-testid="stRadio"] [role="radiogroup"] > div[role="radio"][aria-checked="true"],
+[data-testid="stRadio"] [role="radiogroup"] > label:has(> input[type="radio"]:checked){
+  background: var(--pill-selected);
+  color: var(--pill-selected-text);
+  border-color: var(--pill-selected);
+}
+/* hide default inner dot/icon blocks Streamlit sometimes injects */
+[data-testid="stRadio"] [role="radiogroup"] > label > div:first-child,
+[data-testid="stRadio"] [role="radiogroup"] > div[role="radio"] > div:first-child{
+  display:none;
+}

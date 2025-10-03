@@ -1,31 +1,86 @@
-/* === Minimal additive CSS for hero & promo images === */
-.hero-wrap { display:flex; justify-content:center; margin: 6px 0 18px; }
-.hero-img {
-  display:block;
-  max-width: 85%;
-  height:auto;
-  border-radius: 10px;
-  box-shadow: 0 12px 24px rgba(0,0,0,.12);
-  transform: rotate(-2deg);
+/* ============================================================================
+   CCA Senior Navigator – Consolidated Styles
+   Canonical path: static/css/style.css
+   Purpose: buttons, pill radios, cards, light layout polish
+   ========================================================================== */
+
+/* ---------- Design tokens ---------- */
+:root{
+  --bg: #ffffff;
+  --text: #111827;               /* near-black */
+  --muted: #6b7280;              /* slate-500 */
+  --border: #e5e7eb;             /* gray-200 */
+  --divider: #f3f4f6;            /* gray-100 */
+  --primary: #0B5CD8;            /* brand blue */
+  --btn-black: #111827;
+  --btn-black-hover:#0f172a;
+
+  --pill-bg:#f3f4f6;
+  --pill-text:#111827;
+  --pill-brd:#e5e7eb;
+  --pill-selected:#111827;
+  --pill-selected-text:#ffffff;
+
+  --card-bg:#ffffff;
+  --card-brd:#e5e7eb;
+  --card-radius:14px;
+
+  --ring: 0 0 0 3px rgba(17,24,39,.18);
 }
-.promo-row { display:flex; gap: 24px; align-items:flex-start; justify-content:center; flex-wrap:wrap; }
-.promo-img {
-  max-width: 60%;
-  height:auto;
-  border-radius: 12px;
-  box-shadow: 0 10px 20px rgba(0,0,0,.12);
+
+/* ---------- Page base ---------- */
+html, body, [data-testid="stAppViewContainer"]{
+  background: var(--bg) !important;
+  color: var(--text) !important;
 }
-/* keep pill radios looking like pills even if default css is present */
-[data-testid="stRadio"] [role="radiogroup"]{
-  display:flex; gap:10px; flex-wrap:wrap;
+.block-container{ max-width: 1000px !important; padding-top: 2rem !important; padding-bottom: 2rem !important; }
+h1,h2,h3,h4{ color: var(--text) !important; letter-spacing:-0.01em; }
+small,.stCaption,[data-testid="stCaptionContainer"]{ color: var(--muted) !important; }
+hr,.stMarkdown hr{ border-color: var(--divider) !important; }
+
+/* ---------- Buttons ---------- */
+.stButton > button{
+  background: var(--primary) !important;
+  color: #fff !important;
+  border:none !important;
+  border-radius:12px !important;
+  padding:10px 16px !important;
+  font-weight:600 !important;
+  transition: opacity .15s ease, transform .02s ease;
 }
-[data-testid="stRadio"] input[type="radio"]{ position:absolute; opacity:0; pointer-events:none; }
-[data-testid="stRadio"] [role="radio"], [data-testid="stRadio"] label{
-  display:inline-flex; align-items:center; padding:10px 14px;
-  border-radius:10px; background:#f3f4f6; color:#111827; border:1px solid #e5e7eb;
-  cursor:pointer; user-select:none;
+.stButton > button:hover{ opacity:.92 !important; }
+.stButton > button:active{ transform:translateY(1px); }
+.stButton.secondary > button{ background:var(--btn-black) !important; color:#fff !important; }
+.stButton.secondary > button:hover{ background:var(--btn-black-hover) !important; }
+
+/* ---------- Cards ---------- */
+.stContainer,.card,.tile{
+  background:var(--card-bg)!important;
+  border:1px solid var(--card-brd)!important;
+  border-radius:var(--card-radius)!important;
+  box-shadow:0 1px 2px rgba(0,0,0,.04)!important;
 }
-[data-testid="stRadio"] [role="radio"][aria-checked="true"], 
-[data-testid="stRadio"] label:has(input:checked){
-  background:#111827; color:#fff; border-color:#111827;
+
+/* ---------- Forms ---------- */
+input,textarea,select{ border-radius:10px !important; border:1px solid var(--border) !important; }
+input:focus,textarea:focus,select:focus{ outline:none !important; box-shadow: var(--ring) !important; }
+
+/* ---------- Pill radios ---------- */
+[data-testid="stRadio"] [role="radiogroup"]{ display:flex!important; flex-wrap:wrap!important; gap:10px!important; }
+[data-testid="stRadio"] input[type="radio"]{ position:absolute!important; opacity:0!important; pointer-events:none!important; }
+[data-testid="stRadio"] [role="radiogroup"] > label,
+[data-testid="stRadio"] [role="radiogroup"] > div[role="radio"]{
+  display:inline-flex!important; align-items:center!important; justify-content:center!important;
+  padding:10px 14px!important; border-radius:10px!important;
+  background:var(--pill-bg)!important; color:var(--pill-text)!important;
+  border:1.5px solid var(--pill-brd)!important; cursor:pointer!important;
+  transition:background .15s ease, color .15s ease;
 }
+[data-testid="stRadio"] [role="radiogroup"] > label:hover,
+[data-testid="stRadio"] [role="radiogroup"] > div[role="radio"]:hover{ background:#eceff3 !important; }
+[data-testid="stRadio"] [role="radiogroup"] > div[role="radio"][aria-checked="true"],
+[data-testid="stRadio"] [role="radiogroup"] > label:has(> input[type="radio"]:checked){
+  background:var(--pill-selected)!important; color:var(--pill-selected-text)!important; border-color:var(--pill-selected)!important;
+}
+[data-testid="stRadio"] [role="radiogroup"] > label > div:first-child,
+[data-testid="stRadio"] [role="radiogroup"] > div[role="radio"] > div:first-child{ display:none!important; }
