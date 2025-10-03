@@ -185,7 +185,7 @@ a:hover,
 .sn-banner--success {{ border-color: rgba(22,163,74,.25); background: rgba(22,163,74,.08); color: var(--success); }}
 
 /* Buttons */
-.sn-btn {
+.sn-btn {{
   display:inline-flex;
   align-items:center;
   justify-content:center;
@@ -199,24 +199,24 @@ a:hover,
   color:#0b3e91;
   transition: all .18s ease;
   text-decoration:none;
-}
+}}
 
-.sn-btn.primary {
+.sn-btn.primary {{
   background: var(--brand);
   color: var(--brand-ink);
   border-color: transparent;
-}
+}}
 
-.sn-btn:hover {
+.sn-btn:hover {{
   box-shadow: 0 0 0 4px var(--ring);
   transform: translateY(-1px);
   color:#0b3e91;
-}
+}}
 
-.sn-btn.primary:hover {
+.sn-btn.primary:hover {{
   background: #0a4fc0;
   color: var(--brand-ink);
-}
+}}
 
 .stButton > button,
 button[kind] {{
@@ -437,6 +437,57 @@ button[kind]:focus {{
   outline: none;
   box-shadow: var(--focus-ring);
   border-radius: 12px;
+}}
+
+/* =========================
+   Button normalization block
+   =========================
+   Force all Streamlit buttons to use theme tokens, even if a page injects later CSS.
+*/
+.stButton > button,
+button[kind],
+[data-testid="baseButton-secondary"],
+[data-testid="baseButton-primary"],
+[data-testid="stFormSubmitButton"] > button,
+a[kind="primary"] > button,
+a[data-testid="stLinkButton"] > button {{
+  background: var(--brand) !important;
+  color: var(--brand-ink) !important;
+  border: 1px solid transparent !important;
+  border-radius: 999px !important;
+  padding: 0.78rem 1.85rem !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+}}
+
+.stButton > button:hover,
+button[kind]:hover,
+[data-testid="stFormSubmitButton"] > button:hover,
+a[data-testid="stLinkButton"] > button:hover {{
+  background: #0a4fc0 !important;
+  color: var(--brand-ink) !important;
+  transform: translateY(-1px);
+}}
+
+button[kind="secondary"],
+.stButton > button[kind="secondary"] {{
+  background: transparent !important;
+  color: var(--ink) !important;
+  border: 1px solid var(--border) !important;
+}}
+
+button:disabled {{
+  opacity: .55 !important;
+  cursor: not-allowed !important;
+}}
+
+/* Kill any leftover "danger" variants painting things red */
+.sn-btn.danger,
+.stButton .danger,
+button.danger {{
+  background: var(--brand) !important;
+  color: var(--brand-ink) !important;
+  border-color: transparent !important;
 }}
 
 </style>
