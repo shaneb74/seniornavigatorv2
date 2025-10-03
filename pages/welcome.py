@@ -82,6 +82,33 @@ st.markdown(
 
       /* Safety: hide truly empty markdown containers */
       div[data-testid="stMarkdownContainer"]:empty{ display:none !important; }
+
+      .pro-callout{
+        margin-top: 2.25rem;
+        padding: 1.5rem 1.75rem;
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(15, 60, 90, 0.06), rgba(15, 60, 90, 0.02));
+        border: 1px solid rgba(10, 40, 60, 0.08);
+      }
+      .pro-callout-title{
+        font-size: 0.9rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(10, 40, 60, 0.75);
+        margin-bottom: 0.35rem;
+      }
+      .pro-callout-body{
+        font-size: 0.95rem;
+        line-height: 1.5;
+        color: rgba(20, 20, 20, 0.78);
+        margin-bottom: 0.9rem;
+      }
+      .pro-callout-roles{
+        font-size: 0.9rem;
+        color: rgba(10, 40, 60, 0.7);
+        margin-bottom: 1rem;
+      }
     </style>
     """,
     unsafe_allow_html=True,
@@ -200,3 +227,23 @@ with col2:
         "For myself",
         "pages/tell_us_about_you.py",
     )
+
+st.markdown(
+    """
+    <div class="pro-callout">
+      <div class="pro-callout-title">For Professionals</div>
+      <div class="pro-callout-body">
+        We also support teams guiding older adults through transitions. Access a quieter workspace built for coordinating services with families.
+      </div>
+      <div class="pro-callout-roles">
+        Discharge planners &middot; Referral partners
+      </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+_, cta_right = st.columns([2, 1])
+with cta_right:
+    if st.button("Professional Mode", key="pro_mode_cta"):
+        st.switch_page("pages/professional_mode.py")
