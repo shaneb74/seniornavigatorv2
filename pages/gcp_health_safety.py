@@ -7,7 +7,7 @@ import streamlit as st
 
 from guided_care_plan import ensure_gcp_session, get_question_meta, render_stepper
 from guided_care_plan.state import current_audiencing_snapshot
-
+from senior_nav.components.choice_chips import choice_multi, choice_single, normalize_none
 from ui.theme import inject_theme
 
 
@@ -54,32 +54,27 @@ def _render_question(question_id: str, owns_home: bool | None):
     with st.container(border=True):
         if question_id in MULTI_QUESTIONS:
             default = st.session_state.get(f"gcp_{question_id}", [])
-            choice = st.multiselect(
+            if not isinstance(default, list):
+                default = list(default or [])
+            choice = choice_multi(
                 meta.get("label", question_id.replace("_", " ").title()),
-                options=values,
-                default=default,
+                [(value, option_map.get(value, value)) for value in values],
+                values=default,
                 key=f"gcp_{question_id}",
-                format_func=lambda value: option_map.get(value, value),
-                help=meta.get("description"),
-            )
-        else:
-            selected_value = st.session_state.get(f"gcp_{question_id}", values[0])
-            try:
-                index = values.index(selected_value)
-            except ValueError:
-                index = 0
-            choice = st.radio(
-                meta.get("label", question_id.replace("_", " ").title()),
-                options=values,
-                index=index,
-                key=f"gcp_{question_id}",
-                format_func=lambda value: option_map.get(value, value),
-                help=meta.get("description"),
             )
             if meta.get("description"):
                 st.caption(meta["description"])
-        if meta.get("description") and question_id in MULTI_QUESTIONS:
-            st.caption(meta["description"])
+        else:
+            selected_value = st.session_state.get(f"gcp_{question_id}", values[0])
+            if selected_value not in values:
+                selected_value = values[0]
+            choice = choice_single(
+                meta.get("label", question_id.replace("_", " ").title()),
+                [(value, option_map.get(value, value)) for value in values],
+                value=selected_value,
+                key=f"gcp_{question_id}",
+                help_text=meta.get("description"),
+            )
     return choice
 
 
@@ -105,10 +100,7 @@ if submitted:
     missing = []
     for qid, value in selections.items():
         if qid in MULTI_QUESTIONS:
-            value = list(value or [])
-            if "none" in value and len(value) > 1:
-                value = []
-            processed[qid] = value
+            processed[qid] = normalize_none(list(value or []))
         else:
             if value is None:
                 missing.append(qid)

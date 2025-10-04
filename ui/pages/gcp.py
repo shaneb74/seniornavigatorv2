@@ -1,4 +1,5 @@
 import streamlit as st
+from senior_nav.components.choice_chips import choice_single
 from senior_nav.components.nav import safe_switch_page
 from senior_nav.components.gcp_shell import (
     gcp_header,
@@ -20,28 +21,20 @@ def main():
 
     def form():
         st.subheader("Financial Eligibility")
-        answers["medicaid_status"] = st.radio(
+        answers["medicaid_status"] = choice_single(
             "Are you currently on Medicaid or receiving state long-term care assistance?",
-            options=["yes", "no", "unsure"],
-            index=(
-                ["yes", "no", "unsure"].index(answers.get("medicaid_status", "no"))
-                if answers.get("medicaid_status") in ["yes", "no", "unsure"]
-                else 1
-            ),
-            horizontal=True,
+            ["yes", "no", "unsure"],
+            value=answers.get("medicaid_status", "no"),
+            key="gcp_medicaid_status",
         )
 
         if answers["medicaid_status"] != "yes":
             st.subheader("Financial Confidence")
-            answers["funding_confidence"] = st.radio(
+            answers["funding_confidence"] = choice_single(
                 "How confident do you feel about paying for care?",
-                options=["no_worries", "confident", "unsure", "not_confident"],
-                index=(
-                    ["no_worries", "confident", "unsure", "not_confident"].index(
-                        answers.get("funding_confidence", "unsure")
-                    )
-                ),
-                horizontal=True,
+                ["no_worries", "confident", "unsure", "not_confident"],
+                value=answers.get("funding_confidence", "unsure"),
+                key="gcp_funding_confidence",
             )
         else:
             st.info(

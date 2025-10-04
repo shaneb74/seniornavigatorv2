@@ -1,82 +1,63 @@
 import streamlit as st
+from senior_nav.components.choice_chips import (
+    choice_multi,
+    choice_single,
+    normalize_none,
+)
 from senior_nav.components.nav import safe_switch_page
 from senior_nav.components.gcp_shell import gcp_header, gcp_section, primary_secondary
 
 
 def _init_state():
     st.session_state.setdefault("gcp_answers", {})
-
-
-def _normalize_none(selected_list):
-    if "none" in selected_list and len(selected_list) > 1:
-        return []
-    return selected_list
-
-
 def main():
     _init_state()
     gcp_header(2)
     answers = st.session_state["gcp_answers"]
 
     def form():
-        answers["cognition"] = st.radio(
+        answers["cognition"] = choice_single(
             "How is memory and thinking?",
             ["normal", "mild", "moderate", "severe"],
-            index=(
-                ["normal", "mild", "moderate", "severe"].index(
-                    answers.get("cognition", "normal")
-                )
-            ),
-            horizontal=True,
+            value=answers.get("cognition", "normal"),
+            key="gcp_cognition",
         )
 
-        behavior = st.multiselect(
-            "Any wandering or unsafe behaviors?",
-            ["wandering", "agitation", "exit_seeking", "none"],
-            default=answers.get("behavior_risks", []),
+        answers["behavior_risks"] = normalize_none(
+            choice_multi(
+                "Any wandering or unsafe behaviors?",
+                ["wandering", "agitation", "exit_seeking", "none"],
+                values=answers.get("behavior_risks", []),
+                key="gcp_behavior_risks",
+            )
         )
-        answers["behavior_risks"] = _normalize_none(behavior)
 
-        answers["falls"] = st.radio(
+        answers["falls"] = choice_single(
             "Falls in the last 12 months?",
             ["none", "one", "recurrent"],
-            index=(
-                ["none", "one", "recurrent"].index(answers.get("falls", "none"))
-            ),
-            horizontal=True,
+            value=answers.get("falls", "none"),
+            key="gcp_falls",
         )
 
-        answers["med_mgmt"] = st.radio(
+        answers["med_mgmt"] = choice_single(
             "How complex are medications to manage?",
             ["simple", "several", "complex"],
-            index=(
-                ["simple", "several", "complex"].index(
-                    answers.get("med_mgmt", "simple")
-                )
-            ),
-            horizontal=True,
+            value=answers.get("med_mgmt", "simple"),
+            key="gcp_med_mgmt",
         )
 
-        answers["home_safety"] = st.radio(
+        answers["home_safety"] = choice_single(
             "Is the home setup safe (stairs/bath/etc.)?",
             ["safe", "some_risks", "unsafe"],
-            index=(
-                ["safe", "some_risks", "unsafe"].index(
-                    answers.get("home_safety", "safe")
-                )
-            ),
-            horizontal=True,
+            value=answers.get("home_safety", "safe"),
+            key="gcp_home_safety",
         )
 
-        answers["supervision"] = st.radio(
+        answers["supervision"] = choice_single(
             "Do they have needed supervision at home?",
             ["always", "sometimes", "rarely", "never"],
-            index=(
-                ["always", "sometimes", "rarely", "never"].index(
-                    answers.get("supervision", "always")
-                )
-            ),
-            horizontal=True,
+            value=answers.get("supervision", "always"),
+            key="gcp_supervision",
         )
 
         st.session_state["gcp_answers"] = answers
