@@ -2,6 +2,8 @@ from __future__ import annotations
 
 # ui/theme.py
 # Design tokens + global CSS. Exposes BOTH inject() and inject_theme().
+from pathlib import Path
+
 import streamlit as st
 
 TOKENS = {
@@ -566,6 +568,8 @@ form [data-testid="baseButton-secondary"] > button:hover {{
 </style>
 """
 
+_CHIP_CSS_PATH = Path(__file__).resolve().parent.parent / "senior_nav" / "static" / "chips.css"
+
 def _already_injected() -> bool:
     return "_sn_theme_injected" in st.session_state
 
@@ -576,6 +580,9 @@ def inject_theme() -> None:
     """Primary API expected by app.py"""
     if not _already_injected():
         st.markdown(CSS, unsafe_allow_html=True)
+        if _CHIP_CSS_PATH.exists():
+            chips_css = _CHIP_CSS_PATH.read_text(encoding="utf-8")
+            st.markdown(f"<style>{chips_css}</style>", unsafe_allow_html=True)
         _mark_injected()
 
 def inject() -> None:

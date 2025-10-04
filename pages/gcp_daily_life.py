@@ -6,7 +6,7 @@ from __future__ import annotations
 import streamlit as st
 
 from guided_care_plan import ensure_gcp_session, get_question_meta, render_stepper
-
+from senior_nav.components.choice_chips import choice_single
 from ui.theme import inject_theme
 
 
@@ -37,17 +37,15 @@ def _render_radio(question_id: str) -> str:
     option_map = {opt["value"]: opt["label"] for opt in meta["options"]}
     values = list(option_map.keys())
     selected_value = st.session_state.get(f"gcp_{question_id}", values[0])
-    try:
-        index = values.index(selected_value)
-    except ValueError:
-        index = 0
+    if selected_value not in values:
+        selected_value = values[0]
     with st.container(border=True):
-        choice = st.radio(
+        choice = choice_single(
             meta["label"],
-            options=values,
-            index=index,
+            [(value, option_map[value]) for value in values],
+            value=selected_value,
             key=f"gcp_{question_id}",
-            format_func=lambda value: option_map[value],
+            help_text=meta.get("description"),
         )
         if meta.get("description"):
             st.caption(meta["description"])
