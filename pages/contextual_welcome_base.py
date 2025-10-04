@@ -1,12 +1,12 @@
 from __future__ import annotations
-# pages/contextual_welcome_base.py - modal + pills + collage (no feature cards, no JS)
-from pathlib import Path
+"""Shared renderer for the Contextual Welcome experience (modal + pills + collage)."""
+
 import streamlit as st
 
-# --- theme fallback (keeps app running even if theme import fails)
+# --- theme fallback (keeps app running even if theme import fails) ---
 try:
-    from ui.theme import inject_theme
-except Exception:
+    from ui.theme import inject_theme  # type: ignore
+except Exception:  # pragma: no cover
     def inject_theme() -> None:
         st.markdown(
             """
@@ -19,181 +19,215 @@ except Exception:
             unsafe_allow_html=True,
         )
 
-# Collage images already in static/images/
-IMAGE_FOR = {
-    "you": "static/images/contextual_welcome_self.png",
-    "loved": "static/images/contextual_welcome_someone_else.png",
+# Optional: we only read the current role from audiencing if present
+try:
+    from audiencing import ensure_audiencing_state  # type: ignore
+except Exception:  # pragma: no cover
+    def ensure_audiencing_state():
+        return {"entry": "proxy", "people": {"recipient_name": "", "proxy_name": ""}}
+
+# Collage images that you already placed in static/images/
+IMAGE_MAP = {
+    "self": "static/images/contextual_welcome_self.png",
+    "proxy": "static/images/contextual_welcome_someone_else.png",
 }
 
 COPY = {
-    "you": {
-        "h1": "We're here to help you find the support you're looking for.",
-        "ph": "What's your name?",
-        "tip": "",
+    "self": {
+        "headline": "We are here to help you find the support you are looking for.",
+        "name_placeholder": "What is your name?",
+        "pill_left": "For someone",
+        "pill_right": "For me",
     },
-    "loved": {
-        "h1": "We're here to help you find the support your loved ones need.",
-        "ph": "What's their name?",
-        "tip": "If you want to assess several people, don't worry - you can easily move on to the next step!",
+    "proxy": {
+        "headline": "We are here to help you find the support your loved ones need.",
+        "name_placeholder": "What is their name?",
+        "pill_left": "For someone",
+        "pill_right": "For me",
     },
 }
 
 def _safe_switch_page(target: str) -> None:
     try:
-        st.switch_page(target)
+        st.switch_page(target)  # type: ignore[attr-defined]
     except Exception:
+        # Fallback for older Streamlit
         st.query_params["next"] = target
         st.experimental_rerun()
 
-def _inject_css(hero_url: str) -> None:
+def _inject_page_css() -> None:
     st.markdown(
-        f"""
+        """
         <style>
-          :root {{
-            --ink: #0f172a;
-            --muted: #475569;
-            --surface: #ffffff;
-            --primary: #0b5cd8;
-            --bg: #eaf1ff;
-          }}
-          body {{ background: var(--bg); }}
-          .cw-hero {{
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            z-index: 0;
-            background-image: url("{hero_url}");
-            background-repeat: no-repeat;
-            background-position: right 5% bottom 5%;
-            background-size: contain;
-            filter: drop-shadow(0 16px 30px rgba(2,8,23,.25));
-          }}
-          .cw-modal {{
-            position: relative;
-            z-index: 2;
-            margin: 80px auto;
-            width: 560px;
-            max-width: 88vw;
-            background: var(--surface);
-            border-radius: 16px;
-            box-shadow: 0 12px 30px rgba(2,8,23,.10);
-            padding: 24px;
-            text-align: center;
-          }}
-          .cw-h1 {{
-            font-size: 1.55rem;
-            line-height: 1.25;
-            font-weight: 800;
-            color: var(--ink);
-            margin: 0 0 16px;
-          }}
-          .cw-tip {{
-            margin-top: 12px;
-            color: var(--muted);
-            font-size: 0.9rem;
-          }}
-          .cw-pills {{
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 16px;
-          }}
-          .cw-pills button {{
-            border-radius: 16px;
-            padding: 8px 16px;
-            border: 2px solid var(--primary);
-            background: transparent;
-            color: var(--ink);
-          }}
-          .cw-pills button[aria-pressed="true"] {{
-            background: var(--primary);
-            color: white;
-          }}
-          .cw-close {{
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            font-size: 1.2rem;
-            border: none;
-            background: none;
-            cursor: pointer;
-          }}
-          .cw-input-row {{
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-          }}
-          .cw-input-row input {{
-            flex: 1;
-            max-width: 300px;
-          }}
-          .cw-input-row button {{
-            flex: 0 0 auto;
-          }}
+          /* canvas */
+          .cw-wrap{
+            position:relative;
+            min-height:86vh;
+            background:var(--surface-subtle,#eef4ff);
+            border-radius:18px;
+            overflow:hidden;
+          }
+          /* collage on the right, behind the modal */
+          .cw-collage{
+            position:absolute;
+            right:4%;
+            top:8%;
+            width:min(52vw,980px);
+            max-width:980px;
+            z-index:0;
+            pointer-events:none;
+            opacity:1;
+          }
+          .cw-collage img{
+            width:100%;
+            height:auto;
+            display:block;
+            object-fit:contain;
+            filter:drop-shadow(0 18px 24px rgba(2,6,23,.18));
+          }
+
+          /* modal/card */
+          .cw-card{
+            position:relative;
+            z-index:1;
+            width:min(640px,92vw);
+            background:#fff;
+            border-radius:16px;
+            padding:20px 22px 22px;
+            margin:10vh 0 0 4vw;
+            box-shadow:0 10px 30px rgba(2,6,23,.12);
+          }
+
+          /* pills row */
+          .cw-pills{ display:flex; gap:12px; align-items:center; }
+          .cw-pill{
+            border:1px solid rgba(15,23,42,.12);
+            background:#eef2ff;
+            border-radius:12px;
+            padding:10px 16px;
+            font-weight:600;
+            cursor:pointer;
+            user-select:none;
+          }
+          .cw-pill.active{
+            background:#0b5cd8;
+            color:#fff;
+            border-color:#0b5cd8;
+          }
+          .cw-x{
+            margin-left:auto;
+            border:1px solid rgba(15,23,42,.12);
+            background:#fff;
+            width:36px;height:36px;
+            display:flex;align-items:center;justify-content:center;
+            border-radius:10px;
+            line-height:0; font-weight:700;
+          }
+
+          .cw-h1{
+            margin:14px 2px 14px;
+            font-size:28px; line-height:1.25; font-weight:800;
+            color:var(--ink,#0f172a);
+          }
+
+          /* Streamlit widget tweaks inside the card */
+          .cw-card [data-testid="stTextInput"] label{ display:none !important; }
+          .cw-card [data-testid="stTextInput"] input{
+            height:46px; border-radius:10px;
+          }
+          .cw-card .stButton>button{
+            height:46px; border-radius:10px;
+            font-weight:700;
+          }
+          .cw-helper{
+            margin-top:6px;
+            color:var(--ink-muted,#475569);
+            font-size:.9rem;
+          }
         </style>
-        <div class="cw-hero"></div>
         """,
         unsafe_allow_html=True,
     )
 
 def render(which: str = "you") -> None:
-    """which ∈ {'you','loved'}"""
+    """Render the contextual welcome. `which` is 'you' or 'loved'."""
     inject_theme()
     st.set_page_config(page_title="Contextual Welcome", layout="wide")
-    which = "you" if which not in ("you", "loved") else which
-    st.session_state.setdefault("cw_which", which)
-    
-    # CSS + background collage
-    hero = IMAGE_FOR[st.session_state["cw_which"]]
-    _inject_css(hero)
-    
-    # Modal
-    st.markdown('<div class="cw-modal">', unsafe_allow_html=True)
-    
-    # Close button
-    st.markdown('<button class="cw-close" onclick="window.location.href=\'pages/hub.py\'">×</button>', unsafe_allow_html=True)
-    
-    # Pills
-    st.markdown('<div class="cw-pills">', unsafe_allow_html=True)
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        if st.button(
-            "👥 For someone",
-            key="cw_pill_loved",
-            type="primary" if st.session_state["cw_which"] == "loved" else "secondary",
-            use_container_width=True,
-        ):
-            st.session_state["cw_which"] = "loved"
-            st.rerun()
-    with col2:
-        if st.button(
-            "👤 For me",
-            key="cw_pill_you",
-            type="primary" if st.session_state["cw_which"] == "you" else "secondary",
-            use_container_width=True,
-        ):
-            st.session_state["cw_which"] = "you"
-            st.rerun()
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Header
-    copy = COPY["loved" if st.session_state["cw_which"] == "loved" else "you"]
-    st.markdown(f'<div class="cw-h1">{copy["h1"]}</div>', unsafe_allow_html=True)
-    
-    # Input + Continue
-    st.markdown('<div class="cw-input-row">', unsafe_allow_html=True)
-    col1, col2 = st.columns([3, 2])
-    with col1:
-        name = st.text_input(copy["ph"], key="cw_name")
-    with col2:
-        if st.button("Continue", key="cw_go", use_container_width=True):
-            people = st.session_state.setdefault("people", {"recipient_name": ""})
-            people["recipient_name"] = name.strip()
+
+    # entry key and copy
+    entry = "self" if str(which).lower() in ("you", "self", "me") else "proxy"
+    copy = COPY[entry]
+    img_src = IMAGE_MAP.get(entry, "")
+
+    # absorb existing state (not required, but safe)
+    state = ensure_audiencing_state()
+    people = state.setdefault("people", {"recipient_name": "", "proxy_name": ""})
+
+    _inject_page_css()
+    st.markdown('<div class="cw-wrap">', unsafe_allow_html=True)
+
+    # collage
+    if img_src:
+        st.markdown(f'<div class="cw-collage"><img src="{img_src}" alt="collage"></div>', unsafe_allow_html=True)
+
+    # modal card
+    st.markdown('<div class="cw-card">', unsafe_allow_html=True)
+
+    # pills row
+    col_left, col_right, col_x = st.columns([1.05, 1.0, 0.2], gap="small")
+    with col_left:
+        if st.button(copy["pill_left"], key="cw_pill_left", use_container_width=True):
+            _safe_switch_page("pages/contextual_welcome_loved_one.py")
+        st.markdown(
+            '<script>var b=document.querySelector("button[kind=cw_pill_left]");</script>',
+            unsafe_allow_html=True,
+        )
+    with col_right:
+        if st.button(copy["pill_right"], key="cw_pill_right", use_container_width=True):
+            _safe_switch_page("pages/contextual_welcome_self.py")
+    with col_x:
+        st.button("x", key="cw_close", use_container_width=True)
+
+    # mark active pill with CSS class via simple hint (works with our styles)
+    active_left = entry == "proxy"
+    active_right = entry == "self"
+    st.markdown(
+        f"""
+        <script>
+        const pills = Array.from(document.querySelectorAll('.stButton button'));
+        if (pills.length >= 2) {{
+          pills[0].classList.add('cw-pill', '{'active' if active_left else ''}');
+          pills[1].classList.add('cw-pill', '{'active' if active_right else ''}');
+        }}
+        const closeBtn = document.querySelector('button[kind="cw_close"]');
+        if (closeBtn) closeBtn.classList.add('cw-x');
+        </script>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # headline
+    st.markdown(f'<div class="cw-h1">{copy["headline"]}</div>', unsafe_allow_html=True)
+
+    # name input
+    name_placeholder = copy["name_placeholder"]
+    name_key = "cw_name_self" if entry == "self" else "cw_name_proxy"
+    name = st.text_input(name_placeholder, value="", key=name_key, label_visibility="collapsed")
+    if entry == "self":
+        people["proxy_name"] = ""
+    else:
+        people["recipient_name"] = name
+
+    # Continue
+    c1, c2 = st.columns([1, 1])
+    with c2:
+        if st.button("Continue", key="cw_continue", use_container_width=True):
             _safe_switch_page("pages/hub.py")
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Tip
-    if copy["tip"]:
-        st.markdown(f'<div class="cw-tip">{copy["tip"]}</div>', unsafe_allow_html=True)
-    
-    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.caption(
+        "If you want to assess several people, do not worry - you can easily move on to the next step!",
+        help=None,
+    )
+
+    st.markdown("</div>", unsafe_allow_html=True)   # end .cw-card
+    st.markdown("</div>", unsafe_allow_html=True)   # end .cw-wrap
