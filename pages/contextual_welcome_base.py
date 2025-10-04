@@ -13,19 +13,6 @@ except Exception:  # pragma: no cover
         st.markdown(
             """
             <style>
-/* Force Streamlit body to center content */
-main > div {
-    display: flex;
-    justify-content: center;  /* horizontal centering */
-    align-items: center;      /* vertical centering */
-    min-height: 100vh;        /* full viewport height */
-}
-
-/* Optional: center the block-container specifically */
-.block-container {
-    margin: auto;
-}
-
               .block-container{max-width:1160px;padding-top:8px;}
               header[data-testid="stHeader"]{background:transparent;}
               footer{visibility:hidden;}
@@ -88,19 +75,6 @@ def _inject_page_css() -> None:
     st.markdown(
         """
         <style>
-/* Force Streamlit body to center content */
-main > div {
-    display: flex;
-    justify-content: center;  /* horizontal centering */
-    align-items: center;      /* vertical centering */
-    min-height: 100vh;        /* full viewport height */
-}
-
-/* Optional: center the block-container specifically */
-.block-container {
-    margin: auto;
-}
-
           /* Ensure full viewport height for all parent containers */
           body, html, .stApp, section.main {
             height: 100vh;
