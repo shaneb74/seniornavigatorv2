@@ -47,7 +47,7 @@ def _safe_switch_page(target: str) -> None:
         st.experimental_rerun()
 
 def _inject_css(hero_url: str) -> None:
-    # NOTE: all CSS braces are doubled {{ }} because this is an f-string
+    # Use a fixed background instead of an <img> element (prevents "ghost" block & shifting)
     st.markdown(
         f"""
         <style>
@@ -60,25 +60,22 @@ def _inject_css(hero_url: str) -> None:
           }}
           body {{ background: var(--bg); }}
 
-          /* hero collage at right/bottom */
+          /* a fixed, non-interactive layer for the collage */
           .cw-hero {{
             position: fixed;
-            right: min(2.5vw, 24px);
-            bottom: min(2vh, 24px);
-            width: min(62vw, 980px);
-            z-index: 0;
+            inset: 0;
             pointer-events: none;
-            user-select: none;
-          }}
-          .cw-hero img {{
-            width: 100%;
-            height: auto;
+            z-index: 0;
+            /* paint the collage in the bottom-right corner */
+            background-image: url("{hero_url}");
+            background-repeat: no-repeat;
+            background-position: right min(2.5vw, 24px) bottom min(2vh, 24px);
+            background-size: min(62vw, 980px) auto;
+            /* drop shadow without extra boxes */
             filter: drop-shadow(0 16px 30px rgba(2,8,23,.25));
-            border: 0;
-            display: block;
           }}
 
-          /* modal */
+          /* modal stays above hero */
           .cw-modal {{
             position: relative;
             z-index: 2;
@@ -90,6 +87,7 @@ def _inject_css(hero_url: str) -> None:
             box-shadow: 0 12px 30px rgba(2,8,23,.10);
             padding: 22px 22px 24px;
           }}
+
           .cw-h1 {{
             font-size: 1.55rem;
             line-height: 1.25;
@@ -97,16 +95,20 @@ def _inject_css(hero_url: str) -> None:
             color: var(--ink);
             margin: 6px 0 16px;
           }}
+
           .cw-tip {{
             margin-top: 12px;
             color: var(--muted);
             font-size: .9rem;
           }}
         </style>
-        <div class="cw-hero"><img src="{hero_url}" alt=""></div>
+
+        <!-- background layer (no content box, so no "ghost bar") -->
+        <div class="cw-hero"></div>
         """,
         unsafe_allow_html=True,
     )
+
 
 def render(which: str = "you") -> None:
     """which ∈ {{'you','loved'}}"""
