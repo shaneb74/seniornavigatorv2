@@ -1,79 +1,70 @@
-.skn-scope {
-  display: block;
-  --skn-button-radius: 12px;
-  --skn-button-font-weight: 600;
-  --skn-button-padding-y: 0.75rem;
-  --skn-button-padding-x: 1.25rem;
-}
+/* senior_nav/static/buttons.css */
 
-.skn-scope [data-variant] {
-  width: 100%;
-}
-
-.skn-scope [data-variant] .stButton {
-  width: 100%;
-}
-
-.skn-scope [data-variant] .stButton > button {
-  width: 100%;
+/* Scope all changes to our pages only */
+.sn-scope .stButton > button {
+  border-radius: var(--sn-radius-md);
+  padding: calc(var(--sn-spacing-sm) + 2px) var(--sn-spacing-lg);
+  font-weight: 600;
+  line-height: 1.1;
+  box-shadow: var(--sn-shadow-soft);
+  transition: transform .02s ease-in-out, box-shadow .15s ease, background-color .15s ease, color .15s ease;
+  border: 1px solid var(--sn-color-border);
+  cursor: pointer;
   min-height: 44px;
-  border-radius: var(--skn-button-radius);
-  font-weight: var(--skn-button-font-weight);
-  padding: var(--skn-button-padding-y) var(--skn-button-padding-x);
-  border: 1px solid transparent;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease,
-    box-shadow 0.15s ease;
 }
 
-.skn-scope [data-variant] .stButton > button:focus-visible {
-  outline: 3px solid var(--brand-300, #bfd0ff);
-  outline-offset: 2px;
+/* Primary */
+.sn-scope [data-variant="primary"] .stButton > button {
+  background: var(--sn-color-primary) !important;
+  color: var(--sn-color-bg) !important;
+  border-color: var(--sn-color-primary) !important;
+}
+.sn-scope [data-variant="primary"] .stButton > button:hover {
+  filter: brightness(0.95);
+}
+.sn-scope [data-variant="primary"] .stButton > button:active {
+  transform: translateY(1px);
 }
 
-.skn-scope [data-variant] .stButton > button:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
+/* Secondary */
+.sn-scope [data-variant="secondary"] .stButton > button {
+  background: var(--sn-color-bg) !important;
+  color: var(--sn-color-ink) !important;
+  border-color: var(--sn-color-border) !important;
+}
+.sn-scope [data-variant="secondary"] .stButton > button:hover {
+  background: var(--sn-color-bg-subtle) !important;
 }
 
-.skn-scope [data-variant="primary"] .stButton > button {
-  background: var(--brand-700, #1f2fab) !important;
-  color: #ffffff !important;
-  border-color: var(--brand-700, #1f2fab) !important;
-  box-shadow: 0 10px 20px rgba(31, 47, 171, 0.24);
-}
-
-.skn-scope [data-variant="primary"] .stButton > button:hover {
-  background: var(--brand-800, #17247c) !important;
-}
-
-.skn-scope [data-variant="secondary"] .stButton > button {
-  background: #ffffff !important;
-  color: var(--brand-700, #1f2fab) !important;
-  border-color: var(--brand-400, #4f6fe6) !important;
-}
-
-.skn-scope [data-variant="secondary"] .stButton > button:hover {
-  background: var(--brand-050, #eef2ff) !important;
-}
-
-/* Link-like variant: container with data-variant="link" */
-.skn-scope [data-variant="link"] .stButton > button {
+/* Link-like */
+.sn-scope [data-variant="link"] .stButton > button {
   background: transparent !important;
-  color: var(--brand-700, #1f2fab) !important;
+  color: var(--sn-color-primary) !important;
   border: 0 !important;
   box-shadow: none !important;
-  text-decoration: underline;
   padding-left: 0;
   width: auto;
   min-height: unset;
+  text-decoration: underline;
 }
-
-/* Hover/focus affordances for accessibility */
-.skn-scope [data-variant="link"] .stButton > button:hover {
+.sn-scope [data-variant="link"] .stButton > button:hover {
   text-decoration-thickness: 2px;
 }
 
-.skn-scope [data-variant="link"] .stButton > button:focus-visible {
-  outline: 3px solid var(--brand-300, #bfd0ff);
+/* Focus visibility */
+.sn-scope .stButton > button:focus-visible {
+  outline: 3px solid rgba(43,118,229,.30);
   outline-offset: 2px;
 }
+
+/* Disabled */
+.sn-scope .stButton > button:disabled,
+.sn-scope .stButton > button[disabled] {
+  opacity: .55;
+  cursor: not-allowed;
+  filter: none;
+  transform: none;
+}
+
+/* prevent auto full-width unless intended */
+.sn-scope .stButton { display: inline-block; }
