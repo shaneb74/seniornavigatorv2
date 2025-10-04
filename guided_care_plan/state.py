@@ -14,18 +14,20 @@ from audiencing import ensure_audiencing_state
 PACKAGE_ROOT = Path(__file__).resolve().parent
 
 QUESTION_ORDER: List[str] = [
-    "daily_tasks_support",
-    "medication_management",
+    "medicaid_status",
+    "funding_confidence",
+    "who_for",
+    "living_now",
     "caregiver_support",
-    "falls_history",
+    "adl_help",
     "cognition",
-    "behavior_signals",
-    "supervision_need",
-    "living_situation",
-    "partner_support",
+    "behavior_risks",
+    "falls",
+    "med_mgmt",
     "home_safety",
-    "veteran_benefits",
-    "chronic_conditions",
+    "supervision",
+    "chronic",
+    "preferences",
 ]
 
 
@@ -67,11 +69,11 @@ def ensure_gcp_session() -> Tuple[Dict[str, object], Dict[str, object]]:
 
 
 STEP_TITLES = [
-    "Daily Life",
+    "Financial Eligibility",
+    "Financial Confidence",
+    "Daily Life & Support",
     "Health & Safety",
     "Context & Preferences",
-    "Medical Check",
-    "Recommendation",
 ]
 
 

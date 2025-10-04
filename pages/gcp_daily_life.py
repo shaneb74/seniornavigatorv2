@@ -15,9 +15,10 @@ st.markdown('<div class="sn-scope gcp">', unsafe_allow_html=True)
 
 
 SECTION_QUESTIONS = [
-    "daily_tasks_support",
-    "medication_management",
+    "who_for",
+    "living_now",
     "caregiver_support",
+    "adl_help",
 ]
 
 
@@ -56,10 +57,10 @@ def _render_radio(question_id: str) -> str:
 answers, _ = ensure_gcp_session()
 _ensure_widget_defaults(answers)
 
-st.title("Guided Care Plan - Daily Life & Support")
-st.caption("Step 1 of 5")
+st.title("Guided Care Plan — Daily Life & Support")
+st.caption("Section 3 of 5")
 
-render_stepper(1)
+render_stepper(3)
 
 error_placeholder = st.empty()
 
@@ -75,7 +76,7 @@ if submitted:
         answers.update(selections)
         st.switch_page("pages/gcp_health_safety.py")
 
-if st.button("Back to intro"):
+if st.button("Back to financial questions"):
     st.switch_page("pages/gcp.py")
 
 st.markdown('</div>', unsafe_allow_html=True)
