@@ -1,6 +1,7 @@
 """Card helpers for high-fidelity UI shells."""
 from __future__ import annotations
 
+from html import escape
 from typing import Callable
 
 import streamlit as st
@@ -27,6 +28,11 @@ def _inject_card_styles() -> None:
         .sn-card__title {
           font-size: var(--sn-type-h2-size);
           font-weight: var(--sn-type-h2-weight);
+          margin: 0;
+        }
+        .sn-card__subtitle {
+          color: rgba(17, 20, 24, 0.64);
+          font-size: 1.05rem;
           margin: 0;
         }
         .sn-card__body {
@@ -80,3 +86,25 @@ def render_action(
             unsafe_allow_html=True,
         )
         st.button(button_label, key=key, on_click=on_click, disabled=disabled)
+
+
+def card_panel(*, title: str, subtitle: str | None = None, body: Callable[[], None]) -> None:
+    """Render a structured card surface with a callable body."""
+
+    _inject_card_styles()
+    container = st.container()
+    with container:
+        st.markdown('<div class="sn-card__surface">', unsafe_allow_html=True)
+        st.markdown(
+            f'<h3 class="sn-card__title">{escape(title)}</h3>',
+            unsafe_allow_html=True,
+        )
+        if subtitle:
+            st.markdown(
+                f'<p class="sn-card__subtitle">{escape(subtitle)}</p>',
+                unsafe_allow_html=True,
+            )
+        st.markdown('<div class="sn-card__body">', unsafe_allow_html=True)
+        body()
+        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
