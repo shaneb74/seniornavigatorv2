@@ -1,183 +1,214 @@
 from __future__ import annotations
-# Shared renderer for the Contextual Welcome ("For me" / "For someone") pages.
+
+# Contextual Welcome: shared renderer used by the "self" and "loved one" wrappers
 
 from pathlib import Path
 import streamlit as st
 
-# -- safe theme fallback so we don't crash if theme import fails
+# --- theme fallback (keeps app running even if theme import fails) ---
 try:
-    from ui.theme import inject_theme
-except Exception:  # pragma: no cover
+    from ui.theme import inject_theme  # type: ignore
+except Exception:
     def inject_theme() -> None:
         st.markdown(
             """
             <style>
+              .block-container{max-width:1160px;padding-top:8px;}
+              header[data-testid="stHeader"]{background:transparent;}
+              footer{visibility:hidden;}
               :root{
-                --brand:#0b5cd8;         /* primary */
-                --ink:#0f172a;           /* text */
-                --ink-weak:#4b5563;      /* muted */
-                --bg:#ffffff;            /* paper */
-                --panel:#f1f5ff;         /* light blue panel */
+                --ink:#0f172a;
+                --ink-muted:#5b6577;
+                --surface:#ffffff;
+                --pill:#f1f5ff;
+                --pill-active:#0b5cd8;
+                --pill-ink:#1e293b;
+                --shadow:0 10px 30px rgba(2,6,23,.10), 0 2px 8px rgba(2,6,23,.06);
+                --radius:18px;
               }
-              .block-container{max-width:1160px}
             </style>
             """,
             unsafe_allow_html=True,
         )
 
+# --- small helpers -------------------------------------------------------
 
-# ---------- content & assets ----------
+def safe_switch_page(target: str) -> None:
+    try:
+        st.switch_page(target)  # type: ignore[attr-defined]
+    except Exception:
+        try:
+            st.query_params["next"] = target  # type: ignore[attr-defined]
+        except Exception:
+            pass
+        # back-compat alias for older Streamlit
+        if not hasattr(st, "rerun"):
+            st.rerun = getattr(st, "experimental_rerun")  # type: ignore[attr-defined]
+        st.rerun()
+
+def _exists(p: str) -> bool:
+    try:
+        return Path(p).exists()
+    except Exception:
+        return False
+
+# file paths and copy
 IMAGE_FOR = {
-    # we generated single composite images for each mode
-    "self":  "static/images/contextual_welcome_self.png",
+    "you": "static/images/contextual_welcome_self.png",
     "loved": "static/images/contextual_welcome_someone_else.png",
 }
-
-COPY = {
-    "self": {
-        "h1": "We're here to help you find the support you're looking for.",
-        "helper": "The Care Planning Hub is your home base for guided plans, cost tools, and advisor handoffs.",
-        "accent": "We'll focus on what matters most for you - clarity, confidence, and next steps.",
-    },
-    "loved": {
-        "h1": "We're here to help you find the support your loved ones need.",
-        "helper": "If you want to assess several people, don't worry - you can easily move on to the next step!",
-        "accent": "We're alongside you with guidance that keeps family conversations warm and grounded.",
-    },
+HEADLINE = {
+    "you": "We are here to help you find the support you are looking for.",
+    "loved": "We are here to help you find the support your loved ones need.",
 }
+NAME_LABEL = {
+    "you": "What is your name?",
+    "loved": "What is their name?",
+}
+PILL = {
+    "you": ("For someone", "For me"),
+    "loved": ("For someone", "For me"),
+}
+# small explainer under the CTA (from the comp)
+FOOTNOTE = (
+    "If you want to assess several people, do not worry "
+    "you can easily move on to the next step!"
+)
 
+# --- main render ---------------------------------------------------------
 
-def _img_tag(src: str, alt: str = "") -> str:
-    # If the file is missing locally, show a subtle placeholder so you know.
-    if not Path(src).exists():
-        return f'<div class="cw-missing">Missing image: {src}</div>'
-    return f'<img class="cw-photo" src="{src}" alt="{alt}"/>'
-
-
-def render(mode: str) -> None:
+def render(key: str) -> None:
     """
-    mode: "you" | "self" | "loved"
-    Wrapper pages call render("you") or render("loved").
+    key: "you" or "loved"
     """
+
+    # guard / defaults
+    key = "you" if key not in ("you", "loved") else key
+
     inject_theme()
-    st.set_page_config(page_title="Contextual Welcome", layout="centered")
+    st.set_page_config(page_title="Contextual Welcome", layout="wide")
 
-    # normalize mode key
-    key = "self" if mode in {"you", "self"} else "loved"
-    img_src = IMAGE_FOR[key]
-    text = COPY[key]
-
-    # ---------- CSS ----------
+    # page chrome / gradient bg
     st.markdown(
         """
         <style>
-          /* Stage */
-          .cw-stage{
-            position: relative;
-            min-height: 560px;
-            background: linear-gradient(180deg, #f4f7ff 0%, #f8faff 100%);
-            border-radius: 24px;
-            padding: 40px;
-            overflow: hidden;
-            box-shadow: 0 8px 28px rgba(16,24,40,.06);
+          body { background: #f3f6ff; }
+          .cw-wrap{ position: relative; min-height: 72vh; }
+          .cw-row{ display: grid; grid-template-columns: 520px 1fr; gap: 24px; align-items: center; }
+          @media (max-width: 1100px){
+            .cw-row{ grid-template-columns: 1fr; }
           }
-
-          /* Big collage image on the right */
-          .cw-photos{
-            position: absolute;
-            right: 24px;
-            bottom: 24px;
-            width: min(58%, 780px);
-            pointer-events: none;
+          .cw-card{
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 20px 22px;
+            color: var(--ink);
           }
-          .cw-photo{
-            width: 100%;
-            height: auto;
-            display: block;
-            filter: drop-shadow(0 18px 28px rgba(16,24,40,.18));
-            user-select: none;
+          .cw-pillbar{ display:inline-flex; gap:10px; margin-bottom:14px; }
+          .cw-pill{
+            font-size:.95rem; line-height:1; padding:9px 14px; border-radius:12px;
+            background: var(--pill); color: var(--pill-ink);
+            border:1px solid rgba(2,6,23,.06);
           }
-          .cw-missing{
-            width: 100%;
-            height: 360px;
-            display: grid; place-items: center;
-            color: #B91C1C; background: #FFF1F2; border: 1px dashed #FCA5A5;
-            border-radius: 12px; font-size: 14px; font-family: ui-sans-serif, system-ui, -apple-system;
+          .cw-pill.active{
+            background: var(--pill-active); color:#fff; border-color: var(--pill-active);
           }
-
-          /* Modal card (left) */
-          .cw-modal{
-            position: relative;
-            z-index: 1;
-            width: min(520px, 100%);
-            background: #fff;
-            border-radius: 16px;
-            padding: 22px 22px 18px;
-            box-shadow: 0 14px 46px rgba(16,24,40,.12);
+          .cw-close{
+            position:absolute; right:14px; top:14px; width:30px; height:30px;
+            border-radius:999px; border:1px solid rgba(2,6,23,.08);
+            display:grid; place-items:center; color:var(--ink-muted); background:#fff;
           }
-
-          .cw-tabs{display:flex; gap:10px; margin-bottom:14px}
-          .cw-tab{
-            border: 0; border-radius: 10px; padding: 8px 14px;
-            font-weight: 600; font-size: 14px; line-height: 1;
-            background: #0f172a; color: #fff;
+          .cw-head{ font-size: 28px; font-weight:700; margin: 6px 0 2px 0; }
+          .cw-sub{ color: var(--ink-muted); margin:0 0 12px 0; }
+          .cw-grid3{ display:grid; grid-template-columns: repeat(3, 1fr); gap:16px; margin: 10px 0 18px 0;}
+          .cw-feature{ border:1px solid rgba(2,6,23,.08); border-radius: 12px; padding:14px 14px 12px; }
+          .cw-feature b{ display:block; margin-bottom:6px; }
+          .cw-cta{ margin-top:10px; display:grid; grid-template-columns: 1.2fr .85fr; gap:14px; align-items:center; }
+          @media (max-width: 520px){ .cw-cta{ grid-template-columns: 1fr; } }
+          .cw-note{ color: var(--ink-muted); font-size:.92rem; margin-top:8px; }
+          .cw-hero{
+            position:relative; height: 560px;
           }
-          .cw-tab.secondary{ background: #eaf2ff; color: #2b5fd9; }
-
-          .cw-h1{font-size: 22px; font-weight: 800; color: var(--ink); margin: 8px 0 2px;}
-          .cw-p  {color: var(--ink-weak); margin: 0 0 12px; font-size: 14px;}
-
-          .cw-name-row{display:flex; gap:12px; align-items:center; margin-top: 6px;}
-          .cw-input{
-            flex: 1 1 auto;
-            border-radius: 10px; border: 1px solid #e5e7eb;
-            padding: 12px 14px; font-size: 14px;
-            background: #fff;
+          @media (max-width: 1100px){
+            .cw-hero{ height: 340px; margin-top: 8px; }
           }
-          .cw-cta{
-            border: 0; border-radius: 10px;
-            padding: 12px 20px;
-            background: #4c64f3; color: #fff; font-weight: 700;
-            box-shadow: 0 8px 18px rgba(76,100,243,.35);
-            cursor: pointer;
+          .cw-hero img{
+            position:absolute; inset:auto; max-width:100%; width: 840px;
+            filter: drop-shadow(0 30px 50px rgba(2,6,23,.22));
           }
-          .cw-helper{ color: var(--ink-weak); font-size: 14px; margin-left: 8px;}
-
-          /* Responsive: stack photo below modal on small screens */
-          @media (max-width: 980px){
-            .cw-stage{ padding: 24px; }
-            .cw-photos{ position: static; width: 100%; margin-top: 14px; }
-          }
+          .cw-hero.right img{ right:-60px; }
+          .cw-hero.left img{ left:-60px; }
         </style>
         """,
         unsafe_allow_html=True,
     )
 
-    # ---------- HTML ----------
-    st.markdown('<div class="cw-stage">', unsafe_allow_html=True)
-    st.markdown(
-        f"""
-        <div class="cw-modal">
-          <div class="cw-tabs">
-            <div class="cw-tab{' ' if key=='loved' else ' secondary'}">For someone</div>
-            <div class="cw-tab{' secondary' if key=='loved' else ''}">For me</div>
-          </div>
+    # choose image and alignment
+    img_src = IMAGE_FOR[key]
+    align_class = "right" if key == "loved" else "left"  # match comps: loved collage on right
 
-          <div class="cw-h1">{text['h1']}</div>
+    # Defensive: surface a one-line debug if path is missing
+    if not _exists(img_src):
+        st.caption(f"DEBUG: missing collage at {img_src}. Put your PNG in static/images.")
 
-          <div class="cw-name-row">
-            <input class="cw-input" placeholder="What's your name?" />
-            <button class="cw-cta">Continue</button>
-          </div>
+    # content row
+    st.markdown('<div class="cw-wrap"><div class="cw-row">', unsafe_allow_html=True)
 
-          <div class="cw-p" style="margin-top:10px;">{text['accent']}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    # --- card column
+    st.markdown('<div class="cw-card" style="position:relative;">', unsafe_allow_html=True)
+    st.markdown('<div class="cw-close">x</div>', unsafe_allow_html=True)
 
-    st.markdown(
-        f'<div class="cw-photos">{_img_tag(img_src, "decorative collage")}</div>',
-        unsafe_allow_html=True,
-    )
-    st.markdown("</div>", unsafe_allow_html=True)  # .cw-stage
+    left, right = PILL[key]
+    # visual pills; wrappers control which page we are on
+    pill_html = f"""
+      <div class="cw-pillbar">
+        <span class="cw-pill {'active' if key == 'loved' else ''}">{left}</span>
+        <span class="cw-pill {'active' if key == 'you' else ''}">{right}</span>
+      </div>
+    """
+    st.markdown(pill_html, unsafe_allow_html=True)
+
+    st.markdown(f'<div class="cw-head">{HEADLINE[key]}</div>', unsafe_allow_html=True)
+
+    # three tiny features (from original contextual copy)
+    features = [
+        ("Personalized guidance",
+         "Answer a few context questions and we will highlight the first moves to make."),
+        ("Care Planning Hub",
+         "Navigate between the Guided Care Plan, Cost Planner, and advisor handoff easily."),
+        ("Ready for handoff",
+         "We will focus on what matters most for you - clarity, confidence, and next steps."),
+    ]
+    st.markdown('<div class="cw-grid3">', unsafe_allow_html=True)
+    for title, desc in features:
+        st.markdown(f'<div class="cw-feature"><b>{title}</b><span>{desc}</span></div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # name input + CTA
+    col_name, col_btn = st.columns([1.2, 0.85])
+    with col_name:
+        name = st.text_input(NAME_LABEL[key], key=f"cw_name_{key}")
+    with col_btn:
+        if st.button("Continue", type="primary", use_container_width=True, key=f"cw_continue_{key}"):
+            # stash name into a friendly context bucket
+            ctx = st.session_state.setdefault(
+                "care_context",
+                {"person_name": "Your Loved One", "gcp_answers": {}, "gcp_recommendation": None},
+            )
+            if key == "you":
+                ctx["person_name"] = name or "You"
+            else:
+                ctx["person_name"] = name or "Your Loved One"
+            safe_switch_page("pages/hub.py")
+
+    st.markdown(f'<div class="cw-note">{FOOTNOTE}</div>', unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)  # end card
+
+    # --- collage column
+    st.markdown(f'<div class="cw-hero {align_class}">', unsafe_allow_html=True)
+    st.markdown(f'<img alt="collage" src="/{img_src}">', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('</div></div>', unsafe_allow_html=True)
