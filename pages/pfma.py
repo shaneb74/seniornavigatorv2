@@ -1,37 +1,91 @@
+"""Plan for MyAdvisor TurboTax-style wireframe."""
+from __future__ import annotations
 
 import streamlit as st
-from ui.theme import inject_theme
+
+from ui.cost_planner_template import (
+    NavButton,
+    apply_turbotax_wizard_theme,
+    cost_planner_page_container,
+    render_app_header,
+    render_module_cards,
+    render_nav_buttons,
+    render_suggestion,
+    render_wizard_help,
+    render_wizard_hero,
+)
 
 
-inject_theme()
-st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
+apply_turbotax_wizard_theme()
+
+ctx = st.session_state.setdefault(
+    "care_context",
+    {
+        "person_name": "Your Loved One",
+        "care_flags": {},
+        "planning_mode": "estimating",
+    },
+)
+
+person_name = ctx.get("person_name", "Your Loved One")
 
 
-# Guard
-if 'care_context' not in st.session_state:
-    st.session_state.care_context = {}
+with cost_planner_page_container():
+    render_app_header()
+    render_wizard_hero(
+        "Plan for MyAdvisor",
+        "Book your advisor call, then confirm a few details so the conversation starts with the right context.",
+    )
 
-ctx = st.session_state.care_context
-person_name = ctx.get('person_name', 'Your Loved One')
+    render_suggestion(
+        "Navi can stay with you during the call to capture notes or next steps—just let your advisor know you'd like the help.",
+        tone="info",
+    )
 
-st.title("Plan for My Advisor")
-st.caption("Make your call personalized, easy, and fast. Book your call first, then confirm details so your advisor is expertly prepared.")
+    card_trigger = render_module_cards(
+        [
+            {
+                "title": "Book your advisor call",
+                "description": "Choose a time that works for you. We'll send a confirmation email with the meeting link.",
+                "status": "Recommended first",
+                "actions": [
+                    {
+                        "label": "Book now",
+                        "key": "pfma_book_call",
+                        "type": "primary",
+                    }
+                ],
+            },
+            {
+                "title": "Confirm details",
+                "description": "Review the plan, costs, and paperwork so your advisor can jump straight into solutions.",
+                "status": "Takes about 2 minutes",
+                "status_class": "positive",
+                "actions": [
+                    {
+                        "label": "Start confirmation",
+                        "key": "pfma_start_confirm",
+                        "type": "primary",
+                    }
+                ],
+            },
+        ]
+    )
 
-st.markdown('---')
-# Primary CTA: Book first
-c1, c2 = st.columns(2)
-with c1:
-    if st.button("Book My Call", key="pfma_book_call", type="primary"):
+    if card_trigger == "pfma_book_call":
         st.switch_page("pages/appointment_booking.py")
-with c2:
-    if st.button("Back to Hub", key="pfma_back_hub"):
+    elif card_trigger == "pfma_start_confirm":
+        st.switch_page("pages/pfma_confirm_care_plan.py")
+
+    render_wizard_help(
+        f"We'll pull in everything you've already saved for {person_name}. Update anything that changed and mark it ready for your advisor.",
+    )
+
+    clicked = render_nav_buttons(
+        [
+            NavButton("Back to Hub", "pfma_back_hub"),
+        ]
+    )
+
+    if clicked == "pfma_back_hub":
         st.switch_page("pages/hub.py")
-
-st.markdown('---')
-st.subheader("After booking, confirm a few details")
-st.caption("It takes about two minutes. This helps your advisor prepare a tailored conversation.")
-
-if st.button("Start Confirmation", key="pfma_start_confirm"):
-    st.switch_page("pages/pfma_confirm_care_plan.py")
-
-st.markdown('</div>', unsafe_allow_html=True)
