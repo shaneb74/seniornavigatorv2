@@ -1,6 +1,8 @@
 from __future__ import annotations
 """Shared renderer for the Contextual Welcome experience (modal + pills + collage)."""
 
+import base64, mimetypes
+from pathlib import Path
 import streamlit as st
 
 # --- theme fallback (keeps app running even if theme import fails) ---
@@ -18,13 +20,6 @@ except Exception:  # pragma: no cover
             """,
             unsafe_allow_html=True,
         )
-
-# Optional: we only read the current role from audiencing if present
-try:
-    from audiencing import ensure_audiencing_state  # type: ignore
-except Exception:  # pragma: no cover
-    def ensure_audiencing_state():
-        return {"entry": "proxy", "people": {"recipient_name": "", "proxy_name": ""}}
 
 # Collage images that you already placed in static/images/
 IMAGE_MAP = {
@@ -47,11 +42,38 @@ COPY = {
     },
 }
 
+# Relationship choices (shown when entry == 'proxy')
+RELATIONSHIP_CHOICES = [
+    ("parent", "Parent"),
+    ("spouse", "Spouse/Partner"),
+    ("child", "Adult Child"),
+    ("sibling", "Sibling"),
+    ("relative", "Other Relative"),
+    ("friend", "Friend/Neighbor"),
+    ("caregiver", "Professional Caregiver"),
+    ("poa_cm", "POA / Case Manager"),
+    ("other", "Other"),
+    ("unknown", "Prefer not to say"),
+]
+
+# ------------------ utilities ------------------
+def _data_uri(path_str: str) -> str | None:
+    """Read local image bytes and return a base64 data URI (safe for raw HTML)."""
+    try:
+        p = Path(path_str)
+        if not p.exists():
+            return None
+        b = p.read_bytes()
+        ext = p.suffix.lower()
+        mime = mimetypes.types_map.get(ext, "image/png")
+        return f"data:{mime};base64,{base64.b64encode(b).decode('ascii')}"
+    except Exception:
+        return None
+
 def _safe_switch_page(target: str) -> None:
     try:
         st.switch_page(target)  # type: ignore[attr-defined]
     except Exception:
-        # Fallback for older Streamlit
         st.query_params["next"] = target
         st.experimental_rerun()
 
@@ -72,68 +94,42 @@ def _inject_page_css() -> None:
             position:absolute;
             right:4%;
             top:8%;
-            width:min(52vw,980px);
-            max-width:980px;
+            width:min(680px, 64%);
+            transform:rotate(-5deg);
             z-index:0;
-            pointer-events:none;
-            opacity:1;
+            opacity:.98;
+            filter:drop-shadow(0 22px 40px rgba(0,0,0,.2));
           }
           .cw-collage img{
             width:100%;
             height:auto;
+            border-radius:12px;
             display:block;
-            object-fit:contain;
-            filter:drop-shadow(0 18px 24px rgba(2,6,23,.18));
           }
-
-          /* modal/card */
+          /* modal card */
           .cw-card{
             position:relative;
             z-index:1;
-            width:min(640px,92vw);
-            background:#fff;
-            border-radius:16px;
-            padding:20px 22px 22px;
-            margin:10vh 0 0 4vw;
-            box-shadow:0 10px 30px rgba(2,6,23,.12);
+            background:white;
+            margin: min(16vh, 140px) 0 0 min(3vw, 24px);
+            padding: 22px 22px 16px;
+            width:min(520px, 92vw);
+            border-radius:14px;
+            box-shadow:0 24px 60px rgba(2,12,27,.18);
           }
-
-          /* pills row */
-          .cw-pills{ display:flex; gap:12px; align-items:center; }
-          .cw-pill{
-            border:1px solid rgba(15,23,42,.12);
-            background:#eef2ff;
-            border-radius:12px;
-            padding:10px 16px;
-            font-weight:600;
-            cursor:pointer;
-            user-select:none;
+          .cw-card h2{
+            margin:0 0 .6rem 0;
+            font-size:1.6rem;
+            line-height:1.2;
           }
-          .cw-pill.active{
-            background:#0b5cd8;
-            color:#fff;
-            border-color:#0b5cd8;
+          .cw-card .pill-row{
+            display:flex; gap:10px; margin:12px 0 16px;
           }
-          .cw-x{
-            margin-left:auto;
-            border:1px solid rgba(15,23,42,.12);
-            background:#fff;
-            width:36px;height:36px;
-            display:flex;align-items:center;justify-content:center;
-            border-radius:10px;
-            line-height:0; font-weight:700;
+          .cw-card .pill-row .stButton>button{
+            height:36px; border-radius:999px; padding: 4px 14px; font-weight:700;
           }
-
-          .cw-h1{
-            margin:14px 2px 14px;
-            font-size:28px; line-height:1.25; font-weight:800;
-            color:var(--ink,#0f172a);
-          }
-
-          /* Streamlit widget tweaks inside the card */
-          .cw-card [data-testid="stTextInput"] label{ display:none !important; }
-          .cw-card [data-testid="stTextInput"] input{
-            height:46px; border-radius:10px;
+          .cw-card .stTextInput>div>div>input{
+            height:44px; border-radius:10px;
           }
           .cw-card .stButton>button{
             height:46px; border-radius:10px;
@@ -159,14 +155,26 @@ def render(which: str = "you") -> None:
     copy = COPY[entry]
     img_src = IMAGE_MAP.get(entry, "")
 
-    # absorb existing state (not required, but safe)
-    state = ensure_audiencing_state()
-    people = state.setdefault("people", {"recipient_name": "", "proxy_name": ""})
+    # --- unify with session state used elsewhere (welcome.py) ---
+    if "aud" not in st.session_state:
+        st.session_state.aud = {
+            "entry": entry,
+            "recipient_name": None,
+            "proxy_name": None,
+            "relationship_code": None,
+            "relationship_label": None,
+            "relationship_other": None,
+            "qualifiers": {},
+        }
+    aud = st.session_state.aud
+    aud["entry"] = entry  # keep in sync
 
     _inject_page_css()
     st.markdown('<div class="cw-wrap">', unsafe_allow_html=True)
 
     # collage
+    if img_src and not img_src.startswith(("http://", "https://", "data:")):
+        img_src = _data_uri(img_src) or ""
     if img_src:
         st.markdown(f'<div class="cw-collage"><img src="{img_src}" alt="collage"></div>', unsafe_allow_html=True)
 
@@ -174,55 +182,75 @@ def render(which: str = "you") -> None:
     st.markdown('<div class="cw-card">', unsafe_allow_html=True)
 
     # pills row
-    col_left, col_right, col_x = st.columns([1.05, 1.0, 0.2], gap="small")
+    col_left, col_right, col_x = st.columns([1, 1, 0.2])
     with col_left:
         if st.button(copy["pill_left"], key="cw_pill_left", use_container_width=True):
             _safe_switch_page("pages/contextual_welcome_loved_one.py")
-        st.markdown(
-            '<script>var b=document.querySelector("button[kind=cw_pill_left]");</script>',
-            unsafe_allow_html=True,
-        )
     with col_right:
         if st.button(copy["pill_right"], key="cw_pill_right", use_container_width=True):
             _safe_switch_page("pages/contextual_welcome_self.py")
     with col_x:
-        st.button("x", key="cw_close", use_container_width=True)
-
-    # mark active pill with CSS class via simple hint (works with our styles)
-    active_left = entry == "proxy"
-    active_right = entry == "self"
-    st.markdown(
-        f"""
-        <script>
-        const pills = Array.from(document.querySelectorAll('.stButton button'));
-        if (pills.length >= 2) {{
-          pills[0].classList.add('cw-pill', '{'active' if active_left else ''}');
-          pills[1].classList.add('cw-pill', '{'active' if active_right else ''}');
-        }}
-        const closeBtn = document.querySelector('button[kind="cw_close"]');
-        if (closeBtn) closeBtn.classList.add('cw-x');
-        </script>
-        """,
-        unsafe_allow_html=True,
-    )
+        st.button("x", key="cw_close", use_container_width=True, type="secondary")
 
     # headline
-    st.markdown(f'<div class="cw-h1">{copy["headline"]}</div>', unsafe_allow_html=True)
+    st.markdown(f"<h2>{copy['headline']}</h2>", unsafe_allow_html=True)
 
     # name input
     name_placeholder = copy["name_placeholder"]
     name_key = "cw_name_self" if entry == "self" else "cw_name_proxy"
-    name = st.text_input(name_placeholder, value="", key=name_key, label_visibility="collapsed")
+    name = st.text_input(name_placeholder, value=(aud.get("recipient_name") or ""), key=name_key, label_visibility="collapsed").strip()
+
+    # persist aud fields
     if entry == "self":
-        people["proxy_name"] = ""
+        aud["recipient_name"] = name or aud.get("recipient_name")
+        aud["proxy_name"] = None
     else:
-        people["recipient_name"] = name
+        aud["recipient_name"] = name or aud.get("recipient_name")
+        # Relationship select (proxy only, progressive reveal after name entered)
+        if name:
+            labels = [label for _, label in RELATIONSHIP_CHOICES]
+            default_idx = labels.index(aud["relationship_label"]) if aud.get("relationship_label") in labels else 0
+            rel_label = st.selectbox(
+                f"What's your relationship to {name or 'them'}?",
+                labels,
+                index=default_idx,
+                key="cw_relationship",
+            )
+            code_lookup = {label: code for code, label in RELATIONSHIP_CHOICES}
+            aud["relationship_label"] = rel_label
+            aud["relationship_code"] = code_lookup.get(rel_label)
+            if aud["relationship_code"] == "other":
+                aud["relationship_other"] = st.text_input(
+                    "Briefly describe the relationship",
+                    value=aud.get("relationship_other") or "",
+                    key="cw_relationship_other",
+                    label_visibility="collapsed",
+                )
+            else:
+                aud["relationship_other"] = None
+        else:
+            # Clear relationship if the name is empty again
+            aud["relationship_label"] = None
+            aud["relationship_code"] = None
+            aud["relationship_other"] = None
 
     # Continue
+    # Gate until required info is present
+    name_ok = bool((aud.get("recipient_name") or "").strip())
+    rel_ok = True if entry == "self" else bool(aud.get("relationship_code"))
+    can_continue = name_ok and rel_ok
+
     c1, c2 = st.columns([1, 1])
     with c2:
-        if st.button("Continue", key="cw_continue", use_container_width=True):
+        if st.button("Continue", key="cw_continue", use_container_width=True, disabled=not can_continue):
+            if not aud.get("recipient_name"):
+                aud["recipient_name"] = "You" if entry == "self" else "Your Loved One"
             _safe_switch_page("pages/hub.py")
+
+    if not name_ok:
+        st.caption("Please enter a name to continue.", help=None)
+    elif entry == "proxy" and not rel_ok:
+        st.caption("Select your relationship to continue.", help=None)
 
     st.caption(
         "If you want to assess several people, do not worry - you can easily move on to the next step!",
