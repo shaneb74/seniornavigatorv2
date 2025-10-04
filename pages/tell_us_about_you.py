@@ -1,104 +1,135 @@
-"""Self-entry audiencing flow with qualifier toggles."""
+"""Entry selection variant emphasizing the self journey."""
 from __future__ import annotations
-
-
-from ui.theme import inject_theme
 
 import streamlit as st
 
 from audiencing import (
-
-    URGENT_FEATURE_FLAG,
     apply_audiencing_sanitizer,
     compute_audiencing_route,
     ensure_audiencing_state,
     log_audiencing_set,
     snapshot_audiencing,
-
-
 )
-inject_theme()
-st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
+from ui.components import card_panel
+from ui.theme import inject_theme
 
 
-st.set_page_config(page_title="Tell Us About You", layout="wide")
+ENTRY_OPTIONS = (
+    {
+        "value": "self",
+        "icon": "👤",
+        "title": "I'm planning for myself",
+        "description": "Give me a plan that builds confidence in my own care decisions.",
+    },
+    {
+        "value": "proxy",
+        "icon": "👥",
+        "title": "I'm supporting someone else",
+        "description": "Help me organize what my loved one needs and how to support them.",
+    },
+    {
+        "value": "pro",
+        "icon": "🧑‍💼",
+        "title": "I'm a professional advisor",
+        "description": "I guide families and need a clear framework to share.",
+    },
+)
 
-state = ensure_audiencing_state()
-state["entry"] = "self"
-apply_audiencing_sanitizer(state)
-qualifiers = state["qualifiers"]
-people = state.setdefault("people", {"recipient_name": "", "proxy_name": ""})
 
-st.title("Tell Us About You")
-st.caption("These quick yes/no toggles tailor what you see next.")
+def safe_switch_page(target: str) -> None:
+    try:
+        st.switch_page(target)  # type: ignore[attr-defined]
+    except Exception:
+        st.query_params["next"] = target
+        st.experimental_rerun()
 
-with st.form("audiencing_self_form"):
-    name = st.text_input(
-        "What should we call you?",
-        value=people.get("recipient_name", ""),
-        help="Optional. We use this name in the Hub to personalize your plan.",
-    )
 
-    col1, col2 = st.columns(2, gap="large")
-    with col1:
-        is_veteran = st.toggle(
-            "Are you a veteran?",
-            value=qualifiers.get("is_veteran", False),
-            key="aud_self_is_veteran",
-        )
-        owns_home = st.toggle(
-            "Do you own your home?",
-            value=qualifiers.get("owns_home", False),
-            key="aud_self_owns_home",
-        )
-    with col2:
-        has_partner = st.toggle(
-            "Do you have a partner?",
-            value=qualifiers.get("has_partner", False),
-            key="aud_self_has_partner",
-        )
-        on_medicaid = st.toggle(
-            "Are you on Medicaid?",
-            value=qualifiers.get("on_medicaid", False),
-            key="aud_self_on_medicaid",
-        )
+def _ensure_care_context() -> dict[str, object]:
+    return st.session_state.setdefault("care_context", {"person_name": "You"})
 
-    urgent_case = False
-    if URGENT_FEATURE_FLAG:
-        urgent_case = st.toggle(
-            "Is this urgent?",
-            value=qualifiers.get("urgent", False),
-            key="aud_self_urgent",
-        )
 
-    submitted = st.form_submit_button("Continue", use_container_width=True)
-
-if submitted:
-    people["recipient_name"] = name.strip()
-    people["proxy_name"] = ""
-    qualifiers.update(
-        {
-            "is_veteran": bool(is_veteran),
-            "has_partner": bool(has_partner),
-            "owns_home": bool(owns_home),
-            "on_medicaid": bool(on_medicaid),
-            "urgent": bool(urgent_case) if URGENT_FEATURE_FLAG else False,
-        }
-    )
+def _handle_entry_selection(entry_value: str) -> None:
+    state = ensure_audiencing_state()
+    state["entry"] = entry_value
+    state.setdefault("people", {}).update({"recipient_name": "", "proxy_name": ""})
     apply_audiencing_sanitizer(state)
     compute_audiencing_route(state)
     snapshot = snapshot_audiencing(state)
     st.session_state["audiencing_snapshot"] = snapshot
     log_audiencing_set(snapshot)
-    st.switch_page("pages/hub.py")
 
-st.divider()
+    care_context = _ensure_care_context()
+    care_context["person_name"] = "You" if entry_value == "self" else "Your Loved One"
 
-with st.expander("Debug: Audiencing state", expanded=False):
-    st.json(state)
-    st.markdown("---")
-    st.json(st.session_state.get("audiencing_snapshot", {}))
+    gate_state = st.session_state.setdefault("gate", {})
+    gate_state["medicaid_offramp_shown"] = False
 
-st.button("Back to Welcome", on_click=lambda: st.switch_page("pages/welcome.py"))
+    safe_switch_page("pages/contextual_welcome.py")
 
-st.markdown('</div>', unsafe_allow_html=True)
+
+def _render_option(option: dict[str, str], *, highlight: bool) -> None:
+    button_type = "primary" if highlight else "secondary"
+    with st.container(border=True):
+        st.markdown(
+            f"""
+            <div style="display:flex;flex-direction:column;gap:.6rem;">
+                <div style="font-size:2rem;">{option['icon']}</div>
+                <div style="font-size:1.1rem;font-weight:600;">{option['title']}</div>
+                <p style="margin:0;color:var(--ink-muted);">{option['description']}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        pressed = st.button(
+            "Choose",
+            key=f"aud_self_choice_{option['value']}",
+            type=button_type,
+            use_container_width=True,
+        )
+        if pressed:
+            _handle_entry_selection(option["value"])
+
+
+def render_audiencing_entry(*, emphasize: str = "self") -> None:
+    inject_theme()
+    st.set_page_config(page_title="Tell Us About You", layout="centered")
+    st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
+
+    debug_flag = bool(st.session_state.get("dev_debug"))
+
+    ensure_audiencing_state()
+
+    with card_panel():
+        st.markdown(
+            """
+            <div class="sn-hero-h1" style="margin-bottom:.4rem;">
+              Welcome back, let's personalize your plan
+            </div>
+            <p style="margin:0;color:var(--ink-muted);font-size:1.05rem;">
+              A few quick questions help us guide you to the right care. Some are essential,
+              others help personalize your journey.
+            </p>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        st.caption(
+            "Pick the role that fits you best. We’ll keep everything warm, simple, and human."
+        )
+
+        cols = st.columns(3, gap="large")
+        for col, option in zip(cols, ENTRY_OPTIONS):
+            with col:
+                _render_option(option, highlight=option["value"] == emphasize)
+
+    if debug_flag:
+        with st.expander("Debug: Audiencing state", expanded=False):
+            st.json(st.session_state.get("audiencing", {}))
+            st.markdown("---")
+            st.json(st.session_state.get("audiencing_snapshot", {}))
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
+render_audiencing_entry()
+

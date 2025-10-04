@@ -1,109 +1,137 @@
-"""Proxy-entry audiencing flow capturing names and qualifiers."""
+"""Lean audiencing step for selecting who we're helping."""
 from __future__ import annotations
-
-
-from ui.theme import inject_theme
 
 import streamlit as st
 
 from audiencing import (
-
-    URGENT_FEATURE_FLAG,
     apply_audiencing_sanitizer,
     compute_audiencing_route,
     ensure_audiencing_state,
     log_audiencing_set,
     snapshot_audiencing,
-
-
 )
-inject_theme()
-st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
+from ui.components import card_panel
+from ui.theme import inject_theme
 
 
-st.set_page_config(page_title="Tell Us About Your Loved One", layout="wide")
+ENTRY_OPTIONS = (
+    {
+        "value": "proxy",
+        "icon": "👥",
+        "title": "I'm helping a loved one",
+        "description": "Guide me through caring for a parent, spouse, or friend.",
+    },
+    {
+        "value": "self",
+        "icon": "👤",
+        "title": "I'm planning for myself",
+        "description": "I want clarity and a plan for my own next steps.",
+    },
+    {
+        "value": "pro",
+        "icon": "🧑‍💼",
+        "title": "I'm a professional advisor",
+        "description": "I'm preparing resources to support the families I serve.",
+    },
+)
 
-state = ensure_audiencing_state()
-state["entry"] = "proxy"
-apply_audiencing_sanitizer(state)
-qualifiers = state["qualifiers"]
-people = state.setdefault("people", {"recipient_name": "", "proxy_name": ""})
 
-st.title("Tell Us About Your Loved One")
-st.caption("These toggles make sure the right guidance shows up first.")
+def safe_switch_page(target: str) -> None:
+    """Navigate safely even if switch_page isn't available."""
 
-with st.form("audiencing_proxy_form"):
-    recipient_name = st.text_input(
-        "What is their name?",
-        value=people.get("recipient_name", ""),
-        help="We use this to personalize the Hub for them.",
-    )
-    proxy_name = st.text_input(
-        "What is your name?",
-        value=people.get("proxy_name", ""),
-        help="Optional, for caregiver-facing notes.",
-    )
+    try:
+        st.switch_page(target)  # type: ignore[attr-defined]
+    except Exception:
+        st.query_params["next"] = target
+        st.experimental_rerun()
 
-    col1, col2 = st.columns(2, gap="large")
-    with col1:
-        is_veteran = st.toggle(
-            "Are they a veteran?",
-            value=qualifiers.get("is_veteran", False),
-            key="aud_proxy_is_veteran",
-        )
-        owns_home = st.toggle(
-            "Do they own their home?",
-            value=qualifiers.get("owns_home", False),
-            key="aud_proxy_owns_home",
-        )
-    with col2:
-        has_partner = st.toggle(
-            "Do they have a partner?",
-            value=qualifiers.get("has_partner", False),
-            key="aud_proxy_has_partner",
-        )
-        on_medicaid = st.toggle(
-            "Are they on Medicaid?",
-            value=qualifiers.get("on_medicaid", False),
-            key="aud_proxy_on_medicaid",
-        )
 
-    urgent_case = False
-    if URGENT_FEATURE_FLAG:
-        urgent_case = st.toggle(
-            "Is this urgent?",
-            value=qualifiers.get("urgent", False),
-            key="aud_proxy_urgent",
-        )
+def _ensure_care_context() -> dict[str, object]:
+    return st.session_state.setdefault("care_context", {"person_name": "Your Loved One"})
 
-    submitted = st.form_submit_button("Continue", use_container_width=True)
 
-if submitted:
-    people["recipient_name"] = recipient_name.strip()
-    people["proxy_name"] = proxy_name.strip()
-    qualifiers.update(
-        {
-            "is_veteran": bool(is_veteran),
-            "has_partner": bool(has_partner),
-            "owns_home": bool(owns_home),
-            "on_medicaid": bool(on_medicaid),
-            "urgent": bool(urgent_case) if URGENT_FEATURE_FLAG else False,
-        }
-    )
+def _handle_entry_selection(entry_value: str) -> None:
+    state = ensure_audiencing_state()
+    state["entry"] = entry_value
+    state.setdefault("people", {}).update({"recipient_name": "", "proxy_name": ""})
     apply_audiencing_sanitizer(state)
     compute_audiencing_route(state)
     snapshot = snapshot_audiencing(state)
     st.session_state["audiencing_snapshot"] = snapshot
     log_audiencing_set(snapshot)
-    st.switch_page("pages/hub.py")
 
-st.divider()
+    care_context = _ensure_care_context()
+    care_context["person_name"] = "You" if entry_value == "self" else "Your Loved One"
 
-with st.expander("Debug: Audiencing state", expanded=False):
-    st.json(state)
-    st.markdown("---")
-    st.json(st.session_state.get("audiencing_snapshot", {}))
+    gate_state = st.session_state.setdefault("gate", {})
+    gate_state["medicaid_offramp_shown"] = False
 
-st.button("Back to Welcome", on_click=lambda: st.switch_page("pages/welcome.py"))
+    safe_switch_page("pages/contextual_welcome.py")
 
-st.markdown('</div>', unsafe_allow_html=True)
+
+def _render_option(option: dict[str, str], *, highlight: bool) -> None:
+    button_type = "primary" if highlight else "secondary"
+    with st.container(border=True):
+        st.markdown(
+            f"""
+            <div style="display:flex;flex-direction:column;gap:.6rem;">
+                <div style="font-size:2rem;">{option['icon']}</div>
+                <div style="font-size:1.1rem;font-weight:600;">{option['title']}</div>
+                <p style="margin:0;color:var(--ink-muted);">{option['description']}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        pressed = st.button(
+            "Choose",
+            key=f"aud_choice_{option['value']}",
+            type=button_type,
+            use_container_width=True,
+        )
+        if pressed:
+            _handle_entry_selection(option["value"])
+
+
+def render_audiencing_entry(*, emphasize: str = "proxy") -> None:
+    inject_theme()
+    st.set_page_config(page_title="Tell Us About Your Journey", layout="centered")
+    st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
+
+    debug_flag = bool(st.session_state.get("dev_debug"))
+
+    ensure_audiencing_state()
+
+    with card_panel():
+        st.markdown(
+            """
+            <div class="sn-hero-h1" style="margin-bottom:.4rem;">
+              Who are we guiding today?
+            </div>
+            <p style="margin:0;color:var(--ink-muted);font-size:1.05rem;">
+              A few quick questions help us guide you to the right care. Some are essential,
+              others help personalize your journey.
+            </p>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        st.caption(
+            "Choose the option that best describes you. We'll tailor the journey from there."
+        )
+
+        cols = st.columns(3, gap="large")
+        for col, option in zip(cols, ENTRY_OPTIONS):
+            with col:
+                _render_option(option, highlight=option["value"] == emphasize)
+
+    if debug_flag:
+        with st.expander("Debug: Audiencing state", expanded=False):
+            st.json(st.session_state.get("audiencing", {}))
+            st.markdown("---")
+            st.json(st.session_state.get("audiencing_snapshot", {}))
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
+render_audiencing_entry()
+
