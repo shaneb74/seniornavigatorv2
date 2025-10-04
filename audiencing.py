@@ -101,18 +101,13 @@ def compute_audiencing_route(
         urgent_feature_enabled = URGENT_FEATURE_FLAG
 
     reasons: list[str] = []
-    if qualifiers["on_medicaid"]:
-        next_route = "medicaid_off_ramp"
-        reasons.append("on_medicaid")
-    elif urgent_feature_enabled and qualifiers.get("urgent", False):
+    if urgent_feature_enabled and qualifiers.get("urgent", False):
         next_route = "pfma"
         reasons.append("urgent_case")
-    elif state.get("entry") == "pro":
-        next_route = "pro"
-        reasons.append("professional_entry")
     else:
-        next_route = "gcp"
-        reasons.append("default_gcp")
+        next_route = "contextual_welcome"
+        entry = state.get("entry") or "unknown"
+        reasons.append(f"entry_{entry}")
 
     route = state.setdefault("route", {})
     route["next"] = next_route

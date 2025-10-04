@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
 from typing import Callable, Iterable, Optional
 
 import streamlit as st
@@ -100,3 +101,19 @@ def pills(
     if help_text:
         st.caption(help_text)
     return selected
+
+
+@contextmanager
+def card_panel(*, padding: str | None = None, gap: str = "1.4rem"):
+    """Context manager that renders content inside a themed card panel."""
+
+    padding_css = padding or "clamp(1.8rem, 3vw, 2.4rem)"
+    style = f"padding:{padding_css};display:flex;flex-direction:column;gap:{gap};"
+    st.markdown(
+        f'<div class="sn-card" style="{style}">',
+        unsafe_allow_html=True,
+    )
+    try:
+        yield
+    finally:
+        st.markdown("</div>", unsafe_allow_html=True)

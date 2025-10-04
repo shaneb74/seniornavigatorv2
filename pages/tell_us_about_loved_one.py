@@ -1,109 +1,135 @@
-"""Proxy-entry audiencing flow capturing names and qualifiers."""
+"""Contextual welcome experience for caregivers supporting a loved one."""
 from __future__ import annotations
-
-
-from ui.theme import inject_theme
 
 import streamlit as st
 
 from audiencing import (
-
-    URGENT_FEATURE_FLAG,
     apply_audiencing_sanitizer,
     compute_audiencing_route,
     ensure_audiencing_state,
     log_audiencing_set,
     snapshot_audiencing,
-
-
 )
-inject_theme()
-st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
+from ui.components import card_panel
+from ui.theme import inject_theme
 
 
-st.set_page_config(page_title="Tell Us About Your Loved One", layout="wide")
+HERO_COPY = {
+    "headline": "We’re here to support you and your loved one",
+    "body": (
+        "We'll start with a few questions to understand care needs and your comfort",
+        " planning. From there, we'll recommend options and resources to help you feel",
+        " ready for the conversations ahead.",
+    ),
+    "accent": "We’ll guide you step by step so you always feel confident about what comes next.",
+}
 
-state = ensure_audiencing_state()
-state["entry"] = "proxy"
-apply_audiencing_sanitizer(state)
-qualifiers = state["qualifiers"]
-people = state.setdefault("people", {"recipient_name": "", "proxy_name": ""})
+FEATURE_CARDS = (
+    {
+        "title": "Get grounded fast",
+        "copy": "Answer a few essentials so we can highlight the right moves for your family.",
+    },
+    {
+        "title": "Stay oriented",
+        "copy": "Your Care Planning Hub keeps the Guided Care Plan, Cost Planner, and advisor handoff within reach.",
+    },
+    {
+        "title": "Share with ease",
+        "copy": "Export notes and roadmaps so siblings and loved ones stay in the loop.",
+    },
+)
 
-st.title("Tell Us About Your Loved One")
-st.caption("These toggles make sure the right guidance shows up first.")
 
-with st.form("audiencing_proxy_form"):
-    recipient_name = st.text_input(
-        "What is their name?",
-        value=people.get("recipient_name", ""),
-        help="We use this to personalize the Hub for them.",
-    )
-    proxy_name = st.text_input(
-        "What is your name?",
-        value=people.get("proxy_name", ""),
-        help="Optional, for caregiver-facing notes.",
-    )
+def safe_switch_page(target: str) -> None:
+    """Navigate to another page while handling Streamlit fallbacks."""
 
-    col1, col2 = st.columns(2, gap="large")
-    with col1:
-        is_veteran = st.toggle(
-            "Are they a veteran?",
-            value=qualifiers.get("is_veteran", False),
-            key="aud_proxy_is_veteran",
-        )
-        owns_home = st.toggle(
-            "Do they own their home?",
-            value=qualifiers.get("owns_home", False),
-            key="aud_proxy_owns_home",
-        )
-    with col2:
-        has_partner = st.toggle(
-            "Do they have a partner?",
-            value=qualifiers.get("has_partner", False),
-            key="aud_proxy_has_partner",
-        )
-        on_medicaid = st.toggle(
-            "Are they on Medicaid?",
-            value=qualifiers.get("on_medicaid", False),
-            key="aud_proxy_on_medicaid",
-        )
+    try:
+        st.switch_page(target)  # type: ignore[attr-defined]
+    except Exception:
+        st.query_params["next"] = target
+        st.experimental_rerun()
 
-    urgent_case = False
-    if URGENT_FEATURE_FLAG:
-        urgent_case = st.toggle(
-            "Is this urgent?",
-            value=qualifiers.get("urgent", False),
-            key="aud_proxy_urgent",
-        )
 
-    submitted = st.form_submit_button("Continue", use_container_width=True)
+def _prime_audiencing_state() -> dict[str, object]:
+    state = ensure_audiencing_state()
+    state["entry"] = "proxy"
+    people = state.setdefault("people", {"recipient_name": "", "proxy_name": ""})
+    people.setdefault("recipient_name", "")
+    people.setdefault("proxy_name", "")
 
-if submitted:
-    people["recipient_name"] = recipient_name.strip()
-    people["proxy_name"] = proxy_name.strip()
-    qualifiers.update(
-        {
-            "is_veteran": bool(is_veteran),
-            "has_partner": bool(has_partner),
-            "owns_home": bool(owns_home),
-            "on_medicaid": bool(on_medicaid),
-            "urgent": bool(urgent_case) if URGENT_FEATURE_FLAG else False,
-        }
-    )
     apply_audiencing_sanitizer(state)
     compute_audiencing_route(state)
+
     snapshot = snapshot_audiencing(state)
     st.session_state["audiencing_snapshot"] = snapshot
     log_audiencing_set(snapshot)
-    st.switch_page("pages/hub.py")
 
-st.divider()
+    care_context = st.session_state.setdefault("care_context", {"person_name": "Your Loved One"})
+    care_context["person_name"] = people.get("recipient_name") or "Your Loved One"
 
-with st.expander("Debug: Audiencing state", expanded=False):
-    st.json(state)
-    st.markdown("---")
-    st.json(st.session_state.get("audiencing_snapshot", {}))
+    gate_state = st.session_state.setdefault("gate", {})
+    gate_state.setdefault("medicaid_offramp_shown", False)
 
-st.button("Back to Welcome", on_click=lambda: st.switch_page("pages/welcome.py"))
+    return state
 
-st.markdown('</div>', unsafe_allow_html=True)
+
+def _render_feature_cards() -> None:
+    cols = st.columns(3, gap="large")
+    for column, spec in zip(cols, FEATURE_CARDS):
+        with column:
+            with st.container(border=True):
+                st.markdown(f"**{spec['title']}**")
+                st.caption(spec["copy"])
+
+
+def render_contextual_welcome_loved_one() -> None:
+    inject_theme()
+    st.set_page_config(page_title="Welcome – Supporting Your Loved One", layout="centered")
+    st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
+
+    debug_flag = bool(st.session_state.get("dev_debug"))
+
+    _prime_audiencing_state()
+
+    with card_panel():
+        st.markdown(
+            f"""
+            <div class="sn-hero-h1" style="margin-bottom:.4rem;">{HERO_COPY['headline']}</div>
+            <p style="margin:0;color:var(--ink-muted);font-size:1.05rem;">{''.join(HERO_COPY['body'])}</p>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        st.caption(
+            "We’ll guide you through a quick plan so you always know the next right step to take together."
+        )
+
+        st.markdown("<div class='sn-hr'></div>", unsafe_allow_html=True)
+
+        _render_feature_cards()
+
+        st.markdown("<div class='sn-hr'></div>", unsafe_allow_html=True)
+
+        cta_col, helper_col = st.columns([2, 1])
+        with cta_col:
+            if st.button(
+                "Continue to Care Planning Hub →",
+                type="primary",
+                use_container_width=True,
+            ):
+                safe_switch_page("pages/hub.py")
+        with helper_col:
+            st.caption(
+                "The Care Planning Hub keeps your Guided Care Plan, Cost Planner, and advisor tools organized."
+            )
+
+    if debug_flag:
+        with st.expander("Debug: Loved one contextual welcome", expanded=False):
+            st.json(st.session_state.get("audiencing", {}))
+            st.markdown("---")
+            st.json(st.session_state.get("audiencing_snapshot", {}))
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
+render_contextual_welcome_loved_one()

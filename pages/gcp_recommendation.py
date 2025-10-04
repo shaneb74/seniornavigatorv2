@@ -1,15 +1,20 @@
-"""Guided Care Plan - Medical conditions and recommendation."""
+"""Guided Care Plan recommendation page with Medicaid-aware off-ramp."""
 from __future__ import annotations
-
-
 
 import streamlit as st
 
 from audiencing import ensure_audiencing_state
 from guided_care_plan import ensure_gcp_session, evaluate_guided_care, get_question_meta, render_stepper
 from guided_care_plan.state import current_audiencing_snapshot
-
 from ui.theme import inject_theme
+
+
+def _safe_switch_page(target: str) -> None:
+    try:
+        st.switch_page(target)  # type: ignore[attr-defined]
+    except Exception:
+        st.query_params["next"] = target
+        st.experimental_rerun()
 
 
 inject_theme()
@@ -39,7 +44,7 @@ def _render_chronic_selector(current_values):
             default=default,
             help=meta.get("description"),
         )
-        submitted = st.form_submit_button("Generate my recommendation", type="primary")
+        submitted = st.form_submit_button("Refresh recommendation", type="primary")
     return submitted, selections
 
 
@@ -53,8 +58,8 @@ stepper_placeholder = st.empty()
 with stepper_placeholder.container():
     render_stepper(5 if has_result else 4)
 
-st.title("Guided Care Plan - Medical Check & Recommendation")
-st.caption("Confirm medical conditions so we can finalize your plan.")
+st.title("Guided Care Plan – Recommendation")
+st.caption("Confirm medical context so we can finalize the guidance and directional next steps.")
 
 submitted, selections = _render_chronic_selector(answers.get("chronic_conditions"))
 
@@ -79,7 +84,8 @@ if has_result:
     intensity = gcp_result.get("care_intensity")
     safety_flags = gcp_result.get("safety_flags", [])
     chronic_conditions = gcp_result.get("chronic_conditions", [])
-    decision_trace = gcp_result.get("DecisionTrace", [])
+    decision_trace = gcp_result.get("DecisionTrace", []) or []
+    payment_context = gcp_result.get("payment_context") or "private"
 
     friendly_setting = {
         "home": "Stay at home with in-home support",
@@ -94,31 +100,30 @@ if has_result:
     }.get(intensity, intensity)
 
     st.markdown("---")
+
+    if payment_context == "medicaid":
+        st.markdown(
+            """
+            <div style="background:#e0f2fe;border:1px solid #bae6fd;padding:1rem;border-radius:12px;margin-bottom:1.2rem;">
+                <strong>Medicaid/state assistance detected.</strong>
+                Medicaid changes how care is paid for. We’ll point you to advisor support designed for Medicaid families.
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        gate_state = st.session_state.setdefault("gate", {})
+        gate_state["medicaid_offramp_shown"] = True
+
     st.subheader("Your personalized recommendation")
     st.markdown(f"### {friendly_setting}")
-    st.caption(intensity_copy)
+    if intensity_copy:
+        st.caption(intensity_copy)
 
     if safety_flags:
         st.markdown("#### Safety watchpoints")
         for flag in safety_flags:
-            icon = "✅"
-            description = ""
-            if flag in {"falls", "fall"}:
-                icon = "⚠️"
-                description = "Recent falls call for supervision or home adjustments."
-            elif flag in {"behaviors"}:
-                icon = "⚠️"
-                description = "Behavior changes suggest a memory care environment."
-            elif flag in {"med_mgmt"}:
-                icon = "⚠️"
-                description = "Medication management support can reduce risk."
-            elif flag in {"cognition"}:
-                icon = "⚠️"
-                description = "Cognition changes benefit from structured support."
-            elif flag in {"supervision"}:
-                icon = "⚠️"
-                description = "Extended supervision needs signal higher care intensity."
-            st.write(f"{icon} {flag.replace('_', ' ').title()} - {description}")
+            label = flag.replace("_", " ").title()
+            st.write(f"⚠️ {label}")
 
     if chronic_conditions:
         st.markdown("#### Chronic conditions to plan for")
@@ -130,15 +135,33 @@ if has_result:
     if decision_trace:
         st.markdown("#### DecisionTrace")
         for step in decision_trace:
-            st.write(f"* {step}")
+            st.write(f"• {step}")
 
     st.markdown("---")
-    if st.button("Go to Hub", type="primary"):
-        st.switch_page("pages/hub.py")
-    if st.button("Open Cost Planner", key="open_cost_planner"):
-        st.switch_page("pages/cost_planner.py")
+
+    if payment_context == "medicaid":
+        primary_label = "Continue to Plan for My Advisor →"
+        primary_destination = "pages/pfma.py"
+        primary_type = "primary"
+        secondary_label = "View Cost Planner (optional, private-pay only)"
+        secondary_destination = "pages/cost_planner.py"
+        secondary_type = "secondary"
+    else:
+        primary_label = "Continue to Cost Planner →"
+        primary_destination = "pages/cost_planner.py"
+        primary_type = "primary"
+        secondary_label = "Connect with an advisor"
+        secondary_destination = "pages/pfma.py"
+        secondary_type = "secondary"
+
+    if st.button(primary_label, type=primary_type, use_container_width=True):
+        _safe_switch_page(primary_destination)
+
+    if st.button(secondary_label, type=secondary_type, use_container_width=True):
+        _safe_switch_page(secondary_destination)
 
 with st.expander("Debug: GCP snapshot", expanded=False):
     st.json({"answers": answers, "gcp": gcp_result})
 
 st.markdown('</div>', unsafe_allow_html=True)
+
