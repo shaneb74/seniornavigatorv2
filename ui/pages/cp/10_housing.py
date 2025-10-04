@@ -3,13 +3,14 @@ from __future__ import annotations
 
 import streamlit as st
 
-from senior_nav.components import formbits, layout
+from senior_nav.components import buttons, formbits, layout
 from senior_nav.cost_planner import nav, state
 
 DRAWER_KEY = "housing"
 
 
 def render() -> None:
+    buttons.page_start()
     copy = state.get_copy()
     drawer_copy = copy["drawers"][DRAWER_KEY]
     app_copy = copy["app"]
@@ -29,7 +30,8 @@ def render() -> None:
             if field_key in hidden_fields:
                 continue
             formbits.currency_input(label, key=f"cp_{DRAWER_KEY}_{field_key}")
-        submitted = st.form_submit_button(app_copy["navigation"]["continue"])
+        with buttons.variant("primary"):
+            submitted = st.form_submit_button(app_copy["navigation"]["continue"])
 
     layout.render_drawer_summary(
         app_copy["drawer_summary_label"],
@@ -39,10 +41,13 @@ def render() -> None:
 
     back_col, next_col = st.columns([1, 1])
     with back_col:
-        st.button(app_copy["navigation"]["back"], key="cp_housing_back", on_click=nav.go_previous)
+        with buttons.variant("secondary"):
+            if buttons.secondary(app_copy["navigation"]["back"], key="cp_housing_back"):
+                nav.go_previous()
     with next_col:
         if submitted:
             nav.mark_drawer_complete(DRAWER_KEY)
             nav.go_next()
         else:
             st.write(" ")
+    buttons.page_end()

@@ -3,10 +3,12 @@ from __future__ import annotations
 
 import streamlit as st
 
+from senior_nav.components import buttons
 from senior_nav.cost_planner import nav, state
 
 
 def render() -> None:
+    buttons.page_start()
     copy = state.get_copy()
     summary_copy = copy["summary"]
     app_copy = copy["app"]
@@ -38,12 +40,26 @@ def render() -> None:
 
     action_col1, action_col2 = st.columns(2)
     with action_col1:
-        st.button(summary_copy["actions"]["download"], key="cp_summary_download", disabled=True)
+        with buttons.variant("secondary"):
+            buttons.secondary(
+                summary_copy["actions"]["download"],
+                key="cp_summary_download",
+                disabled=True,
+            )
     with action_col2:
-        st.button(summary_copy["actions"]["share"], key="cp_summary_share", disabled=True)
+        with buttons.variant("secondary"):
+            buttons.secondary(
+                summary_copy["actions"]["share"],
+                key="cp_summary_share",
+                disabled=True,
+            )
 
     back_col, next_col = st.columns([1, 1])
     with back_col:
-        st.button(app_copy["navigation"]["back"], key="cp_summary_back", on_click=nav.go_previous)
+        with buttons.variant("secondary"):
+            if buttons.secondary(app_copy["navigation"]["back"], key="cp_summary_back"):
+                nav.go_previous()
     with next_col:
-        st.button(app_copy["navigation"]["continue"], key="cp_summary_continue", on_click=nav.go_next)
+        if buttons.primary(app_copy["navigation"]["continue"], key="cp_summary_continue"):
+            nav.go_next()
+    buttons.page_end()

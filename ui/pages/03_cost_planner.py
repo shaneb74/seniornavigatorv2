@@ -3,13 +3,14 @@ from __future__ import annotations
 
 import streamlit as st
 
-from senior_nav.components import layout, theme
+from senior_nav.components import buttons, layout, theme
 from senior_nav.cost_planner import state, wizard
 from senior_nav.navi import agent as navi_agent
 
 state.ensure_state()
 st.set_page_config(layout="wide")
 theme.inject_theme()
+buttons.page_start()
 
 copy = state.get_copy()
 app_copy = copy["app"]
@@ -45,3 +46,4 @@ with sidebar_col:
     )
 
 navi_agent.render(current_step.drawer_key)
+buttons.page_end()

@@ -1,6 +1,7 @@
 """Theme helpers for the Senior Care Navigator UI shell."""
 from __future__ import annotations
 
+from pathlib import Path
 from textwrap import dedent
 
 import streamlit as st
@@ -8,6 +9,8 @@ import streamlit as st
 from senior_nav.ui_style import tokens
 
 _THEME_STATE_KEY = "__sn_theme_injected__"
+_BUTTONS_STATE_KEY = "__sn_buttons_css__"
+_BUTTONS_CSS_CACHE: str | None = None
 
 
 def _build_css() -> str:
@@ -158,10 +161,27 @@ def _build_css() -> str:
     )
 
 
+def _load_buttons_css() -> str:
+    global _BUTTONS_CSS_CACHE
+    if _BUTTONS_CSS_CACHE is not None:
+        return _BUTTONS_CSS_CACHE
+
+    css_path = Path(__file__).resolve().parent.parent / "static" / "buttons.css"
+    try:
+        _BUTTONS_CSS_CACHE = css_path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        _BUTTONS_CSS_CACHE = ""
+    return _BUTTONS_CSS_CACHE
+
+
 def inject_theme() -> None:
     """Inject shared theme CSS once per session."""
     if st.session_state.get(_THEME_STATE_KEY):
         return
 
     st.markdown(_build_css(), unsafe_allow_html=True)
+    buttons_css = _load_buttons_css()
+    if buttons_css:
+        st.markdown(f"<style>{buttons_css}</style>", unsafe_allow_html=True)
     st.session_state[_THEME_STATE_KEY] = True
+    st.session_state.setdefault(_BUTTONS_STATE_KEY, True)

@@ -1,6 +1,12 @@
-"""Self contextual welcome placeholder."""
+"""Standalone entry to render the self contextual welcome variant."""
 from __future__ import annotations
 
-from .contextual_welcome_base import render
+from ui.pages.contextual_welcome_base import render
 
-render("self")
+
+def main() -> None:
+    render("you")
+
+
+if __name__ == "__main__":
+    main()

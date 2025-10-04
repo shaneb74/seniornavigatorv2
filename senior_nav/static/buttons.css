@@ -1,0 +1,79 @@
+.skn-scope {
+  display: block;
+  --skn-button-radius: 12px;
+  --skn-button-font-weight: 600;
+  --skn-button-padding-y: 0.75rem;
+  --skn-button-padding-x: 1.25rem;
+}
+
+.skn-scope [data-variant] {
+  width: 100%;
+}
+
+.skn-scope [data-variant] .stButton {
+  width: 100%;
+}
+
+.skn-scope [data-variant] .stButton > button {
+  width: 100%;
+  min-height: 44px;
+  border-radius: var(--skn-button-radius);
+  font-weight: var(--skn-button-font-weight);
+  padding: var(--skn-button-padding-y) var(--skn-button-padding-x);
+  border: 1px solid transparent;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.skn-scope [data-variant] .stButton > button:focus-visible {
+  outline: 3px solid var(--brand-300, #bfd0ff);
+  outline-offset: 2px;
+}
+
+.skn-scope [data-variant] .stButton > button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.skn-scope [data-variant="primary"] .stButton > button {
+  background: var(--brand-700, #1f2fab) !important;
+  color: #ffffff !important;
+  border-color: var(--brand-700, #1f2fab) !important;
+  box-shadow: 0 10px 20px rgba(31, 47, 171, 0.24);
+}
+
+.skn-scope [data-variant="primary"] .stButton > button:hover {
+  background: var(--brand-800, #17247c) !important;
+}
+
+.skn-scope [data-variant="secondary"] .stButton > button {
+  background: #ffffff !important;
+  color: var(--brand-700, #1f2fab) !important;
+  border-color: var(--brand-400, #4f6fe6) !important;
+}
+
+.skn-scope [data-variant="secondary"] .stButton > button:hover {
+  background: var(--brand-050, #eef2ff) !important;
+}
+
+/* Link-like variant: container with data-variant="link" */
+.skn-scope [data-variant="link"] .stButton > button {
+  background: transparent !important;
+  color: var(--brand-700, #1f2fab) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  text-decoration: underline;
+  padding-left: 0;
+  width: auto;
+  min-height: unset;
+}
+
+/* Hover/focus affordances for accessibility */
+.skn-scope [data-variant="link"] .stButton > button:hover {
+  text-decoration-thickness: 2px;
+}
+
+.skn-scope [data-variant="link"] .stButton > button:focus-visible {
+  outline: 3px solid var(--brand-300, #bfd0ff);
+  outline-offset: 2px;
+}
