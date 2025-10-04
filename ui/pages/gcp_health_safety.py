@@ -5,14 +5,18 @@ from senior_nav.components.choice_chips import (
     normalize_none,
 )
 from senior_nav.components.nav import safe_switch_page
-from senior_nav.components.gcp_shell import gcp_header, gcp_section, primary_secondary
+from senior_nav.components.gcp_shell import gcp_header, gcp_section
+from senior_nav.components import buttons
 
 
 def _init_state():
     st.session_state.setdefault("gcp_answers", {})
+
+
 def main():
     _init_state()
     gcp_header(2)
+    buttons.page_start()
     answers = st.session_state["gcp_answers"]
 
     def form():
@@ -62,15 +66,24 @@ def main():
 
         st.session_state["gcp_answers"] = answers
 
-        def _back():
-            safe_switch_page("ui/pages/gcp_daily_life.py")
-
-        def _next():
-            safe_switch_page("ui/pages/gcp_context_prefs.py")
-
-        primary_secondary("Continue", _next, "Back", _back)
+        c1, c2 = st.columns([1, 1])
+        with c1:
+            st.markdown('<div data-variant="secondary">', unsafe_allow_html=True)
+            buttons.secondary(
+                "Back",
+                key="gcp_health_back",
+                on_click=lambda: safe_switch_page("ui/pages/gcp_daily_life.py"),
+            )
+            st.markdown("</div>", unsafe_allow_html=True)
+        with c2:
+            buttons.primary(
+                "Continue to Context & Preferences",
+                key="gcp_to_context",
+                on_click=lambda: safe_switch_page("ui/pages/gcp_context_prefs.py"),
+            )
 
     gcp_section("Guided Care Plan", "Health & Safety", form)
+    buttons.page_end()
 
 
 if __name__ == "__main__":

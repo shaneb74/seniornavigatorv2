@@ -51,9 +51,12 @@ def page_end() -> None:
 
 
 def primary(label: str, *, key: str | None = None, **kwargs) -> bool:
+    kwargs.setdefault("type", "primary")
+    kwargs.setdefault("use_container_width", True)
     with variant("primary"):
         return st.button(label, key=key, **kwargs)
 
 
 def secondary(label: str, *, key: str | None = None, **kwargs) -> bool:
+    kwargs.setdefault("use_container_width", True)
     return st.button(label, key=key, **kwargs)
