@@ -1,16 +1,25 @@
 """Final confirmation and PFMA handoff for Cost Planner."""
 from __future__ import annotations
-from ui.theme import inject_theme
 
 import json
 
 import streamlit as st
 
 from cost_planner_shared import ensure_core_state, format_currency, recompute_costs
+from ui.cost_planner_template import (
+    Metric,
+    NavButton,
+    apply_cost_planner_theme,
+    cost_planner_page_container,
+    render_app_header,
+    render_metrics,
+    render_nav_buttons,
+    render_wizard_help,
+    render_wizard_hero,
+)
 
 
-inject_theme()
-st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
+apply_cost_planner_theme()
 
 
 ensure_core_state()
@@ -19,52 +28,57 @@ aud_snapshot = st.session_state.get("audiencing_snapshot") or st.session_state.g
 
 recompute_costs()
 
-st.title("Confirm cost plan & handoff")
-st.caption("Lock in the current snapshot, export it, or share with an advisor.")
 
-monthly = format_currency(cp["monthly_total"])
-offsets = format_currency(cp["subtotals"]["offsets"])
-net = format_currency(cp["net_out_of_pocket"])
+with cost_planner_page_container():
+    render_app_header()
+    render_wizard_hero(
+        "Confirm cost plan & handoff",
+        "Lock in the current snapshot, export it, or share with an advisor.",
+    )
 
-st.metric("Monthly costs", monthly)
-st.metric("Offsets", offsets)
-st.metric("Net out-of-pocket", net)
+    metrics = [
+        Metric("Monthly costs", format_currency(cp["monthly_total"])),
+        Metric("Offsets", format_currency(cp["subtotals"]["offsets"])),
+        Metric("Net out-of-pocket", format_currency(cp["net_out_of_pocket"])),
+    ]
+    if cp.get("runway_months") is not None:
+        metrics.append(Metric("Runway", f"{cp['runway_months']:.1f} months"))
+    render_metrics(metrics)
 
-if cp.get("runway_months") is not None:
-    st.metric("Runway", f"{cp['runway_months']:.1f} months")
+    st.subheader("Ready to share?")
+    confirm = st.checkbox("I reviewed these numbers and they reflect our plan.")
 
-st.subheader("Ready to share?")
-confirm = st.checkbox("I reviewed these numbers and they reflect our plan.")
+    snapshot_json = json.dumps(cp["snapshot_for_crm"], indent=2).encode("utf-8")
+    st.download_button(
+        "Download CRM snapshot",
+        data=snapshot_json,
+        file_name="cost_planner_snapshot.json",
+        mime="application/json",
+        disabled=not confirm,
+    )
 
-snapshot_json = json.dumps(cp["snapshot_for_crm"], indent=2).encode("utf-8")
-st.download_button(
-    "Download CRM snapshot",
-    data=snapshot_json,
-    file_name="cost_planner_snapshot.json",
-    mime="application/json",
-    disabled=not confirm,
-)
+    col_share, col_tweak = st.columns(2)
+    with col_share:
+        if st.button("Share with Advisor / PFMA", type="primary", disabled=not confirm):
+            st.session_state["last_event"] = {
+                "type": "cost_planner_shared",
+                "audiencing": aud_snapshot,
+            }
+            st.switch_page("pages/pfma_confirm_cost_plan.py")
+    with col_tweak:
+        if st.button("Tweak estimate"):
+            st.switch_page("pages/cost_planner_estimate.py")
 
-col_share, col_tweak = st.columns(2)
-with col_share:
-    if st.button("Share with Advisor / PFMA", type="primary", disabled=not confirm):
-        st.session_state["last_event"] = {
-            "type": "cost_planner_shared",
-            "audiencing": aud_snapshot,
-        }
-        st.switch_page("pages/pfma_confirm_cost_plan.py")
-with col_tweak:
-    if st.button("Tweak estimate"):
-        st.switch_page("pages/cost_planner_estimate.py")
+    render_wizard_help("Need to adjust anything? You can always jump back into modules before sharing.")
 
-st.markdown("---")
+    clicked = render_nav_buttons(
+        [
+            NavButton("Return to Hub", "confirm_back_hub"),
+            NavButton("Back to Summary", "confirm_back_summary"),
+        ]
+    )
 
-col_hub, col_back = st.columns(2)
-with col_hub:
-    if st.button("Return to Hub", type="secondary"):
+    if clicked == "confirm_back_hub":
         st.switch_page("pages/hub.py")
-with col_back:
-    if st.button("Back to Summary"):
+    elif clicked == "confirm_back_summary":
         st.switch_page("pages/cost_planner_estimate_summary.py")
-
-st.markdown('</div>', unsafe_allow_html=True)
