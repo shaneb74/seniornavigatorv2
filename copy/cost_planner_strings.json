@@ -1,0 +1,226 @@
+{
+  "app": {
+    "title": "Cost Planner",
+    "mode_badges": {
+      "exploring": "Exploring costs",
+      "planning": "Planning with my advisor"
+    },
+    "progress_label": "Step progress",
+    "sidebar": {
+      "totals_title": "Mock monthly outlook",
+      "totals_rows": [
+        [
+          "Housing & Living",
+          "$3,250"
+        ],
+        [
+          "Care Supports",
+          "$2,180"
+        ],
+        [
+          "Medical & Health",
+          "$640"
+        ],
+        [
+          "Insurance & Benefits",
+          "$410"
+        ],
+        [
+          "Debts & Other",
+          "$525"
+        ],
+        [
+          "Estimated Total",
+          "$7,005"
+        ]
+      ],
+      "navi_title": "Need a hand?",
+      "navi_body": "Navi shares quick suggestions as you plan."
+    },
+    "navigation": {
+      "back": "Go back",
+      "continue": "Save & continue",
+      "jump": "Jump to step"
+    },
+    "drawer_summary_label": "Subtotal"
+  },
+  "mode_selection": {
+    "headline": "How would you like to get started?",
+    "cards": {
+      "explore": {
+        "title": "Explore costs",
+        "body": "Walk through an interactive tour with mock costs to see what's possible.",
+        "cta": "Continue exploring"
+      },
+      "plan": {
+        "title": "Plan costs with my advisor",
+        "body": "Sign in so we can save updates and prep a hand-off for your advisor.",
+        "cta": "Sign in to start"
+      }
+    },
+    "login_modal": {
+      "title": "Planning mode uses a secure sign-in",
+      "body": "For now this is a placeholder experience. We'll confirm your account details in a later release.",
+      "confirm": "Looks good"
+    }
+  },
+  "qualifiers": {
+    "title": "Tell us a little about your situation",
+    "description": "These details tailor which costs and tips we highlight.",
+    "contribution_style": {
+      "label": "How will contributors share costs?",
+      "options": {
+        "unified": "We'll pool expenses together",
+        "individual": "We'll split things individually"
+      }
+    },
+    "owns_home": {
+      "label": "Do you own the home where care happens?",
+      "options": {
+        "yes": "Yes, we own it",
+        "no": "No, we rent or live elsewhere"
+      }
+    },
+    "is_veteran": {
+      "label": "Is anyone a veteran or military spouse?",
+      "options": {
+        "yes": "Yes",
+        "no": "No"
+      }
+    },
+    "medicaid_banner": {
+      "title": "Unsure about Medicaid eligibility?",
+      "body": "We can flag local experts who specialize in Medicaid planning so you feel confident in next steps."
+    },
+    "continue": "Save qualifiers"
+  },
+  "drawers": {
+    "housing": {
+      "title": "Housing & daily living",
+      "caption": "Capture the monthly costs that keep your home running smoothly.",
+      "fields": {
+        "rent": "Monthly rent or mortgage",
+        "utilities": "Home utilities and services",
+        "maintenance": "Maintenance & repairs",
+        "home_modifications": "Accessibility upgrades"
+      },
+      "summary_hint": "Includes mortgage, utilities, and upkeep.",
+      "subtotal": "$3,250"
+    },
+    "care": {
+      "title": "Care supports",
+      "caption": "Estimate hands-on care, respite, and community programs.",
+      "fields": {
+        "home_care": "In-home care or companionship",
+        "adult_day": "Adult day or respite programs",
+        "community": "Community or residential care fees"
+      },
+      "summary_hint": "Blends in-home care with occasional respite.",
+      "subtotal": "$2,180"
+    },
+    "medical": {
+      "title": "Medical & wellness",
+      "caption": "Track recurring health costs like prescriptions and appointments.",
+      "fields": {
+        "prescriptions": "Prescription medications",
+        "specialists": "Specialist visits & therapies",
+        "equipment": "Medical equipment & supplies"
+      },
+      "summary_hint": "Includes chronic condition follow-ups.",
+      "subtotal": "$640"
+    },
+    "insurance_benefits": {
+      "title": "Insurance & benefits",
+      "caption": "Stay on top of premiums and benefits that offset costs.",
+      "fields": {
+        "medicare": "Medicare or supplement premiums",
+        "va_benefits": "VA Aid & Attendance or other military benefits",
+        "long_term_care": "Long-term care insurance premiums"
+      },
+      "summary_hint": "Remember to review benefits annually.",
+      "subtotal": "$410"
+    },
+    "debts_other": {
+      "title": "Debts & other priorities",
+      "caption": "Balance transportation, loans, and personal priorities.",
+      "fields": {
+        "transportation": "Transportation & travel",
+        "loans": "Loans or credit balances",
+        "personal": "Personal spending"
+      },
+      "summary_hint": "Highlights flexible spending categories.",
+      "subtotal": "$525"
+    }
+  },
+  "review": {
+    "title": "Review your plan snapshot",
+    "intro": "Use the drawers below to make quick edits before sharing with your advisor.",
+    "accordion": {
+      "housing": "Housing & daily living",
+      "care": "Care supports",
+      "medical": "Medical & wellness",
+      "insurance_benefits": "Insurance & benefits",
+      "debts_other": "Debts & other priorities"
+    },
+    "suggestions_title": "Navi suggests",
+    "suggestions": [
+      {
+        "level": "info",
+        "title": "Review caregiver relief programs",
+        "body": "Check local respite care grants to offset weekly support hours."
+      },
+      {
+        "level": "warning",
+        "title": "Plan a prescription buffer",
+        "body": "Keep one refill ahead to avoid delays during supply shortages."
+      },
+      {
+        "level": "critical",
+        "title": "Confirm emergency contacts",
+        "body": "Ensure the plan lists who can step in if the primary caregiver is unavailable."
+      }
+    ]
+  },
+  "summary": {
+    "title": "Your cost summary",
+    "intro": "Here\u2019s the high-level view you can export for conversations.",
+    "table_headers": [
+      "Category",
+      "Monthly estimate"
+    ],
+    "actions": {
+      "download": "Download summary",
+      "share": "Share with advisor"
+    }
+  },
+  "confirm": {
+    "title": "Confirm and share",
+    "intro": "Double-check the plan and confirm you\u2019re ready to send it forward.",
+    "checklist": [
+      "I reviewed each drawer and captured key costs.",
+      "I noted any benefits or supports to explore further.",
+      "I\u2019m ready to loop in my advisor for next steps."
+    ],
+    "confirm_label": "I\u2019m ready to share this plan",
+    "share_button": "Share with my advisor",
+    "share_note": "A fun confetti moment will live here soon!"
+  },
+  "navi": {
+    "bubble_label": "Chat with Navi",
+    "quiet_message": "Navi is ready when you want more guidance.",
+    "suggestions": {
+      "chronic_conditions": {
+        "title": "Add prescription planning",
+        "body": "Because chronic conditions are on your radar, consider adding a buffer for new medications."
+      },
+      "owns_home": {
+        "title": "Track home utilities",
+        "body": "Since you own the home, include utilities so the budget covers true monthly costs."
+      },
+      "medicaid": {
+        "title": "Verify Medicaid eligibility",
+        "body": "Let\u2019s note to confirm Medicaid rules in your state\u2014eligibility can unlock big savings."
+      }
+    }
+  }
+}

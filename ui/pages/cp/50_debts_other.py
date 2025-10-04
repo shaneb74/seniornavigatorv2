@@ -1,0 +1,40 @@
+"""Debts & other drawer UI."""
+from __future__ import annotations
+
+import streamlit as st
+
+from senior_nav.components import formbits, layout
+from senior_nav.cost_planner import nav, state
+
+DRAWER_KEY = "debts_other"
+
+
+def render() -> None:
+    copy = state.get_copy()
+    drawer_copy = copy["drawers"][DRAWER_KEY]
+    app_copy = copy["app"]
+    nav.mark_drawer_open(DRAWER_KEY)
+
+    st.markdown(f"### {drawer_copy['title']}")
+    st.caption(drawer_copy["caption"])
+
+    with st.form(f"cp_{DRAWER_KEY}_form"):
+        for field_key, label in drawer_copy["fields"].items():
+            formbits.currency_input(label, key=f"cp_{DRAWER_KEY}_{field_key}")
+        submitted = st.form_submit_button(app_copy["navigation"]["continue"])
+
+    layout.render_drawer_summary(
+        app_copy["drawer_summary_label"],
+        drawer_copy["subtotal"],
+        drawer_copy["summary_hint"],
+    )
+
+    back_col, next_col = st.columns([1, 1])
+    with back_col:
+        st.button(app_copy["navigation"]["back"], key="cp_debts_back", on_click=nav.go_previous)
+    with next_col:
+        if submitted:
+            nav.mark_drawer_complete(DRAWER_KEY)
+            nav.go_next()
+        else:
+            st.write(" ")
