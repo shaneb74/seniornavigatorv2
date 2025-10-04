@@ -90,6 +90,21 @@ def _inject_page_css() -> None:
         <style>
           /* canvas */
 
+          /* Center content vertically in the white container */
+          .block-container {
+            display: flex !important;
+            flex-direction: column;
+            justify-content: center !important;
+            align-items: flex-start !important;
+            min-height: 100vh !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+          }
+          section.main > div.block-container {
+            min-height: 100vh !important;
+          }
+    
+
           /* tighten Streamlit content pane (the big white rounded container) */
           .block-container{
             padding-top: 6px !important;
