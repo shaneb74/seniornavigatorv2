@@ -1,6 +1,15 @@
-"""Entry point for contextual welcome placeholder page."""
+"""Contextual welcome entry point that routes to the correct variant."""
 from __future__ import annotations
 
-from .contextual_welcome_base import render
+import streamlit as st
 
-render("base")
+from ui.pages.contextual_welcome_base import render
+
+
+def main() -> None:
+    entry = st.session_state.get("audiencing", {}).get("entry", "self")
+    render("you" if entry == "self" else "loved")
+
+
+if __name__ == "__main__":
+    main()

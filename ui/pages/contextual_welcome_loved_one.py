@@ -1,6 +1,12 @@
-"""Loved one contextual welcome placeholder."""
+"""Standalone entry to render the loved one contextual welcome variant."""
 from __future__ import annotations
 
-from .contextual_welcome_base import render
+from ui.pages.contextual_welcome_base import render
 
-render("loved_one")
+
+def main() -> None:
+    render("loved")
+
+
+if __name__ == "__main__":
+    main()
