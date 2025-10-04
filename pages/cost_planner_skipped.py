@@ -1,52 +1,63 @@
 
+from __future__ import annotations
+
 import streamlit as st
-from ui.theme import inject_theme
+
+from ui.cost_planner_template import (
+    NavButton,
+    apply_cost_planner_theme,
+    cost_planner_page_container,
+    render_app_header,
+    render_nav_buttons,
+    render_wizard_help,
+    render_wizard_hero,
+)
 
 
-inject_theme()
-st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
+apply_cost_planner_theme()
 
 
-# Debug: non-visual logger
-def _debug_log(msg: str):
+def _debug_log(msg: str) -> None:
     try:
         print(f"[SNAV] {msg}")
     except Exception:
         pass
 
-_debug_log('LOADED: cost_planner_skipped.py')
+
+_debug_log("LOADED: cost_planner_skipped.py")
 
 
-# Guard: ensure session state keys exist across cold restarts
-if 'care_context' not in st.session_state:
+if "care_context" not in st.session_state:
     st.session_state.care_context = {
-        'gcp_answers': {},
-        'decision_trace': [],
-        'planning_mode': 'exploring',
-        'care_flags': {}
+        "gcp_answers": {},
+        "decision_trace": [],
+        "planning_mode": "exploring",
+        "care_flags": {},
     }
-ctx = st.session_state.care_context
 
 
-# Cost Planner: Skipped
-st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-st.title("Skipped Modules for your loved one")
-st.markdown("<h2>Review what you missed.</h2>", unsafe_allow_html=True)
-st.markdown("<p>Add these later if needed.</p>", unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
+with cost_planner_page_container():
+    render_app_header()
+    render_wizard_hero(
+        "Skipped modules",
+        "Review what you skipped and reopen them when you're ready.",
+    )
 
-# Skipped modules tile
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
-st.markdown("### Skipped Items")
-st.markdown("<p>You skipped: Housing Path, Benefits Check.</p>", unsafe_allow_html=True)
-st.button("Revisit Skipped", key="revisit_skipped", type="primary")
-st.markdown('</div>', unsafe_allow_html=True)
+    skipped_modules = ["Housing Path", "Benefits Check"]
+    st.subheader("Skipped items")
+    for module in skipped_modules:
+        st.write(f"• {module}")
 
-# Navigation
-st.markdown('<div class="scn-nav-row">', unsafe_allow_html=True)
-col1, col2 = st.columns([1, 1])
-with col1:
-    st.button("Back to Evaluation", key="back_skipped", type="secondary")
-st.markdown('</div>', unsafe_allow_html=True)
+    render_wizard_help("You can revisit these modules any time from the Cost Planner dashboard.")
 
-st.markdown('</div>', unsafe_allow_html=True)
+    clicked = render_nav_buttons(
+        [
+            NavButton("Back to Evaluation", "skipped_back_evaluation"),
+            NavButton("Revisit Modules", "skipped_revisit", type="primary"),
+        ]
+    )
+
+    if clicked == "skipped_back_evaluation":
+        st.switch_page("pages/cost_planner_evaluation.py")
+    elif clicked == "skipped_revisit":
+        st.switch_page("pages/cost_planner_modules.py")

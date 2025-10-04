@@ -1,21 +1,30 @@
 """Expert review drawer for Cost Planner."""
 from __future__ import annotations
-from ui.theme import inject_theme
 
 import streamlit as st
 
 from cost_planner_shared import (
-
     ensure_core_state,
     expert_flag,
     format_currency,
     get_numeric,
     recompute_costs,
-
-
 )
-inject_theme()
-st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
+from ui.cost_planner_template import (
+    Metric,
+    NavButton,
+    apply_cost_planner_theme,
+    cost_planner_page_container,
+    render_app_header,
+    render_metrics,
+    render_nav_buttons,
+    render_suggestion,
+    render_wizard_help,
+    render_wizard_hero,
+)
+
+
+apply_cost_planner_theme()
 
 
 ensure_core_state()
@@ -40,39 +49,47 @@ if gcp.get("care_intensity") == "high" and get_numeric("care_base_rate") == 0:
 if cp["mode"] == "planning" and cp.get("runway_months") is None:
     expert_flag("Planning mode without positive runway")
 
-st.title("Expert review & decision trace")
-st.caption("Resolve any flagged inconsistencies before generating exports.")
 
-if cp["expert_flags"]:
-    for flag in cp["expert_flags"]:
-        st.warning(flag, icon="⚠️")
-else:
-    st.success("No expert review flags at this time.", icon="✅")
+with cost_planner_page_container():
+    render_app_header()
+    render_wizard_hero(
+        "Expert review & decision trace",
+        "Resolve any flagged inconsistencies before generating exports.",
+    )
 
-st.subheader("Decision log")
-if cp["decision_log"]:
-    for entry in cp["decision_log"]:
-        st.write(f"* {entry}")
-else:
-    st.caption("No decisions logged yet.")
+    if cp["expert_flags"]:
+        for flag in cp["expert_flags"]:
+            render_suggestion(flag, tone="warn")
+    else:
+        render_suggestion("No expert review flags at this time.", tone="info")
 
-st.subheader("Snapshot checks")
-st.metric("Monthly costs", format_currency(cp["monthly_total"]))
-st.metric("Net out-of-pocket", format_currency(cp["net_out_of_pocket"]))
-if cp.get("runway_months") is not None:
-    st.metric("Runway (months)", f"{cp['runway_months']:.1f}")
+    st.subheader("Decision log")
+    if cp["decision_log"]:
+        for entry in cp["decision_log"]:
+            st.write(f"* {entry}")
+    else:
+        render_wizard_help("No decisions logged yet. Notes will appear here as planners make updates.")
 
-st.markdown("---")
+    st.subheader("Snapshot checks")
+    metrics = [
+        Metric("Monthly costs", format_currency(cp["monthly_total"])),
+        Metric("Net out-of-pocket", format_currency(cp["net_out_of_pocket"])),
+    ]
+    if cp.get("runway_months") is not None:
+        metrics.append(Metric("Runway (months)", f"{cp['runway_months']:.1f}"))
+    render_metrics(metrics)
 
-col_hub, col_back, col_next = st.columns([1, 1, 1])
-with col_hub:
-    if st.button("Return to Hub", type="secondary"):
+    clicked = render_nav_buttons(
+        [
+            NavButton("Return to Hub", "evaluation_back_hub"),
+            NavButton("Back: Debts & Other", "evaluation_back_debts"),
+            NavButton("Next: Summary", "evaluation_next_summary", type="primary"),
+        ]
+    )
+
+    if clicked == "evaluation_back_hub":
         st.switch_page("pages/hub.py")
-with col_back:
-    if st.button("Back: Debts & Other"):
+    elif clicked == "evaluation_back_debts":
         st.switch_page("pages/cost_planner_freeform.py")
-with col_next:
-    if st.button("Next: Summary", type="primary"):
+    elif clicked == "evaluation_next_summary":
         st.switch_page("pages/cost_planner_estimate_summary.py")
-
-st.markdown('</div>', unsafe_allow_html=True)
