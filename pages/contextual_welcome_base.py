@@ -75,16 +75,23 @@ def _inject_page_css() -> None:
     st.markdown(
         """
         <style>
-          /* Shrink Streamlit canvas ONLY when our marker is present */
+          /* Center the main content area vertically and horizontally */
           section.main:has(.cw-wrap-marker) > div.block-container{
-            min-height:auto !important;
-            padding-top:16px !important;
-            padding-bottom:24px !important;
+            min-height: auto !important;
+            background-color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
           }
           /* Remove extra vertical spacing wrappers on this page */
           section.main:has(.cw-wrap-marker) [data-testid="stVerticalBlock"]{
-            padding-top:0 !important; padding-bottom:0 !important;
-            margin-top:0 !important; margin-bottom:0 !important;
+            padding-top: 0 !important; padding-bottom: 0 !important;
+            margin-top: 0 !important; margin-bottom: 0 !important;
           }
 
           /* Ghost bar removal + tidy input look (safe globally) */
@@ -93,37 +100,37 @@ def _inject_page_css() -> None:
             box-shadow: none !important;
           }
           .stTextInput input{
-            background:#ffffff !important;
-            border:1px solid rgba(15,23,42,.12) !important;
-            border-radius:10px !important;
-            height:44px !important;
+            background: #ffffff !important;
+            border: 1px solid rgba(15,23,42,.12) !important;
+            border-radius: 10px !important;
+            height: 44px !important;
           }
 
           /* Headline spacing */
-          .cw-headline{ margin: 0 0 12px 0; font-size:1.6rem; line-height:1.25; }
+          .cw-headline{ margin: 0 0 12px 0; font-size: 1.6rem; line-height: 1.25; }
 
           /* Pills row */
-          .pill-row{ display:flex; gap:10px; margin:10px 0 14px; }
+          .pill-row{ display: flex; gap: 10px; margin: 10px 0 14px; }
           .pill-row .stButton>button{
-            height:36px; border-radius:999px; padding:6px 16px; font-weight:700;
-            width:auto !important;
+            height: 36px; border-radius: 999px; padding: 6px 16px; font-weight: 700;
+            width: auto !important;
           }
 
           /* Inline row for name + continue */
-          .name-row{ display:flex; gap:12px; align-items:center; margin:8px 0 4px; }
+          .name-row{ display: flex; gap: 12px; align-items: center; margin: 8px 0 4px; }
           .name-row .stButton>button{
-            height:44px; border-radius:10px; font-weight:700; min-width:160px;
+            height: 44px; border-radius: 10px; font-weight: 700; min-width: 160px;
           }
 
           /* Keep image to the right, text wraps naturally on the left */
           .cw-image img{
-            display:block; width:100%; height:auto; border-radius:12px;
+            display: block; width: 100%; height: auto; border-radius: 12px;
             transform: rotate(-3deg);
             filter: drop-shadow(0 22px 40px rgba(0,0,0,.18));
           }
 
           @media (max-width: 980px){
-            .name-row{ flex-direction:column; align-items:stretch; }
+            .name-row{ flex-direction: column; align-items: stretch; }
           }
         </style>
         """,
