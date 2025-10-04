@@ -34,14 +34,17 @@ def _ensure_care_context():
 
 
 def _render_chronic_selector(current_values):
-    meta = get_question_meta("chronic_conditions")
-    options = meta["options"]
-    default = current_values or ("None" in options and ["None"] or [])
+    meta = get_question_meta("chronic")
+    options = meta.get("options", [])
+    option_map = {opt["value"]: opt.get("label", opt["value"]) for opt in options}
+    values = list(option_map.keys())
+    default = current_values or (["none"] if "none" in values else [])
     with st.form("gcp_chronic_conditions_form"):
         selections = st.multiselect(
-            meta["label"],
-            options=options,
+            meta.get("label", "Any chronic conditions?"),
+            options=values,
             default=default,
+            format_func=lambda value: option_map.get(value, value),
             help=meta.get("description"),
         )
         submitted = st.form_submit_button("Refresh recommendation", type="primary")
@@ -53,6 +56,8 @@ care_context = _ensure_care_context()
 aud_state = ensure_audiencing_state()
 snapshot = current_audiencing_snapshot()
 
+answers.pop("chronic_conditions", None)
+
 has_result = bool(gcp_result.get("recommended_setting"))
 stepper_placeholder = st.empty()
 with stepper_placeholder.container():
@@ -61,11 +66,17 @@ with stepper_placeholder.container():
 st.title("Guided Care Plan - Recommendation")
 st.caption("Confirm medical context so we can finalize the guidance and directional next steps.")
 
-submitted, selections = _render_chronic_selector(answers.get("chronic_conditions"))
+submitted, selections = _render_chronic_selector(answers.get("chronic"))
 
 if submitted:
-    chosen = selections or ["None"]
-    answers["chronic_conditions"] = chosen
+    chosen = list(selections or [])
+    if "none" in chosen:
+        if len(chosen) == 1:
+            answers["chronic"] = ["none"]
+        else:
+            answers["chronic"] = []
+    else:
+        answers["chronic"] = chosen
     result = evaluate_guided_care(answers, aud_state)
     gcp_result.update(result)
     gcp_result["audiencing_snapshot"] = snapshot
@@ -86,6 +97,11 @@ if has_result:
     chronic_conditions = gcp_result.get("chronic_conditions", [])
     decision_trace = gcp_result.get("DecisionTrace", []) or []
     payment_context = gcp_result.get("payment_context") or "private"
+    funding_choice = answers.get("funding_confidence")
+    chronic_labels = {
+        opt["value"]: opt.get("label", opt["value"])
+        for opt in get_question_meta("chronic").get("options", [])
+    }
 
     friendly_setting = {
         "home": "Stay at home with in-home support",
@@ -127,10 +143,14 @@ if has_result:
 
     if chronic_conditions:
         st.markdown("#### Chronic conditions to plan for")
-        if chronic_conditions == ["None"]:
+        if chronic_conditions == ["none"]:
             st.write("No chronic conditions noted.")
         else:
-            st.write(", ".join(chronic_conditions))
+            friendly = [
+                chronic_labels.get(cond, cond.replace("_", " ").title())
+                for cond in chronic_conditions
+            ]
+            st.write(", ".join(friendly))
 
     if decision_trace:
         st.markdown("#### DecisionTrace")
@@ -153,6 +173,17 @@ if has_result:
         secondary_label = "Connect with an advisor"
         secondary_destination = "pages/pfma.py"
         secondary_type = "secondary"
+
+    if payment_context == "private" and funding_choice in {"unsure", "not_confident"}:
+        st.markdown(
+            """
+            <div style="background:#fef3c7;border:1px solid #facc15;padding:1rem;border-radius:12px;margin-bottom:1.2rem;">
+                <strong>Not sure about paying for care?</strong>
+                We can walk through funding strategies in the Cost Planner before you make any commitments.
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     if st.button(primary_label, type=primary_type, use_container_width=True):
         _safe_switch_page(primary_destination)

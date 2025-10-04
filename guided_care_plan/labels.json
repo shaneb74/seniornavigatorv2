@@ -1,74 +1,184 @@
 {
   "questions": {
-    "daily_tasks_support": {
-      "label": "How much help is needed with daily routines like bathing, dressing, and meal prep?",
-      "description": "Covers activities of daily living and whether meals happen independently.",
+    "medicaid_status": {
+      "label": "Are you currently on Medicaid or receiving state long-term care assistance?",
+      "description": "Helps us understand eligibility so we can surface the right guidance.",
+      "helper_copy": "Medicare is federal health insurance. Medicaid is a need-based program that can pay for long-term care. If you\u2019re unsure, keep going\u2014we\u2019ll flag this to double-check later.",
       "options": [
         {
-          "value": "independent",
-          "label": "I manage everything on my own"
+          "value": "yes",
+          "label": "Yes"
         },
         {
-          "value": "light_support",
-          "label": "I need reminders or light help"
+          "value": "no",
+          "label": "No"
         },
         {
-          "value": "moderate_support",
-          "label": "I need help with several tasks"
-        },
-        {
-          "value": "extensive_support",
-          "label": "I rely on others for most tasks"
+          "value": "unsure",
+          "label": "I'm not sure"
         }
       ]
     },
-    "medication_management": {
-      "label": "How are medications managed day to day?",
-      "description": "Shows the risk for missed or incorrect doses.",
+    "funding_confidence": {
+      "label": "How confident do you feel about paying for care?",
+      "description": "Only shown when Medicaid isn\u2019t already covering long-term care.",
       "options": [
         {
-          "value": "self_managed",
-          "label": "Handled independently"
+          "value": "no_worries",
+          "label": "No worries"
         },
         {
-          "value": "uses_reminders",
-          "label": "Managed with reminders or pill boxes"
+          "value": "confident",
+          "label": "Confident"
         },
         {
-          "value": "needs_help",
-          "label": "Someone usually sets them up"
+          "value": "unsure",
+          "label": "Unsure"
         },
         {
-          "value": "high_risk",
-          "label": "Frequently missed or mixed up"
+          "value": "not_confident",
+          "label": "Not confident"
+        }
+      ]
+    },
+    "who_for": {
+      "label": "Who are you planning for?",
+      "options": [
+        {
+          "value": "self",
+          "label": "Myself"
+        },
+        {
+          "value": "parent",
+          "label": "Parent"
+        },
+        {
+          "value": "spouse",
+          "label": "Spouse or partner"
+        },
+        {
+          "value": "other",
+          "label": "Someone else"
+        }
+      ]
+    },
+    "living_now": {
+      "label": "Where do they live today?",
+      "options": [
+        {
+          "value": "own_home",
+          "label": "In their own home"
+        },
+        {
+          "value": "with_family",
+          "label": "With family"
+        },
+        {
+          "value": "independent",
+          "label": "Independent/retirement community"
+        },
+        {
+          "value": "assisted",
+          "label": "Assisted living"
+        },
+        {
+          "value": "memory",
+          "label": "Memory care"
+        },
+        {
+          "value": "skilled",
+          "label": "Skilled nursing"
         }
       ]
     },
     "caregiver_support": {
-      "label": "How much consistent help is available from family or caregivers?",
-      "description": "Helps balance support needs with available hands-on help.",
+      "label": "How much caregiver support is available?",
       "options": [
         {
-          "value": "robust",
-          "label": "Support most days of the week"
-        },
-        {
-          "value": "intermittent",
-          "label": "Help a few days each week"
-        },
-        {
-          "value": "limited",
-          "label": "Occasional check-ins"
-        },
-        {
           "value": "none",
-          "label": "I mostly manage alone"
+          "label": "No regular help"
+        },
+        {
+          "value": "few_days_week",
+          "label": "Help a few days a week"
+        },
+        {
+          "value": "most_days",
+          "label": "Help most days"
+        },
+        {
+          "value": "24_7",
+          "label": "Help around the clock"
         }
       ]
     },
-    "falls_history": {
-      "label": "Have there been any falls in the last 6 months?",
-      "description": "Recent falls raise supervision and safety needs.",
+    "adl_help": {
+      "label": "How many daily activities need hands-on help?",
+      "options": [
+        {
+          "value": "0-1",
+          "label": "0\u20131 activities"
+        },
+        {
+          "value": "2-3",
+          "label": "2\u20133 activities"
+        },
+        {
+          "value": "4-5",
+          "label": "4\u20135 activities"
+        },
+        {
+          "value": "6+",
+          "label": "6 or more activities"
+        }
+      ]
+    },
+    "cognition": {
+      "label": "How is memory and thinking?",
+      "options": [
+        {
+          "value": "normal",
+          "label": "Sharp and consistent"
+        },
+        {
+          "value": "mild",
+          "label": "Mild changes"
+        },
+        {
+          "value": "moderate",
+          "label": "Noticeable confusion"
+        },
+        {
+          "value": "severe",
+          "label": "Severe memory loss"
+        }
+      ]
+    },
+    "behavior_risks": {
+      "label": "Any wandering or unsafe behaviors?",
+      "description": "Select all that apply.",
+      "options": [
+        {
+          "value": "wandering",
+          "label": "Wandering"
+        },
+        {
+          "value": "agitation",
+          "label": "Agitation or aggression"
+        },
+        {
+          "value": "exit_seeking",
+          "label": "Tries to leave unsafely"
+        },
+        {
+          "value": "none",
+          "label": "None of these"
+        }
+      ],
+      "multi": true
+    },
+    "falls": {
+      "label": "Any falls in the last 12 months?",
       "options": [
         {
           "value": "none",
@@ -79,230 +189,127 @@
           "label": "One fall"
         },
         {
-          "value": "multiple",
-          "label": "More than one"
-        },
-        {
-          "value": "unknown",
-          "label": "Not sure"
+          "value": "recurrent",
+          "label": "More than one fall"
         }
       ]
     },
-    "cognition": {
-      "label": "How would you describe memory and thinking on a typical day?",
-      "description": "Combines with medication management to gauge supervision.",
+    "med_mgmt": {
+      "label": "How complex are medications to manage?",
       "options": [
         {
-          "value": "clear",
-          "label": "Clear and consistent"
+          "value": "simple",
+          "label": "Simple routine"
         },
         {
-          "value": "mild_changes",
-          "label": "Some forgetfulness"
+          "value": "several",
+          "label": "Several medications"
         },
         {
-          "value": "moderate_changes",
-          "label": "Frequent confusion"
-        },
-        {
-          "value": "significant_changes",
-          "label": "Serious memory loss or confusion"
-        }
-      ]
-    },
-    "behavior_signals": {
-      "label": "Are there behaviors like wandering, aggression, or sundowning?",
-      "description": "Flags that point toward memory care supports.",
-      "options": [
-        {
-          "value": "none",
-          "label": "No concerning behaviors"
-        },
-        {
-          "value": "occasional",
-          "label": "Occasional changes"
-        },
-        {
-          "value": "frequent",
-          "label": "Frequent or escalating"
-        },
-        {
-          "value": "high_risk",
-          "label": "High-risk behaviors or wandering"
-        }
-      ]
-    },
-    "supervision_need": {
-      "label": "How much supervision is needed during the day or overnight?",
-      "description": "Helps right-size the care setting.",
-      "options": [
-        {
-          "value": "minimal",
-          "label": "Check-ins are enough"
-        },
-        {
-          "value": "daytime",
-          "label": "Support most days"
-        },
-        {
-          "value": "extended",
-          "label": "Support most of the day"
-        },
-        {
-          "value": "around_clock",
-          "label": "Support is needed day and night"
-        }
-      ]
-    },
-    "living_situation": {
-      "label": "Where does care happen today?",
-      "description": "Aligns the plan with the current living setup.",
-      "options": [
-        {
-          "value": "alone",
-          "label": "Living alone"
-        },
-        {
-          "value": "with_partner",
-          "label": "Living with a partner"
-        },
-        {
-          "value": "with_family",
-          "label": "Living with family"
-        },
-        {
-          "value": "community",
-          "label": "Already in a care community"
-        }
-      ]
-    },
-    "partner_support": {
-      "label": "How involved is a partner in day-to-day care?",
-      "description": "Only shown when a partner is in the picture.",
-      "options": [
-        {
-          "value": "primary_caregiver",
-          "label": "My partner is the primary caregiver"
-        },
-        {
-          "value": "shared_care",
-          "label": "We share the responsibilities"
-        },
-        {
-          "value": "needs_support",
-          "label": "My partner needs backup"
-        },
-        {
-          "value": "no_partner",
-          "label": "No partner involved"
+          "value": "complex",
+          "label": "Complex schedule or frequent changes"
         }
       ]
     },
     "home_safety": {
-      "label": "How safe and manageable is the current home?",
-      "description": "Shown when the household owns the home.",
+      "label": "Is the home setup safe (stairs/bath/etc.)?",
       "options": [
         {
-          "value": "ready",
-          "label": "Set up with safety features"
+          "value": "safe",
+          "label": "Safe setup"
         },
         {
-          "value": "minor_updates",
-          "label": "Needs a few updates"
+          "value": "some_risks",
+          "label": "Some safety risks"
         },
         {
-          "value": "major_updates",
-          "label": "Needs significant updates"
-        },
-        {
-          "value": "not_feasible",
-          "label": "Home does not fit long-term needs"
-        },
-        {
-          "value": "not_homeowner",
-          "label": "We do not own this home"
+          "value": "unsafe",
+          "label": "Needs major safety support"
         }
       ]
     },
-    "veteran_benefits": {
-      "label": "Do you want help using VA or military-connected benefits?",
-      "description": "Appears only for veterans.",
+    "supervision": {
+      "label": "Do they have the supervision they need at home?",
       "options": [
         {
-          "value": "actively_using",
-          "label": "Already using benefits"
+          "value": "always",
+          "label": "Always covered"
         },
         {
-          "value": "need_help",
-          "label": "Need help understanding options"
+          "value": "sometimes",
+          "label": "Covered most of the time"
         },
         {
-          "value": "not_interested",
-          "label": "Not interested right now"
+          "value": "rarely",
+          "label": "Covered occasionally"
         },
         {
-          "value": "not_applicable",
-          "label": "Not a veteran"
+          "value": "never",
+          "label": "Rarely or never covered"
         }
       ]
     },
-    "chronic_conditions": {
-      "label": "Are there ongoing health conditions we should factor in?",
+    "chronic": {
+      "label": "Any chronic conditions we should plan for?",
       "description": "Select all that apply.",
       "options": [
-        "Diabetes",
-        "Hypertension",
-        "COPD",
-        "CHF",
-        "Stroke",
-        "Parkinson's",
-        "Dementia or Alzheimer's",
-        "None"
-      ]
+        {
+          "value": "diabetes",
+          "label": "Diabetes"
+        },
+        {
+          "value": "parkinson",
+          "label": "Parkinson\u2019s"
+        },
+        {
+          "value": "stroke",
+          "label": "Stroke"
+        },
+        {
+          "value": "copd",
+          "label": "COPD"
+        },
+        {
+          "value": "chf",
+          "label": "Heart failure (CHF)"
+        },
+        {
+          "value": "other",
+          "label": "Other condition"
+        },
+        {
+          "value": "none",
+          "label": "No chronic conditions"
+        }
+      ],
+      "multi": true
     },
-    "medicaid_status": {
-      "label": "How confident are you about Medicaid eligibility?",
-      "description": "Helps us surface the right planning checklists.",
+    "preferences": {
+      "label": "Any strong care preferences?",
+      "description": "Select all that apply.",
       "options": [
         {
-          "value": "eligible",
-          "label": "We know we qualify"
+          "value": "stay_home",
+          "label": "Stay at home"
         },
         {
-          "value": "in_progress",
-          "label": "We are applying or appealing"
+          "value": "be_near_family",
+          "label": "Be near family"
         },
         {
-          "value": "unsure",
-          "label": "We need help figuring it out"
+          "value": "structured_care",
+          "label": "Structured community"
         },
         {
-          "value": "not_applicable",
-          "label": "Not applicable"
+          "value": "private_room",
+          "label": "Private room"
+        },
+        {
+          "value": "none",
+          "label": "No strong preferences"
         }
-      ]
-    },
-    "funding_confidence": {
-      "label": "How confident do you feel in covering near-term costs?",
-      "description": "Guides which reassurance tips Navi offers.",
-      "options": [
-        {
-          "value": "steady",
-          "label": "We\u2019re on track"
-        },
-        {
-          "value": "monitoring",
-          "label": "We\u2019re watching things closely"
-        },
-        {
-          "value": "uncertain",
-          "label": "We could use more support"
-        },
-        {
-          "value": "urgent",
-          "label": "We\u2019re worried about the next few months"
-        }
-      ]
+      ],
+      "multi": true
     }
   }
 }

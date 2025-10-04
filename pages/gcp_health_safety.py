@@ -6,6 +6,7 @@ from __future__ import annotations
 import streamlit as st
 
 from guided_care_plan import ensure_gcp_session, get_question_meta, render_stepper
+from guided_care_plan.state import current_audiencing_snapshot
 
 from ui.theme import inject_theme
 
@@ -15,68 +16,113 @@ st.markdown('<div class="sn-scope gcp">', unsafe_allow_html=True)
 
 
 SECTION_QUESTIONS = [
-    "falls_history",
     "cognition",
-    "behavior_signals",
-    "supervision_need",
+    "behavior_risks",
+    "falls",
+    "med_mgmt",
+    "home_safety",
+    "supervision",
 ]
+
+MULTI_QUESTIONS = {"behavior_risks"}
 
 
 def _ensure_widget_defaults(answers):
     for question_id in SECTION_QUESTIONS:
         meta = get_question_meta(question_id)
         options = [option["value"] for option in meta["options"]]
-        default_value = answers.get(question_id) or options[0]
-        if default_value not in options:
-            default_value = options[0]
-        st.session_state.setdefault(f"gcp_{question_id}", default_value)
+        if question_id in MULTI_QUESTIONS:
+            default_value = answers.get(question_id) or []
+            st.session_state.setdefault(f"gcp_{question_id}", list(default_value))
+        else:
+            default_value = answers.get(question_id) or options[0]
+            if default_value not in options:
+                default_value = options[0]
+            st.session_state.setdefault(f"gcp_{question_id}", default_value)
 
 
-def _render_radio(question_id: str) -> str:
-    meta = get_question_meta(question_id)
-    option_map = {opt["value"]: opt["label"] for opt in meta["options"]}
+def _render_question(question_id: str, owns_home: bool | None):
+    meta = get_question_meta(question_id).copy()
+    if question_id == "home_safety" and owns_home is False:
+        meta = dict(meta)
+        meta["label"] = "Is their living setup safe?"
+
+    options = meta.get("options", [])
+    option_map = {opt["value"]: opt.get("label", opt["value"]) for opt in options}
     values = list(option_map.keys())
-    selected_value = st.session_state.get(f"gcp_{question_id}", values[0])
-    try:
-        index = values.index(selected_value)
-    except ValueError:
-        index = 0
+
     with st.container(border=True):
-        choice = st.radio(
-            meta["label"],
-            options=values,
-            index=index,
-            key=f"gcp_{question_id}",
-            format_func=lambda value: option_map[value],
-        )
-        if meta.get("description"):
+        if question_id in MULTI_QUESTIONS:
+            default = st.session_state.get(f"gcp_{question_id}", [])
+            choice = st.multiselect(
+                meta.get("label", question_id.replace("_", " ").title()),
+                options=values,
+                default=default,
+                key=f"gcp_{question_id}",
+                format_func=lambda value: option_map.get(value, value),
+                help=meta.get("description"),
+            )
+        else:
+            selected_value = st.session_state.get(f"gcp_{question_id}", values[0])
+            try:
+                index = values.index(selected_value)
+            except ValueError:
+                index = 0
+            choice = st.radio(
+                meta.get("label", question_id.replace("_", " ").title()),
+                options=values,
+                index=index,
+                key=f"gcp_{question_id}",
+                format_func=lambda value: option_map.get(value, value),
+                help=meta.get("description"),
+            )
+            if meta.get("description"):
+                st.caption(meta["description"])
+        if meta.get("description") and question_id in MULTI_QUESTIONS:
             st.caption(meta["description"])
     return choice
 
 
 answers, _ = ensure_gcp_session()
+snapshot = current_audiencing_snapshot()
+owns_home = snapshot.get("qualifiers", {}).get("owns_home")
+
 _ensure_widget_defaults(answers)
 
-st.title("Guided Care Plan - Health & Safety")
-st.caption("Step 2 of 5")
+st.title("Guided Care Plan — Health & Safety")
+st.caption("Section 4 of 5")
 
-render_stepper(2)
+render_stepper(4)
 
 error_placeholder = st.empty()
 
 with st.form("gcp_health_safety_form"):
-    selections = {qid: _render_radio(qid) for qid in SECTION_QUESTIONS}
+    selections = {qid: _render_question(qid, owns_home) for qid in SECTION_QUESTIONS}
     submitted = st.form_submit_button("Continue to Context & Preferences", type="primary")
 
 if submitted:
-    missing = [qid for qid, value in selections.items() if value is None]
+    processed = {}
+    missing = []
+    for qid, value in selections.items():
+        if qid in MULTI_QUESTIONS:
+            value = list(value or [])
+            if "none" in value and len(value) > 1:
+                value = []
+            processed[qid] = value
+        else:
+            if value is None:
+                missing.append(qid)
+            processed[qid] = value
     if missing:
         error_placeholder.error("Answer each question before moving on.")
     else:
-        answers.update(selections)
+        for qid, value in processed.items():
+            if qid in MULTI_QUESTIONS:
+                st.session_state[f"gcp_{qid}"] = list(value)
+        answers.update(processed)
         st.switch_page("pages/gcp_context_prefs.py")
 
-if st.button("Back to Daily Life"):
+if st.button("Back to Daily Life & Support"):
     st.switch_page("pages/gcp_daily_life.py")
 
 st.markdown('</div>', unsafe_allow_html=True)
