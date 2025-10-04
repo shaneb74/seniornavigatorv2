@@ -18,45 +18,58 @@ def main():
     answers = st.session_state["gcp_answers"]
 
     def form():
-        st.subheader("Financial Eligibility")
-        answers["medicaid_status"] = choice_single(
-            "Are you currently on Medicaid or receiving state long-term care assistance?",
-            ["yes", "no", "unsure"],
-            value=answers.get("medicaid_status", "no"),
-            key="gcp_medicaid_status",
-        )
-
-        if answers["medicaid_status"] != "yes":
-            st.subheader("Financial Confidence")
-            answers["funding_confidence"] = choice_single(
-                "How confident do you feel about paying for care?",
-                ["no_worries", "confident", "unsure", "not_confident"],
-                value=answers.get("funding_confidence", "unsure"),
-                key="gcp_funding_confidence",
+        with st.form("gcp_intro_form"):
+            st.subheader("Financial Eligibility")
+            medicaid_choice = choice_single(
+                "Are you currently on Medicaid or receiving state long-term care assistance?",
+                ["yes", "no", "unsure"],
+                value=answers.get("medicaid_status", "no"),
+                key="gcp_medicaid_status",
             )
-        else:
-            st.info(
-                "Medicaid changes how care is paid. We’ll still show a care recommendation, "
-                "then guide the next step."
+            answers["medicaid_status"] = medicaid_choice
+
+            if medicaid_choice != "yes":
+                st.subheader("Financial Confidence")
+                funding_choice = choice_single(
+                    "How confident do you feel about paying for care?",
+                    ["no_worries", "confident", "unsure", "not_confident"],
+                    value=answers.get("funding_confidence", "unsure"),
+                    key="gcp_funding_confidence",
+                )
+                answers["funding_confidence"] = funding_choice
+            else:
+                st.info(
+                    "Medicaid changes how care is paid. We’ll still show a care recommendation, "
+                    "then guide the next step."
+                )
+                funding_choice = answers.get("funding_confidence")
+
+            # persist answers
+            st.session_state["gcp_answers"] = answers
+
+            start_disabled = (medicaid_choice is None) or (
+                medicaid_choice != "yes" and not funding_choice
             )
 
-        # persist answers
-        st.session_state["gcp_answers"] = answers
+            st.markdown('<div data-variant="primary">', unsafe_allow_html=True)
+            go = st.form_submit_button(
+                "Continue to Daily Life & Support",
+                type="primary",
+                use_container_width=True,
+                disabled=start_disabled,
+            )
+            st.markdown("</div>", unsafe_allow_html=True)
+
+            if go:
+                safe_switch_page("ui/pages/gcp_daily_life.py")
 
     gcp_section("Guided Care Plan", "Financial", form)
 
     # bottom nav rendered outside the section to keep button interactions working
-    c1, c2 = st.columns([1, 1])
-
-    with c1:
-        st.markdown('<div data-variant="secondary">', unsafe_allow_html=True)
-        if buttons.secondary("Return to Hub", key="gcp_return_hub"):
-            safe_switch_page("ui/pages/app.py")
-        st.markdown("</div>", unsafe_allow_html=True)
-
-    with c2:
-        if buttons.primary("Continue to Daily Life & Support", key="gcp_to_daily"):
-            safe_switch_page("ui/pages/gcp_daily_life.py")
+    st.markdown('<div data-variant="secondary">', unsafe_allow_html=True)
+    if st.button("Return to Hub", use_container_width=True, key="gcp_return_hub"):
+        safe_switch_page("ui/pages/app.py")
+    st.markdown("</div>", unsafe_allow_html=True)
 
     buttons.page_end()
 
