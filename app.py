@@ -133,13 +133,11 @@ def ensure_page(path: str, title: str, icon: str, default: bool = False):
 INTENDED = [
     ("pages/welcome.py", "Welcome", "👋", True),
     ("pages/hub.py", "Your Concierge Care Hub", "🏠", False),
-    ("pages/tell_us_about_you.py", "Contextual Welcome – For You", "ℹ️", False),
-    (
-        "pages/tell_us_about_loved_one.py",
-        "Contextual Welcome – For Loved Ones",
-        "ℹ️",
-        False,
-    ),
+
+    # ✅ contextual welcome wrappers (keep these)
+    ("pages/contextual_welcome_self.py", "Contextual Welcome – For You", "ℹ️", False),
+    ("pages/contextual_welcome_loved_one.py", "Contextual Welcome – For Loved Ones", "ℹ️", False),
+
     ("pages/professional_mode.py", "Professional Mode", "🧑", False),
     ("pages/gcp.py", "Guided Care Plan", "🗺️", False),
     ("pages/gcp_daily_life.py", "GCP - Daily Life & Support", "🗺️", False),
@@ -177,16 +175,13 @@ INTENDED = [
     ("pages/my_account.py", "My Account", "👤", False),
 ]
 
-pages, missing = [], []
+# Build the Page objects (ignore missing silently)
+pages = []
 for args in INTENDED:
-    page, miss = ensure_page(*args)
+    page, _ = ensure_page(*args)  # (path, title, icon, default)
     if page:
         pages.append(page)
-    if miss:
-        missing.append(miss)
 
-if missing:
-    st.sidebar.warning("Missing pages detected:\\n" + "\\n".join(f"- {m}" for m in missing))
 
 # Kick the session back to Welcome on first load
 _force_welcome_once()
