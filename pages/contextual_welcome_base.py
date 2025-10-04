@@ -1,5 +1,5 @@
 from __future__ import annotations
-"""Contextual Welcome - clean layout (no tall canvas), center-ish hero, and gating."""
+"""Contextual Welcome - clean layout (no tall canvas), left text / right image, solid gating."""
 
 import base64, mimetypes
 from pathlib import Path
@@ -13,6 +13,19 @@ except Exception:  # pragma: no cover
         st.markdown(
             """
             <style>
+/* Force Streamlit body to center content */
+main > div {
+    display: flex;
+    justify-content: center;  /* horizontal centering */
+    align-items: center;      /* vertical centering */
+    min-height: 100vh;        /* full viewport height */
+}
+
+/* Optional: center the block-container specifically */
+.block-container {
+    margin: auto;
+}
+
               .block-container{max-width:1160px;padding-top:8px;}
               header[data-testid="stHeader"]{background:transparent;}
               footer{visibility:hidden;}
@@ -75,75 +88,103 @@ def _inject_page_css() -> None:
     st.markdown(
         """
         <style>
-          /* ====== IMPORTANT: shrink Streamlit canvas on this page only ====== */
-          section.main:has(.cw-wrap) > div.block-container{
-            min-height:auto !important;           /* no 100vh slab */
-            padding-top:16px !important;
-            padding-bottom:24px !important;
+/* Force Streamlit body to center content */
+main > div {
+    display: flex;
+    justify-content: center;  /* horizontal centering */
+    align-items: center;      /* vertical centering */
+    min-height: 100vh;        /* full viewport height */
+}
+
+/* Optional: center the block-container specifically */
+.block-container {
+    margin: auto;
+}
+
+          /* Ensure full viewport height for all parent containers */
+          body, html, .stApp, section.main {
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
           }
-          section.main:has(.cw-wrap) > div.block-container [data-testid="stVerticalBlock"]{
-            padding-top:0 !important; padding-bottom:0 !important;
-            margin-top:0 !important; margin-bottom:0 !important;
+          /* Center the main content area absolutely */
+          section.main:has(.cw-wrap-marker) > div.block-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            min-height: auto !important;
+            background-color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            max-width: 1160px;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+          }
+          /* Remove extra vertical spacing wrappers on this page */
+          section.main:has(.cw-wrap-marker) [data-testid="stVerticalBlock"] {
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
           }
 
-          /* ====== Hero layout ====== */
-          .cw-wrap{ position:relative; }
-          .cw-hero{
-            position:relative;
-            display:block;
-            margin:clamp(12px,6vh,72px) 0 0 min(3vw,24px);
+          /* Ghost bar removal + tidy input look (safe globally) */
+          .stTextInput > div > div {
+            background: transparent !important;
+            box-shadow: none !important;
+          }
+          .stTextInput input {
+            background: #ffffff !important;
+            border: 1px solid rgba(15,23,42,.12) !important;
+            border-radius: 10px !important;
+            height: 44px !important;
           }
 
-          /* Collage */
-          .cw-collage{
-            position:absolute;
-            right:2%;
-            top:-10px;                   /* pull slightly upward without affecting flow */
-            width:min(560px, 52%);
-            transform:rotate(-4deg);
-            z-index:1;
-            opacity:.98;
-            filter:drop-shadow(0 22px 40px rgba(0,0,0,.18));
+          /* Headline spacing */
+          .cw-headline { margin: 0 0 12px 0; font-size: 1.6rem; line-height: 1.25; }
+
+          /* Pills row */
+          .pill-row { display: flex; gap: 10px; margin: 10px 0 14px; }
+          .pill-row .stButton>button {
+            height: 36px; border-radius: 999px; padding: 6px 16px; font-weight: 700;
+            width: auto !important;
           }
-          .cw-collage img{ width:100%; height:auto; border-radius:12px; display:block; }
 
-          /* Card */
-          .cw-card{
-            position:relative;
-            z-index:2;
-            background:#fff;
-            width:min(520px, 92vw);
-            border-radius:14px;
-            padding:22px 22px 16px;
-            box-shadow:0 24px 60px rgba(2,12,27,.18);
+          /* Inline row for name + continue */
+          .name-row { display: flex; gap: 12px; align-items: center; margin: 8px 0 4px; }
+          .name-row .stButton>button {
+            height: 44px; border-radius: 10px; font-weight: 700; min-width: 160px;
           }
-          .cw-card h2{ margin:0 0 .8rem 0; font-size:1.6rem; line-height:1.25; }
 
-          .pill-row{ display:flex; gap:10px; margin:12px 0 16px; }
-          .pill-row .stButton>button{
-            height:36px; border-radius:999px; padding:6px 16px; font-weight:700;
-            width:auto !important;
+          /* Keep image to the right, text wraps naturally on the left */
+          .cw-image img {
+            display: block; width: 100%; height: auto; border-radius: 12px;
+            transform: rotate(-3deg);
+            filter: drop-shadow(0 22px 40px rgba(0,0,0,.18));
           }
-          .cw-card .stTextInput>div>div>input{ height:44px; border-radius:10px; }
 
-          .cta{ display:flex; justify-content:flex-start; margin-top:8px; }
-          .cta .stButton>button{ height:46px; border-radius:10px; font-weight:700; min-width:220px; }
-
-          .cw-helper{ margin-top:6px; color:var(--ink-muted,#475569); font-size:.9rem; }
+          @media (max-width: 980px) {
+            .name-row { flex-direction: column; align-items: stretch; }
+          }
         </style>
         """,
         unsafe_allow_html=True,
     )
 
-def render(which: str="you") -> None:
+def render(which: str = "you") -> None:
     inject_theme()
     st.set_page_config(page_title="Contextual Welcome", layout="wide")
 
-    entry = "self" if str(which).lower() in ("you","self","me") else "proxy"
+    # Which flow?
+    entry = "self" if str(which).lower() in ("you", "self", "me") else "proxy"
     copy = COPY[entry]
-    img_src = IMAGE_MAP.get(entry,"")
+    img_src = IMAGE_MAP.get(entry, "")
 
-    # session state
+    # Session state
     if "aud" not in st.session_state:
         st.session_state.aud = {
             "entry": entry,
@@ -159,54 +200,34 @@ def render(which: str="you") -> None:
 
     _inject_page_css()
 
-    # outer wrap
-    st.markdown('<div class="cw-wrap">', unsafe_allow_html=True)
+    # Marker so CSS is scoped to THIS page only
+    st.markdown('<div class="cw-wrap-marker"></div>', unsafe_allow_html=True)
 
-    # hero container (in normal flow so canvas hugs height)
-    st.markdown('<div class="cw-hero">', unsafe_allow_html=True)
+    # Two-column layout: text left, image right (no overlap)
+    left, right = st.columns([1, 1])
 
-    # collage (absolute; does not change flow height)
-    if img_src and not img_src.startswith(("http://","https://","data:")):
-        img_src = _data_uri(img_src) or ""
-    if img_src:
-        st.markdown(f'<div class="cw-collage"><img src="{img_src}" alt="collage"></div>', unsafe_allow_html=True)
+    with left:
+        # Headline
+        st.markdown(f'<div class="cw-headline">{copy["headline"]}</div>', unsafe_allow_html=True)
 
-    # card
-    st.markdown('<div class="cw-card">', unsafe_allow_html=True)
-
-    # pills
-    st.markdown('<div class="pill-row">', unsafe_allow_html=True)
-    col_l, col_r, col_x = st.columns([1,1,0.2])
-    with col_l:
-        if st.button(copy["pill_left"], key="cw_pill_left", use_container_width=False):
-            _safe_switch_page("pages/contextual_welcome_loved_one.py")
-    with col_r:
-        if st.button(copy["pill_right"], key="cw_pill_right", use_container_width=False):
-            _safe_switch_page("pages/contextual_welcome_self.py")
-    with col_x:
-        st.button("x", key="cw_close", use_container_width=False, type="secondary")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown(f"<h2>{copy['headline']}</h2>", unsafe_allow_html=True)
-
-    name_key = "cw_name_self" if entry=="self" else "cw_name_proxy"
-    name_ph = copy["name_placeholder"]
-    name = st.write("")
-    name = (aud.get("recipient_name") or "").strip()
-
-    if entry=="self":
+        # Name input (single widget)
+        name_key = "cw_name_self" if entry == "self" else "cw_name_proxy"
+        name_ph = copy["name_placeholder"]
+        name_val = aud.get("recipient_name") or ""
+        name = st.text_input(name_ph, value=name_val, key=name_key, label_visibility="collapsed").strip()
         aud["recipient_name"] = name or aud.get("recipient_name")
-        aud["proxy_name"] = None
-    else:
-        aud["recipient_name"] = name or aud.get("recipient_name")
-        if name:
-            labels = [label for _,label in RELATIONSHIP_CHOICES]
-            idx = labels.index(aud["relationship_label"]) if aud.get("relationship_label") in labels else 0
+
+        # Relationship (proxy flow), progressive after name
+        if entry == "proxy" and (aud.get("recipient_name") or "").strip():
+            labels = [label for _, label in RELATIONSHIP_CHOICES]
+            default_idx = labels.index(aud["relationship_label"]) if aud.get("relationship_label") in labels else 0
             rel_label = st.selectbox(
-                f"What's your relationship to {name or 'them'}?",
-                labels, index=idx, key="cw_relationship"
+                f"What's your relationship to {aud['recipient_name'] or 'them'}?",
+                labels,
+                index=default_idx,
+                key="cw_relationship",
             )
-            code_lookup = {label:code for code,label in RELATIONSHIP_CHOICES}
+            code_lookup = {label: code for code, label in RELATIONSHIP_CHOICES}
             aud["relationship_label"] = rel_label
             aud["relationship_code"] = code_lookup.get(rel_label)
             if aud["relationship_code"] == "other":
@@ -218,35 +239,35 @@ def render(which: str="you") -> None:
                 )
             else:
                 aud["relationship_other"] = None
-        else:
+        elif entry == "proxy":
             aud["relationship_label"] = None
             aud["relationship_code"] = None
             aud["relationship_other"] = None
 
-    
-    # Inline name + Continue row
-    st.markdown('<div class="name-row">', unsafe_allow_html=True)
-    c_name, c_btn = st.columns([1, 1])
-    with c_name:
-        # re-render input (keeps same key so it's the same widget)
-        name = st.text_input(name_ph, value=(aud.get("recipient_name") or ""), key=name_key, label_visibility="collapsed").strip()
-        aud["recipient_name"] = name or aud.get("recipient_name")
-    with c_btn:
+        # Gating
+        name_ok = bool((aud.get("recipient_name") or "").strip())
+        rel_ok = True if entry == "self" else bool(aud.get("relationship_code"))
+        can_continue = name_ok and rel_ok
+
+        # Continue
+        st.markdown('<div class="name-row">', unsafe_allow_html=True)
         if st.button("Continue", key="cw_continue", use_container_width=False, disabled=not can_continue):
             if not aud.get("recipient_name"):
                 aud["recipient_name"] = "You" if entry == "self" else "Your Loved One"
             _safe_switch_page("pages/hub.py")
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
-    name_ok = bool((aud.get("recipient_name") or "").strip())
-    rel_ok = True if entry=="self" else bool(aud.get("relationship_code"))
-    can_continue = name_ok and rel_ok
+        # Helper captions
+        if not name_ok:
+            st.caption("Please enter a name to continue.")
+        elif entry == "proxy" and not rel_ok:
+            st.caption("Select your relationship to continue.")
 
-    if not name_ok:
-        st.caption("Please enter a name to continue.")
-    elif entry=="proxy" and not rel_ok:
-        st.caption("Select your relationship to continue.")
-
-    st.markdown('</div>', unsafe_allow_html=True)  # end .cw-card
-    st.markdown('</div>', unsafe_allow_html=True)  # end .cw-hero
-    st.markdown('</div>', unsafe_allow_html=True)  # end .cw-wrap
+    with right:
+        # Image on the right, no overlap
+        if img_src and not img_src.startswith(("http://", "https://", "data:")):
+            img_src = _data_uri(img_src) or ""
+        if img_src:
+            st.markdown('<div class="cw-image">', unsafe_allow_html=True)
+            st.markdown(f'<img src="{img_src}" alt="collage">', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)

@@ -1,10 +1,9 @@
-"""Shared helpers for TurboTax-style wireframe styling.
+"""Shared helpers for Cost Planner wireframe styling.
 
 These utilities provide the TurboTax-inspired presentation that the
-product team wants to see applied consistently across our guided
-experiences (Cost Planner, Guided Care Plan, Plan for MyAdvisor, etc.).
-They intentionally focus on layout and tone; business logic should stay
-within the individual pages.
+product team wants to see applied consistently across every
+``cost_planner*`` Streamlit page.  They intentionally focus on layout
+and tone; business logic should stay within the individual pages.
 """
 from __future__ import annotations
 
@@ -29,8 +28,6 @@ class NavButton:
     label: str
     key: str
     type: str = "secondary"
-    help: Optional[str] = None
-    disabled: bool = False
 
 
 def apply_cost_planner_theme() -> None:
@@ -163,17 +160,9 @@ def render_nav_buttons(buttons: Iterable[NavButton]) -> Optional[str]:
                 button.label,
                 key=button.key,
                 type=button.type,
-                help=button.help,
-                disabled=button.disabled,
             ):
                 return button.key
     return None
-
-
-def apply_turbotax_wizard_theme() -> None:
-    """Alias for ``apply_cost_planner_theme`` for broader reuse."""
-
-    apply_cost_planner_theme()
 
 
 def render_suggestion(text: str, *, tone: str = "info") -> None:
