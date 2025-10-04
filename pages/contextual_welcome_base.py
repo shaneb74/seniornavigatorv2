@@ -90,22 +90,29 @@ def _inject_page_css() -> None:
         <style>
           /* canvas */
 
-          /* Center content vertically in the white container */
-          .block-container {
-            display: flex !important;
-            flex-direction: column;
-            justify-content: center !important;
-            align-items: flex-start !important;
-            min-height: 100vh !important;
+          /* Shrink Streamlit canvas to content on THIS page only */
+          section.main > div.block-container{
+            min-height: auto !important;
+            display: block !important;
+            padding-top: 10px !important;
+            padding-bottom: 14px !important;
+          }
+          /* Remove excess spacing on first/last vertical blocks */
+          section.main > div.block-container [data-testid="stVerticalBlock"]{
             padding-top: 0 !important;
             padding-bottom: 0 !important;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
           }
-          section.main > div.block-container {
-            min-height: 100vh !important;
+          section.main > div.block-container > div:first-child{
+            margin-top: 0 !important;
+            padding-top: 0 !important;
           }
-    
-
-          /* tighten Streamlit content pane (the big white rounded container) */
+          /* Hide any accidental empty spacer blocks */
+          section.main > div.block-container > div:empty{
+            display:none !important;
+          }
+/* tighten Streamlit content pane (the big white rounded container) */
           .block-container{
             padding-top: 6px !important;
             padding-bottom: 12px !important;
@@ -146,7 +153,7 @@ def _inject_page_css() -> None:
             z-index:10;         /* above collage */
             isolation:isolate;  /* new stacking context */
             background:#fff;
-            margin:clamp(4px,2vh,32px) 0 0 min(3vw, 24px);
+            margin:clamp(4px,2vh,28px) 0 0 min(3vw, 24px);
             padding: 20px 20px 14px;
             width:min(520px, 92vw);
             border-radius:14px;
