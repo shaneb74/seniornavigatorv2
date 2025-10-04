@@ -20,21 +20,21 @@ def main():
     buttons.page_start()
 
     def rec_body():
-        payment_context = gcp.get("payment_context") or (
-            "medicaid" if answers.get("medicaid_status") == "yes" else "private"
-        )
-
-        # Top: title + refresh (link-like)
         st.subheader("Your care recommendation")
 
+        # Link-style refresh
         st.markdown('<div data-variant="link">', unsafe_allow_html=True)
         if buttons.secondary("Refresh recommendation", key="gcp_refresh"):
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
-        # Body copy
         st.write("We’ll show your personalized recommendation here with a short explanation.")
-        if payment_context == "medicaid":
+
+        pay = gcp.get("payment_context") or (
+            "medicaid" if answers.get("medicaid_status") == "yes" else "private"
+        )
+
+        if pay == "medicaid":
             st.info(
                 "Medicaid covers long-term care differently. Next we’ll guide you to Plan for My Advisor. "
                 "Cost Planner is optional."
@@ -42,36 +42,20 @@ def main():
         else:
             st.info("You can continue to the Cost Planner to explore costs, offsets, and timeline.")
 
-        # Bottom CTAs (primary/secondary)
-        def _to_cp():
-            safe_switch_page("ui/pages/03_cost_planner.py")  # adjust if your file name differs
-
-        def _to_pfma():
-            safe_switch_page("ui/pages/05_plan_for_my_advisor.py")
-
         c1, c2 = st.columns([1, 1])
-        if payment_context == "medicaid":
-            with c1:
-                # Primary: PFMA
+        with c1:
+            st.markdown('<div data-variant="secondary">', unsafe_allow_html=True)
+            if buttons.secondary("Back", key="gcp_rec_back"):
+                safe_switch_page("ui/pages/gcp_context_prefs.py")
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        with c2:
+            if pay == "medicaid":
                 if buttons.primary("Continue to Plan for My Advisor", key="gcp_to_pfma"):
-                    _to_pfma()
-            with c2:
-                # Secondary: CP optional
-                st.markdown('<div data-variant="secondary">', unsafe_allow_html=True)
-                if buttons.secondary("Open Cost Planner (optional)", key="gcp_to_cp_opt"):
-                    _to_cp()
-                st.markdown("</div>", unsafe_allow_html=True)
-        else:
-            with c1:
-                # Primary: CP
-                if buttons.primary("Open Cost Planner", key="gcp_to_cp"):
-                    _to_cp()
-            with c2:
-                # Secondary: PFMA
-                st.markdown('<div data-variant="secondary">', unsafe_allow_html=True)
-                if buttons.secondary("Plan for My Advisor", key="gcp_to_pfma_alt"):
-                    _to_pfma()
-                st.markdown("</div>", unsafe_allow_html=True)
+                    safe_switch_page("ui/pages/05_plan_for_my_advisor.py")
+            else:
+                if buttons.primary("Continue to Cost Planner", key="gcp_to_cp"):
+                    safe_switch_page("ui/pages/03_cost_planner.py")
 
     gcp_section("Guided Care Plan", "Recommendation", rec_body)
 
