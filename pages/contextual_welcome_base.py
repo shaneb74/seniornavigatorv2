@@ -16,7 +16,14 @@ except Exception:  # pragma: no cover
               .block-container{max-width:1160px;padding-top:8px;}
               header[data-testid="stHeader"]{background:transparent;}
               footer{visibility:hidden;}
-            </style>
+            
+@media (min-height: 900px){
+  .cw-wrap{ min-height:64vh; }
+  .cw-card{ margin:clamp(8px,5vh,80px) 0 0 min(3vw, 24px); }
+  .cw-collage{ top:2%; right:0.5%; width:min(580px, 54%); }
+}
+
+        </style>
             """,
             unsafe_allow_html=True,
         )
@@ -84,7 +91,7 @@ def _inject_page_css() -> None:
           /* canvas */
           .cw-wrap{
             position:relative;
-            min-height:86vh;
+            min-height:72vh;
             background:var(--surface-subtle,#eef4ff);
             border-radius:18px;
             overflow:hidden;
@@ -93,9 +100,9 @@ def _inject_page_css() -> None:
           /* collage on the right, behind the modal */
           .cw-collage{
             position:absolute;
-            right:2%;
-            top:6%;
-            width:min(640px, 58%);
+            right:1%;
+            top:3%;
+            width:min(600px, 56%);
             transform:rotate(-4deg);
             z-index:1; /* behind the card */
             opacity:.98;
@@ -114,7 +121,7 @@ def _inject_page_css() -> None:
             z-index:10;         /* above collage */
             isolation:isolate;  /* new stacking context */
             background:#fff;
-            margin:clamp(48px,12vh,140px) 0 0 min(3vw, 24px);
+            margin:clamp(12px,6vh,96px) 0 0 min(3vw, 24px);
             padding: 22px 22px 16px;
             width:min(520px, 92vw);
             border-radius:14px;
@@ -122,7 +129,7 @@ def _inject_page_css() -> None:
           }
 
           .cw-card h2{
-            margin:0 0 .8rem 0;
+            margin:.2rem 0 .8rem 0;
             font-size:1.6rem;
             line-height:1.25;
           }
@@ -152,6 +159,13 @@ def _inject_page_css() -> None:
             color:var(--ink-muted,#475569);
             font-size:.9rem;
           }
+        
+@media (min-height: 900px){
+  .cw-wrap{ min-height:64vh; }
+  .cw-card{ margin:clamp(8px,5vh,80px) 0 0 min(3vw, 24px); }
+  .cw-collage{ top:2%; right:0.5%; width:min(580px, 54%); }
+}
+
         </style>
         """,
         unsafe_allow_html=True,
