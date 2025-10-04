@@ -12,8 +12,8 @@ def _init_state():
 
 def main():
     _init_state()
-    gcp_header(0)
-    buttons.page_start()
+    gcp_header(0)           # section 1 of 5
+    buttons.page_start()    # scope button CSS to this page
 
     answers = st.session_state["gcp_answers"]
 
@@ -36,11 +36,14 @@ def main():
             )
         else:
             st.info(
-                "Medicaid changes how care is paid. We’ll still show a care recommendation, then guide the next step."
+                "Medicaid changes how care is paid. We’ll still show a care recommendation, "
+                "then guide the next step."
             )
 
+        # persist answers
         st.session_state["gcp_answers"] = answers
 
+        # bottom nav
         c1, c2 = st.columns([1, 1])
 
         with c1:

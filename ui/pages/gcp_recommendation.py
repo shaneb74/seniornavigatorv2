@@ -16,7 +16,7 @@ def main():
     answers = st.session_state["gcp_answers"]
     gcp = st.session_state.get("gcp", {})
 
-    # Scope the page so our primary/secondary/link button CSS doesn't affect other modules
+    # Scope page-level button CSS
     buttons.page_start()
 
     def rec_body():
@@ -42,6 +42,7 @@ def main():
         else:
             st.info("You can continue to the Cost Planner to explore costs, offsets, and timeline.")
 
+        # Bottom CTAs
         c1, c2 = st.columns([1, 1])
         with c1:
             st.markdown('<div data-variant="secondary">', unsafe_allow_html=True)

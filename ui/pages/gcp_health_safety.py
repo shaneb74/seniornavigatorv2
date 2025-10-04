@@ -11,10 +11,13 @@ from senior_nav.components import buttons
 
 def _init_state():
     st.session_state.setdefault("gcp_answers", {})
+
+
 def main():
     _init_state()
-    gcp_header(2)
+    gcp_header(3)           # section 4 of 5: Health & Safety
     buttons.page_start()
+
     answers = st.session_state["gcp_answers"]
 
     def form():
@@ -62,14 +65,18 @@ def main():
             key="gcp_supervision",
         )
 
+        # persist
         st.session_state["gcp_answers"] = answers
 
+        # bottom nav
         c1, c2 = st.columns([1, 1])
+
         with c1:
             st.markdown('<div data-variant="secondary">', unsafe_allow_html=True)
             if buttons.secondary("Back", key="gcp_health_back"):
                 safe_switch_page("ui/pages/gcp_daily_life.py")
             st.markdown("</div>", unsafe_allow_html=True)
+
         with c2:
             if buttons.primary("Continue to Context & Preferences", key="gcp_to_context"):
                 safe_switch_page("ui/pages/gcp_context_prefs.py")
