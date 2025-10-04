@@ -1,11 +1,15 @@
 """Theme helpers for the Senior Care Navigator UI shell."""
 from __future__ import annotations
 
+from pathlib import Path
 from textwrap import dedent
 
 import streamlit as st
 
 from senior_nav.ui_style import tokens
+
+_STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
+_CHIP_CSS_PATH = _STATIC_DIR / "chips.css"
 
 _THEME_STATE_KEY = "__sn_theme_injected__"
 
@@ -164,4 +168,7 @@ def inject_theme() -> None:
         return
 
     st.markdown(_build_css(), unsafe_allow_html=True)
+    if _CHIP_CSS_PATH.exists():
+        chips_css = _CHIP_CSS_PATH.read_text(encoding="utf-8")
+        st.markdown(f"<style>{chips_css}</style>", unsafe_allow_html=True)
     st.session_state[_THEME_STATE_KEY] = True
