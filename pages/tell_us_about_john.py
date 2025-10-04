@@ -1,61 +1,135 @@
+"""Sample audiencing demo focused on the proxy journey."""
+from __future__ import annotations
 
 import streamlit as st
+
+from audiencing import (
+    apply_audiencing_sanitizer,
+    compute_audiencing_route,
+    ensure_audiencing_state,
+    log_audiencing_set,
+    snapshot_audiencing,
+)
+from ui.components import card_panel
 from ui.theme import inject_theme
 
 
-inject_theme()
-st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
+ENTRY_OPTIONS = (
+    {
+        "value": "proxy",
+        "icon": "👥",
+        "title": "I'm here for John",
+        "description": "Walk me through supporting John with empathy and clarity.",
+    },
+    {
+        "value": "self",
+        "icon": "👤",
+        "title": "I'm planning for myself",
+        "description": "Help me understand what matters most for my own plan.",
+    },
+    {
+        "value": "pro",
+        "icon": "🧑‍💼",
+        "title": "I'm a professional",
+        "description": "I’m preparing guidance to share with families like John's.",
+    },
+)
 
 
-# Debug: non-visual logger
-def _debug_log(msg: str):
+def safe_switch_page(target: str) -> None:
     try:
-        print(f"[SNAV] {msg}")
+        st.switch_page(target)  # type: ignore[attr-defined]
     except Exception:
-        pass
-
-_debug_log('LOADED: tell_us_about_john.py')
-
-
-# Guard: ensure session state keys exist across cold restarts
-if 'care_context' not in st.session_state:
-    st.session_state.care_context = {
-        'gcp_answers': {},
-        'decision_trace': [],
-        'planning_mode': 'exploring',
-        'care_flags': {}
-    }
-ctx = st.session_state.care_context
+        st.query_params["next"] = target
+        st.experimental_rerun()
 
 
-# Tell Us About your loved one - Initial Audienceing
-st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-st.title("Tell Us About your loved one")
-st.markdown("<h2>A few quick taps to start.</h2>", unsafe_allow_html=True)
-st.markdown("<p>Help us guide your loved one's care in under a minute.</p>", unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
+def _ensure_care_context() -> dict[str, object]:
+    return st.session_state.setdefault("care_context", {"person_name": "John"})
 
-# Simple qualifying questions with tile style
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
-st.markdown("### About your loved one", unsafe_allow_html=True)
-st.markdown("<p>These questions help us tailor your loved one's options-simple and private.</p>", unsafe_allow_html=True)
-st.write("Did your loved one serve in the military?")
-st.button("Yes", key="military_yes", type="primary")
-st.button("No", key="military_no", type="primary")
 
-st.write("Is your loved one on Medicaid now?")
-st.button("Yes", key="medicaid_yes", type="primary")
-st.button("No", key="medicaid_no", type="primary")
+def _handle_entry_selection(entry_value: str) -> None:
+    state = ensure_audiencing_state()
+    state["entry"] = entry_value
+    state.setdefault("people", {}).update({"recipient_name": "John", "proxy_name": ""})
+    apply_audiencing_sanitizer(state)
+    compute_audiencing_route(state)
+    snapshot = snapshot_audiencing(state)
+    st.session_state["audiencing_snapshot"] = snapshot
+    log_audiencing_set(snapshot)
 
-st.write("Does your loved one own a home?")
-st.button("Yes", key="home_yes", type="primary")
-st.button("No", key="home_no", type="primary")
+    care_context = _ensure_care_context()
+    care_context["person_name"] = "John" if entry_value != "self" else "You"
 
-st.markdown('</div>', unsafe_allow_html=True)
+    gate_state = st.session_state.setdefault("gate", {})
+    gate_state["medicaid_offramp_shown"] = False
 
-# Navigation
-st.markdown('<div class="scn-nav-row">', unsafe_allow_html=True)
-col1, col2 = st.columns([1, 1])
-with col2:
-    st.button("Next: Hub", key="next_hub", type="primary")
-st.markdown('</div>', unsafe_allow_html=True)
+    safe_switch_page("pages/contextual_welcome.py")
+
+
+def _render_option(option: dict[str, str], *, highlight: bool) -> None:
+    button_type = "primary" if highlight else "secondary"
+    with st.container(border=True):
+        st.markdown(
+            f"""
+            <div style="display:flex;flex-direction:column;gap:.6rem;">
+                <div style="font-size:2rem;">{option['icon']}</div>
+                <div style="font-size:1.1rem;font-weight:600;">{option['title']}</div>
+                <p style="margin:0;color:var(--ink-muted);">{option['description']}</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        pressed = st.button(
+            "Choose",
+            key=f"aud_john_choice_{option['value']}",
+            type=button_type,
+            use_container_width=True,
+        )
+        if pressed:
+            _handle_entry_selection(option["value"])
+
+
+def render_audiencing_entry(*, emphasize: str = "proxy") -> None:
+    inject_theme()
+    st.set_page_config(page_title="Tell Us About John", layout="centered")
+    st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
+
+    debug_flag = bool(st.session_state.get("dev_debug"))
+
+    ensure_audiencing_state()
+
+    with card_panel():
+        st.markdown(
+            """
+            <div class="sn-hero-h1" style="margin-bottom:.4rem;">
+              Let's get to know your role with John
+            </div>
+            <p style="margin:0;color:var(--ink-muted);font-size:1.05rem;">
+              A few quick questions help us guide you to the right care. Some are essential,
+              others help personalize your journey.
+            </p>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        st.caption(
+            "Pick the role that best fits how you're helping John today."
+        )
+
+        cols = st.columns(3, gap="large")
+        for col, option in zip(cols, ENTRY_OPTIONS):
+            with col:
+                _render_option(option, highlight=option["value"] == emphasize)
+
+    if debug_flag:
+        with st.expander("Debug: Audiencing state", expanded=False):
+            st.json(st.session_state.get("audiencing", {}))
+            st.markdown("---")
+            st.json(st.session_state.get("audiencing_snapshot", {}))
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
+render_audiencing_entry()
+
