@@ -1,3 +1,4 @@
+# pages/contextual_welcome_self.py
 try:
     from pages.contextual_welcome_base import render
 except Exception:
