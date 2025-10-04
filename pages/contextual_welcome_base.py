@@ -90,6 +90,31 @@ def _inject_page_css() -> None:
         <style>
           /* canvas */
 
+          /* HARD overlay stage that ignores Streamlit's tall canvas */
+          section.main{ position: relative !important; }
+          .cw-wrap{ position: relative; }
+          .cw-stage{
+            position: fixed;
+            inset: 0;                  /* occupy the viewport */
+            display: grid;
+            grid-template-columns: 1fr; 
+            align-content: center;     /* vertical center */
+            justify-content: start;    /* left alignment */
+            pointer-events: none;      /* don't block sidebar/toolbar */
+          }
+          .cw-card, .cw-collage{ pointer-events: auto; }  /* allow interaction */
+          /* Center horizontally by constraining an inner lane the same as Streamlit's width */
+          .cw-stage > *{
+            margin-left: min(3vw, 24px);
+          }
+          /* Avoid giant white canvas above/below on this page */
+          section.main > div.block-container{
+            min-height: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+          }
+
+
           /* TRUE vertical centering just for this page */
           section.main{
             display: grid !important;
@@ -148,7 +173,7 @@ def _inject_page_css() -> None:
             position:absolute;
             right:1%;
             top:4%;
-            width:min(600px, 56%);
+            width:min(560px, 52%);
             transform:rotate(-4deg);
             z-index:1; /* behind the card */
             opacity:.98;
@@ -242,7 +267,7 @@ def render(which: str = "you") -> None:
     aud["entry"] = entry  # keep in sync
 
     _inject_page_css()
-    st.markdown('<div class="cw-wrap">', unsafe_allow_html=True)
+    st.markdown('<div class="cw-wrap"><div class="cw-stage">', unsafe_allow_html=True)
 
     # collage
     if img_src and not img_src.startswith(("http://", "https://", "data:")):
@@ -331,4 +356,5 @@ def render(which: str = "you") -> None:
     )
 
     st.markdown("</div>", unsafe_allow_html=True)   # end .cw-card
+    st.markdown("</div>", unsafe_allow_html=True)   # end .cw-stage
     st.markdown("</div>", unsafe_allow_html=True)   # end .cw-wrap
