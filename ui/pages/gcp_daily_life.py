@@ -1,4 +1,5 @@
 import streamlit as st
+from senior_nav.components.choice_chips import choice_single
 from senior_nav.components.nav import safe_switch_page
 from senior_nav.components.gcp_shell import gcp_header, gcp_section, primary_secondary
 
@@ -13,43 +14,29 @@ def main():
     answers = st.session_state["gcp_answers"]
 
     def form():
-        answers["who_for"] = st.radio(
+        answers["who_for"] = choice_single(
             "Who are you planning for?",
             ["self", "parent", "spouse", "other"],
-            index=(
-                ["self", "parent", "spouse", "other"].index(
-                    answers.get("who_for", "self")
-                )
-            ),
-            horizontal=True,
+            value=answers.get("who_for", "self"),
+            key="gcp_who_for",
         )
-        answers["living_now"] = st.radio(
+        answers["living_now"] = choice_single(
             "Where do they live today?",
             ["own_home", "with_family", "independent", "assisted", "memory", "skilled"],
-            index=(
-                ["own_home", "with_family", "independent", "assisted", "memory", "skilled"].index(
-                    answers.get("living_now", "own_home")
-                )
-            ),
-            horizontal=True,
+            value=answers.get("living_now", "own_home"),
+            key="gcp_living_now",
         )
-        answers["caregiver_support"] = st.radio(
+        answers["caregiver_support"] = choice_single(
             "How much caregiver support is available?",
             ["none", "few_days_week", "most_days", "24_7"],
-            index=(
-                ["none", "few_days_week", "most_days", "24_7"].index(
-                    answers.get("caregiver_support", "none")
-                )
-            ),
-            horizontal=True,
+            value=answers.get("caregiver_support", "none"),
+            key="gcp_caregiver_support",
         )
-        answers["adl_help"] = st.radio(
+        answers["adl_help"] = choice_single(
             "How many daily activities need help?",
             ["0-1", "2-3", "4-5", "6+"],
-            index=(
-                ["0-1", "2-3", "4-5", "6+"].index(answers.get("adl_help", "0-1"))
-            ),
-            horizontal=True,
+            value=answers.get("adl_help", "0-1"),
+            key="gcp_adl_help",
         )
 
         st.session_state["gcp_answers"] = answers
