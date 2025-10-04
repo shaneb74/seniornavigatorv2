@@ -4,6 +4,7 @@ from __future__ import annotations
 import streamlit as st
 
 from guided_care_plan import ensure_gcp_session, get_question_meta, render_stepper
+from senior_nav.components.choice_chips import choice_multi, normalize_none
 from ui.theme import inject_theme
 
 
@@ -27,13 +28,11 @@ def _render_multiselect(question_id: str) -> list[str]:
     values = list(option_map.keys())
     default = st.session_state.get(f"gcp_{question_id}", [])
     with st.container(border=True):
-        selections = st.multiselect(
+        selections = choice_multi(
             meta.get("label", question_id.replace("_", " ").title()),
-            options=values,
-            default=default,
+            [(value, option_map.get(value, value)) for value in values],
+            values=default,
             key=f"gcp_{question_id}",
-            format_func=lambda value: option_map.get(value, value),
-            help=meta.get("description"),
         )
         if meta.get("description"):
             st.caption(meta["description"])
@@ -55,14 +54,7 @@ with st.form("gcp_context_form"):
 if submitted:
     processed = {}
     for qid, value in selections.items():
-        value = list(value or [])
-        if qid in NONE_EXCLUSIVE and "none" in value:
-            if len(value) == 1:
-                processed[qid] = value
-            else:
-                processed[qid] = []
-        else:
-            processed[qid] = value
+        processed[qid] = normalize_none(list(value or [])) if qid in NONE_EXCLUSIVE else list(value or [])
     for qid, value in processed.items():
         st.session_state[f"gcp_{qid}"] = list(value)
     answers.update(processed)

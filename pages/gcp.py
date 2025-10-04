@@ -11,6 +11,7 @@ from audiencing import (
 )
 from guided_care_plan import ensure_gcp_session, get_question_meta, render_stepper
 from guided_care_plan.state import current_audiencing_snapshot
+from senior_nav.components.choice_chips import choice_single
 from ui.components import card_panel
 from ui.theme import inject_theme
 
@@ -160,19 +161,14 @@ def render_intro() -> None:
 
         st.markdown("### Section 1 — Financial Eligibility")
         medicaid_default = st.session_state.get(MEDICAID_SESSION_KEY)
-        medicaid_index = (
-            medicaid_values.index(medicaid_default)
-            if medicaid_default in medicaid_values
-            else None
-        )
-        medicaid_choice = st.radio(
+        if medicaid_default not in medicaid_values:
+            medicaid_default = medicaid_values[0]
+        medicaid_choice = choice_single(
             medicaid_meta.get("label", "Are you currently on Medicaid?"),
-            options=medicaid_values,
-            index=medicaid_index,
+            [(value, medicaid_labels.get(value, value)) for value in medicaid_values],
+            value=medicaid_default,
             key=MEDICAID_SESSION_KEY,
-            horizontal=True,
-            format_func=lambda value: medicaid_labels.get(value, value),
-            help=medicaid_meta.get("description"),
+            help_text=medicaid_meta.get("description"),
         )
 
         if medicaid_choice in medicaid_values:
@@ -197,19 +193,16 @@ def render_intro() -> None:
         if medicaid_choice and medicaid_choice != "yes":
             st.markdown("### Section 2 — Financial Confidence")
             funding_default = st.session_state.get(FUNDING_SESSION_KEY)
-            funding_index = (
-                funding_values.index(funding_default)
-                if funding_default in funding_values
-                else None
-            )
-            funding_choice = st.radio(
-                funding_meta.get("label", "How confident do you feel about paying for care?"),
-                options=funding_values,
-                index=funding_index,
+            if funding_default not in funding_values:
+                funding_default = funding_values[0]
+            funding_choice = choice_single(
+                funding_meta.get(
+                    "label", "How confident do you feel about paying for care?"
+                ),
+                [(value, funding_labels.get(value, value)) for value in funding_values],
+                value=funding_default,
                 key=FUNDING_SESSION_KEY,
-                horizontal=True,
-                format_func=lambda value: funding_labels.get(value, value),
-                help=funding_meta.get("description"),
+                help_text=funding_meta.get("description"),
             )
             if funding_choice in funding_values:
                 answers["funding_confidence"] = funding_choice
