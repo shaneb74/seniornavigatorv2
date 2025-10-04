@@ -75,6 +75,8 @@ def _inject_page_css() -> None:
     st.markdown(
         """
         <style>
+          /* Ensure full viewport height for vertical centering */
+          body, html { height: 100%; margin: 0; }
           /* Center the main content area vertically and horizontally */
           section.main:has(.cw-wrap-marker) > div.block-container{
             min-height: auto !important;
