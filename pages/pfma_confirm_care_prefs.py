@@ -1,91 +1,102 @@
-"""Plan for MyAdvisor care preferences confirmation wireframe."""
+"""PFMA Care Preferences confirmer."""
 from __future__ import annotations
 
 import streamlit as st
 
-from ui.cost_planner_template import (
-    NavButton,
-    apply_turbotax_wizard_theme,
-    cost_planner_page_container,
-    render_app_header,
-    render_assessment_header,
-    render_nav_buttons,
-    render_suggestion,
-    render_wizard_help,
+from ui.pfma import (
+    apply_pfma_theme,
+    chip_multiselect,
+    ensure_pfma_state,
+    go_to_step,
+    render_drawer,
+    update_section,
 )
 
 
-def render_prefs_summary(prefs: dict[str, object]) -> None:
-    living_goal = prefs.get("living_goal") or "Stay at home with support"
-    social = prefs.get("social_needs") or "Prefers small group interactions"
-    communication = prefs.get("communication") or "Share updates with family group text"
+SECTION_KEY = "care_prefs"
+PET_OPTIONS = ("Yes", "No", "Allergic", "Service animal only")
+ACTIVITY_OPTIONS = (
+    "Gardening",
+    "Live music",
+    "Arts & crafts",
+    "Faith services",
+    "Outdoors",
+    "Volunteering",
+    "Games",
+)
+SETTING_OPTIONS = (
+    "Stay at home",
+    "Senior community",
+    "Assisted living",
+    "Memory care",
+    "Skilled nursing",
+)
+
+
+apply_pfma_theme()
+state = ensure_pfma_state()
+error_placeholder = st.empty()
+
+
+def _drawer_body(pfma_state: dict[str, object]) -> dict[str, object]:
+    section_data = pfma_state["sections"].get(SECTION_KEY, {}).get("data", {})
 
     st.markdown(
-        f"""
-        <table class="summary-table">
-          <tbody>
-            <tr>
-              <td>Living preference</td>
-              <td class="amount">{living_goal}</td>
-            </tr>
-            <tr>
-              <td>Social connection</td>
-              <td class="amount">{social}</td>
-            </tr>
-            <tr>
-              <td>Communication plan</td>
-              <td class="amount">{communication}</td>
-            </tr>
-          </tbody>
-        </table>
-        """,
+        "<div class='pfma-note'>Little preferences make a big difference. Capture what sparks joy or what’s a dealbreaker.</div>",
         unsafe_allow_html=True,
     )
 
+    pet_key = "pfma_care_prefs_pets"
+    if pet_key not in st.session_state:
+        st.session_state[pet_key] = section_data.get("pets") or PET_OPTIONS[0]
+    st.selectbox("Pets okay?", PET_OPTIONS, key=pet_key)
 
-apply_turbotax_wizard_theme()
-
-ctx = st.session_state.setdefault("care_context", {"person_name": "Your Loved One"})
-person_name = ctx.get("person_name", "Your Loved One")
-prefs = ctx.get("care_preferences")
-prefs_dict = prefs if isinstance(prefs, dict) else {}
-
-
-with cost_planner_page_container():
-    render_app_header()
-    render_assessment_header(
-        "Plan for MyAdvisor · Confirmation",
-        persona=person_name,
-        mode="Step 4 of 7",
+    activities = chip_multiselect(
+        "Activities that matter",
+        ACTIVITY_OPTIONS,
+        key=f"{SECTION_KEY}_activities",
+        default=section_data.get("activities") or [],
     )
 
-    st.subheader("Care Preferences")
-    st.caption("Confirm the tone and boundaries you'd like your advisor to respect during the call.")
+    radius_key = "pfma_care_prefs_radius"
+    if radius_key not in st.session_state:
+        st.session_state[radius_key] = section_data.get("radius", 15)
+    st.slider("Preferred radius from home (miles)", 5, 50, key=radius_key, help="We’ll expand if there are limited matches.")
 
-    render_prefs_summary(prefs_dict)
-
-    render_suggestion(
-        "Flag any hard lines—like no overnight moves—so your advisor keeps recommendations aligned.",
-        tone="info",
+    settings = chip_multiselect(
+        "Preferred care settings",
+        SETTING_OPTIONS,
+        key=f"{SECTION_KEY}_settings",
+        default=section_data.get("settings") or [],
     )
 
-    agreed = st.checkbox("This looks right", key="pfma_confirm_care_prefs_agree", value=False)
+    return {
+        "pets": st.session_state[pet_key],
+        "activities": activities,
+        "radius": st.session_state[radius_key],
+        "settings": settings,
+    }
 
-    render_wizard_help(
-        "Update preferences in Care Preferences anytime; we'll sync them automatically when you reopen this step.",
-    )
 
-    clicked = render_nav_buttons(
-        [
-            NavButton("Edit care preferences", "pfma_care_prefs_edit"),
-            NavButton("Back to overview", "pfma_care_prefs_overview"),
-            NavButton("Continue", "pfma_care_prefs_next", type="primary", disabled=not agreed),
-        ]
-    )
+result = render_drawer(
+    step_key=SECTION_KEY,
+    title="Care Preferences ⭐",
+    badge="Celebrates the Joy duck",
+    description="Flag lifestyle non-negotiables so your advisor can shortlist matches you’ll feel good about.",
+    body=_drawer_body,
+    footer_note="Preference tweaks? Update anytime—even after the advisor call.",
+)
 
-    if clicked == "pfma_care_prefs_edit":
-        st.switch_page("pages/care_prefs.py")
-    elif clicked == "pfma_care_prefs_overview":
-        st.switch_page("pages/pfma.py")
-    elif clicked == "pfma_care_prefs_next":
-        st.switch_page("pages/pfma_confirm_household_legal.py")
+
+if result.saved:
+    payload = result.payload
+    errors: list[str] = []
+    if not payload.get("settings"):
+        errors.append("Pick at least one setting so we know your baseline.")
+    if errors:
+        error_placeholder.error("\n".join(errors))
+    else:
+        update_section(SECTION_KEY, payload)
+        st.toast("Preferences saved—your ducks are delighted.")
+        if result.next_step:
+            go_to_step(result.next_step)

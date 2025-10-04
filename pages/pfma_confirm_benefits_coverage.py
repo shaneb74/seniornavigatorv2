@@ -1,91 +1,88 @@
-"""Plan for MyAdvisor benefits & coverage confirmation wireframe."""
+"""PFMA Benefits & Coverage confirmer."""
 from __future__ import annotations
 
 import streamlit as st
 
-from ui.cost_planner_template import (
-    NavButton,
-    apply_turbotax_wizard_theme,
-    cost_planner_page_container,
-    render_app_header,
-    render_assessment_header,
-    render_nav_buttons,
-    render_suggestion,
-    render_wizard_help,
+from ui.pfma import (
+    apply_pfma_theme,
+    ensure_pfma_state,
+    go_to_step,
+    render_drawer,
+    update_section,
 )
 
 
-def render_benefits_summary(benefits: dict[str, object]) -> None:
-    primary = benefits.get("primary_insurance") or "Medicare Part A & B"
-    secondary = benefits.get("secondary_insurance") or "Secondary plan not set"
-    veteran = "Eligible" if benefits.get("is_veteran") else "Ask about VA support"
+SECTION_KEY = "benefits_coverage"
+
+
+apply_pfma_theme()
+state = ensure_pfma_state()
+error_placeholder = st.empty()
+
+
+def _drawer_body(pfma_state: dict[str, object]) -> dict[str, object]:
+    section_data = pfma_state["sections"].get(SECTION_KEY, {}).get("data", {})
 
     st.markdown(
-        f"""
-        <table class="summary-table">
-          <tbody>
-            <tr>
-              <td>Primary coverage</td>
-              <td class="amount">{primary}</td>
-            </tr>
-            <tr>
-              <td>Secondary coverage</td>
-              <td class="amount">{secondary}</td>
-            </tr>
-            <tr>
-              <td>VA benefits</td>
-              <td class="amount">{veteran}</td>
-            </tr>
-          </tbody>
-        </table>
-        """,
+        "<div class='pfma-note'>Insurance basics ensure your advisor starts with the right funding paths.</div>",
         unsafe_allow_html=True,
     )
 
+    carrier_key = "pfma_benefits_carrier"
+    if carrier_key not in st.session_state:
+        st.session_state[carrier_key] = section_data.get("insurance_company", "")
+    st.text_input("Primary health insurance", key=carrier_key, placeholder="BlueCross BlueShield")
 
-apply_turbotax_wizard_theme()
+    ltc_key = "pfma_benefits_ltc"
+    if ltc_key not in st.session_state:
+        st.session_state[ltc_key] = section_data.get("ltc_insurance", "Yes")
+    st.selectbox("Long-term care insurance?", ("Yes", "No", "Unsure"), key=ltc_key)
 
-ctx = st.session_state.setdefault("care_context", {"person_name": "Your Loved One"})
-person_name = ctx.get("person_name", "Your Loved One")
-benefits = ctx.get("benefits")
-benefits_dict = benefits if isinstance(benefits, dict) else {}
+    medicaid_key = "pfma_benefits_medicaid"
+    if medicaid_key not in st.session_state:
+        st.session_state[medicaid_key] = section_data.get("medicaid_status", "No")
+    st.selectbox("Medicaid status", ("Yes", "No", "Applied", "Unsure"), key=medicaid_key)
+
+    va_key = "pfma_benefits_va"
+    if va_key not in st.session_state:
+        st.session_state[va_key] = section_data.get("va_eligibility", "No")
+    st.selectbox("VA eligibility", ("Yes", "No", "Unsure"), key=va_key)
+
+    verify_key = "pfma_benefits_verified"
+    if verify_key not in st.session_state:
+        st.session_state[verify_key] = bool(section_data.get("verified"))
+    st.checkbox("I’ve verified this information", key=verify_key)
+
+    return {
+        "insurance_company": st.session_state[carrier_key],
+        "ltc_insurance": st.session_state[ltc_key],
+        "medicaid_status": st.session_state[medicaid_key],
+        "va_eligibility": st.session_state[va_key],
+        "verified": st.session_state[verify_key],
+    }
 
 
-with cost_planner_page_container():
-    render_app_header()
-    render_assessment_header(
-        "Plan for MyAdvisor · Confirmation",
-        persona=person_name,
-        mode="Step 6 of 7",
-    )
+result = render_drawer(
+    step_key=SECTION_KEY,
+    title="Benefits & Coverage 💰",
+    badge="Proud of the Money duck",
+    description="Confirm funding levers so your advisor can fast-track offsets and paperwork.",
+    body=_drawer_body,
+    footer_note="Not sure on coverage? Share what you know—your advisor will help verify.",
+)
 
-    st.subheader("Benefits & Coverage")
-    st.caption("Confirm health coverage and financial support options before the advisor call.")
 
-    render_benefits_summary(benefits_dict)
-
-    render_suggestion(
-        "If coverage is unclear, jot down policy numbers so your advisor can verify during or after the call.",
-        tone="info",
-    )
-
-    agreed = st.checkbox("This looks right", key="pfma_confirm_benefits_agree", value=False)
-
-    render_wizard_help(
-        "Need adjustments? Open Benefits & Coverage, update insurance or aid, then refresh this step.",
-    )
-
-    clicked = render_nav_buttons(
-        [
-            NavButton("Edit benefits", "pfma_benefits_edit"),
-            NavButton("Back to overview", "pfma_benefits_overview"),
-            NavButton("Continue", "pfma_benefits_next", type="primary", disabled=not agreed),
-        ]
-    )
-
-    if clicked == "pfma_benefits_edit":
-        st.switch_page("pages/benefits_coverage.py")
-    elif clicked == "pfma_benefits_overview":
-        st.switch_page("pages/pfma.py")
-    elif clicked == "pfma_benefits_next":
-        st.switch_page("pages/pfma_confirm_personal_info.py")
+if result.saved:
+    payload = result.payload
+    errors: list[str] = []
+    if not payload.get("insurance_company"):
+        errors.append("Add the primary insurance carrier.")
+    if not payload.get("verified"):
+        errors.append("Confirm you’ve verified the coverage details—or tick it once you do.")
+    if errors:
+        error_placeholder.error("\n".join(errors))
+    else:
+        update_section(SECTION_KEY, payload)
+        st.toast("Coverage snapshot ready for your advisor.")
+        if result.next_step:
+            go_to_step(result.next_step)

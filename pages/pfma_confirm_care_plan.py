@@ -1,82 +1,114 @@
-"""Plan for MyAdvisor care plan confirmation wireframe."""
+"""PFMA Care Plan confirmer."""
 from __future__ import annotations
 
 import streamlit as st
 
-from ui.cost_planner_template import (
-    NavButton,
-    apply_turbotax_wizard_theme,
-    cost_planner_page_container,
-    render_app_header,
-    render_assessment_header,
-    render_nav_buttons,
-    render_suggestion,
-    render_wizard_help,
+from ui.pfma import (
+    apply_pfma_theme,
+    chip_multiselect,
+    ensure_pfma_state,
+    go_to_step,
+    render_drawer,
+    segmented_control,
+    update_section,
 )
 
 
-def render_summary_block(recommendation: str) -> None:
+SECTION_KEY = "care_plan"
+ADL_OPTIONS = (
+    "Bathing",
+    "Dressing",
+    "Mobility",
+    "Meal prep",
+    "Medication",
+    "Toileting",
+    "Transportation",
+)
+
+
+apply_pfma_theme()
+state = ensure_pfma_state()
+error_placeholder = st.empty()
+
+
+def _drawer_body(pfma_state: dict[str, object]) -> dict[str, object]:
+    section_data = pfma_state["sections"].get(SECTION_KEY, {}).get("data", {})
+    gcp_state = st.session_state.get("gcp", {}) or {}
+
+    recommended = gcp_state.get("recommended_setting") or "Recommendation in progress"
+    safety_flags = gcp_state.get("safety_flags") or []
+
     st.markdown(
-        """
-        <table class="summary-table">
-          <tbody>
-            <tr>
-              <td>Advisor-ready recommendation</td>
-              <td class="amount">{recommendation}</td>
-            </tr>
-            <tr>
-              <td>Next best option</td>
-              <td class="amount">Capture during call</td>
-            </tr>
-          </tbody>
-        </table>
-        """.format(recommendation=recommendation or "Recommendation TBD"),
+        f"<div class='pfma-note'>Current recommendation: <strong>{recommended}</strong></div>",
         unsafe_allow_html=True,
     )
+    if safety_flags:
+        items = "".join(f"<li>{flag}</li>" for flag in safety_flags)
+        st.markdown(
+            f"""
+            <div class="pfma-note" style="background:rgba(251,192,45,0.12);border-radius:var(--sn-radius);padding:.85rem 1rem;">
+              <strong>Recent safety flags</strong>
+              <ul style="margin:.4rem 0 0 1.1rem;">{items}</ul>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-
-apply_turbotax_wizard_theme()
-
-ctx = st.session_state.setdefault("care_context", {"person_name": "Your Loved One"})
-person_name = ctx.get("person_name", "Your Loved One")
-recommendation = ctx.get("gcp_recommendation") or "Recommendation ready soon"
-
-
-with cost_planner_page_container():
-    render_app_header()
-    render_assessment_header(
-        "Plan for MyAdvisor · Confirmation",
-        persona=person_name,
-        mode="Step 1 of 7",
+    confirmation = segmented_control(
+        "Does this plan feel advisor-ready?",
+        ("Yes", "Need to discuss", "Not sure"),
+        key=f"{SECTION_KEY}_confirmation",
+        default=section_data.get("confirmation"),
     )
 
-    st.subheader("Care Plan")
-    st.caption("Confirm the plan highlights your advisor should know before the call.")
-
-    render_summary_block(recommendation)
-
-    render_suggestion(
-        "Bring up any concerns about timelines or logistics—your advisor can flag them for follow-up.",
-        tone="info",
+    default_adls = section_data.get("adls") or gcp_state.get("adl_dependency") or []
+    if isinstance(default_adls, str):
+        default_adls = [default_adls]
+    adls = chip_multiselect(
+        "Daily activities we should spotlight",
+        ADL_OPTIONS,
+        key=f"{SECTION_KEY}_adls",
+        default=default_adls,
     )
 
-    agreed = st.checkbox("This looks right", key="pfma_confirm_care_plan_agree", value=False)
-
-    render_wizard_help(
-        "Need edits? Jump back to Guided Care Plan, update the recommendation, then return here to reconfirm.",
+    notes_key = f"pfma_{SECTION_KEY}_notes"
+    if notes_key not in st.session_state:
+        st.session_state[notes_key] = section_data.get("notes", "")
+    st.text_area(
+        "Anything you want your advisor to double-check?",
+        key=notes_key,
+        max_chars=400,
+        height=110,
     )
 
-    clicked = render_nav_buttons(
-        [
-            NavButton("Edit care plan", "pfma_care_plan_edit"),
-            NavButton("Back to overview", "pfma_care_plan_overview"),
-            NavButton("Continue", "pfma_care_plan_next", type="primary", disabled=not agreed),
-        ]
-    )
+    return {
+        "recommended_setting": recommended,
+        "confirmation": confirmation,
+        "adls": adls,
+        "notes": st.session_state[notes_key],
+        "safety_flags": safety_flags,
+    }
 
-    if clicked == "pfma_care_plan_edit":
-        st.switch_page("pages/gcp.py")
-    elif clicked == "pfma_care_plan_overview":
-        st.switch_page("pages/pfma.py")
-    elif clicked == "pfma_care_plan_next":
-        st.switch_page("pages/pfma_confirm_cost_plan.py")
+
+result = render_drawer(
+    step_key=SECTION_KEY,
+    title="Care Plan Confirmer 📋",
+    badge="Earns the Clarity duck",
+    description="Give your advisor a heads-up on the plan elements that are locked in versus ready for discussion.",
+    body=_drawer_body,
+    footer_note="Need edits? Jump back to Guided Care Plan and come right back.",
+)
+
+
+if result.saved:
+    payload = result.payload
+    errors: list[str] = []
+    if not payload.get("confirmation"):
+        errors.append("Let us know if the recommendation is ready or needs a conversation.")
+    if errors:
+        error_placeholder.error("\n".join(errors))
+    else:
+        update_section(SECTION_KEY, payload)
+        st.toast("Care plan ready for your advisor.")
+        if result.next_step:
+            go_to_step(result.next_step)

@@ -1,91 +1,113 @@
-"""Plan for MyAdvisor care needs confirmation wireframe."""
+"""PFMA Care Needs confirmer."""
 from __future__ import annotations
 
 import streamlit as st
 
-from ui.cost_planner_template import (
-    NavButton,
-    apply_turbotax_wizard_theme,
-    cost_planner_page_container,
-    render_app_header,
-    render_assessment_header,
-    render_nav_buttons,
-    render_suggestion,
-    render_wizard_help,
+from ui.pfma import (
+    apply_pfma_theme,
+    chip_multiselect,
+    ensure_pfma_state,
+    go_to_step,
+    render_drawer,
+    segmented_control,
+    update_section,
 )
 
 
-def render_needs_summary(needs: dict[str, object]) -> None:
-    activities = needs.get("adls") or "Activities of daily living to review"
-    safety = needs.get("safety") or "Safety considerations captured in Guided Care Plan"
-    stamina = needs.get("stamina") or "Energy and stamina conversation points"
+SECTION_KEY = "care_needs"
+BEHAVIORAL_OPTIONS = (
+    "Memory changes",
+    "Wandering",
+    "Agitation",
+    "Sleep disruption",
+    "Hallucinations",
+    "Mood shifts",
+)
+DIETARY_OPTIONS = (
+    "Low-sodium",
+    "Diabetic",
+    "Pureed",
+    "Vegetarian",
+    "Gluten-free",
+    "High-calorie",
+)
+COGNITION_LEVELS = ("Intact", "Mild", "Moderate", "Severe")
+
+
+apply_pfma_theme()
+state = ensure_pfma_state()
+error_placeholder = st.empty()
+
+
+def _drawer_body(pfma_state: dict[str, object]) -> dict[str, object]:
+    section_data = pfma_state["sections"].get(SECTION_KEY, {}).get("data", {})
+    care_state = st.session_state.get("care_context", {}) or {}
+    needs_state = care_state.get("care_needs") if isinstance(care_state.get("care_needs"), dict) else {}
 
     st.markdown(
-        f"""
-        <table class="summary-table">
-          <tbody>
-            <tr>
-              <td>Daily support focus</td>
-              <td class="amount">{activities}</td>
-            </tr>
-            <tr>
-              <td>Safety & risks</td>
-              <td class="amount">{safety}</td>
-            </tr>
-            <tr>
-              <td>Energy & stamina</td>
-              <td class="amount">{stamina}</td>
-            </tr>
-          </tbody>
-        </table>
-        """,
+        "<div class='pfma-note'>Focus on the daily support that keeps things running smoothly. Advisors love concrete examples.</div>",
         unsafe_allow_html=True,
     )
 
-
-apply_turbotax_wizard_theme()
-
-ctx = st.session_state.setdefault("care_context", {"person_name": "Your Loved One"})
-person_name = ctx.get("person_name", "Your Loved One")
-needs = ctx.get("care_needs")
-needs_dict = needs if isinstance(needs, dict) else {}
-
-
-with cost_planner_page_container():
-    render_app_header()
-    render_assessment_header(
-        "Plan for MyAdvisor · Confirmation",
-        persona=person_name,
-        mode="Step 3 of 7",
+    behavioral = chip_multiselect(
+        "Behavioral or memory symptoms",
+        BEHAVIORAL_OPTIONS,
+        key=f"{SECTION_KEY}_behavioral",
+        default=section_data.get("behavioral") or needs_state.get("behavioral") or [],
     )
 
-    st.subheader("Care Needs")
-    st.caption("Highlight what day-to-day help is most important for the advisor to know.")
-
-    render_needs_summary(needs_dict)
-
-    render_suggestion(
-        "If needs change quickly, jot down notes right before the call so you can give the advisor the latest picture.",
-        tone="info",
+    notes_key = f"pfma_{SECTION_KEY}_mental_health"
+    if notes_key not in st.session_state:
+        st.session_state[notes_key] = section_data.get("mental_health") or needs_state.get("mental_health") or ""
+    st.text_area(
+        "Mental health notes",
+        key=notes_key,
+        max_chars=400,
+        height=100,
     )
 
-    agreed = st.checkbox("This looks right", key="pfma_confirm_care_needs_agree", value=False)
-
-    render_wizard_help(
-        "Need to tweak? Revisit the Care Needs module, refresh, and mark it ready here when finished.",
+    dietary = chip_multiselect(
+        "Dietary needs",
+        DIETARY_OPTIONS,
+        key=f"{SECTION_KEY}_dietary",
+        default=section_data.get("dietary") or needs_state.get("dietary") or [],
     )
 
-    clicked = render_nav_buttons(
-        [
-            NavButton("Edit care needs", "pfma_care_needs_edit"),
-            NavButton("Back to overview", "pfma_care_needs_overview"),
-            NavButton("Continue", "pfma_care_needs_next", type="primary", disabled=not agreed),
-        ]
+    cognition_default = section_data.get("cognition") or needs_state.get("cognition")
+    segmented_control(
+        "Cognition level",
+        COGNITION_LEVELS,
+        key=f"{SECTION_KEY}_cognition",
+        default=cognition_default,
     )
 
-    if clicked == "pfma_care_needs_edit":
-        st.switch_page("pages/care_needs.py")
-    elif clicked == "pfma_care_needs_overview":
-        st.switch_page("pages/pfma.py")
-    elif clicked == "pfma_care_needs_next":
-        st.switch_page("pages/pfma_confirm_care_prefs.py")
+    return {
+        "behavioral": behavioral,
+        "mental_health": st.session_state[notes_key],
+        "dietary": dietary,
+        "cognition": st.session_state.get(f"pfma_segment_{SECTION_KEY}_cognition"),
+    }
+
+
+result = render_drawer(
+    step_key=SECTION_KEY,
+    title="Care Needs & Support 🩺",
+    badge="Unlocks the Care duck",
+    description="Capture the rhythms of each day so your advisor sees where support is non-negotiable.",
+    body=_drawer_body,
+    footer_note="You can always keep notes in the Follow-Up Drawer after the call, too.",
+)
+
+
+if result.saved:
+    payload = result.payload
+    errors: list[str] = []
+    if not payload.get("cognition"):
+        errors.append("Choose a cognition level to help with care-matching.")
+    if errors:
+        error_placeholder.error("\n".join(errors))
+    else:
+        update_section(SECTION_KEY, payload)
+        st.toast("Daily support ready to share.")
+        if result.next_step:
+            go_to_step(result.next_step)
