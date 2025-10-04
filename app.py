@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-# app.py - Senior Navigator app bootstrap with robust CSS injection
+# app.py - Senior Navigator app bootstrap with robust CSS injection + design mode
 
+import os
 from pathlib import Path
 import streamlit as st
 
@@ -37,11 +38,9 @@ def _inject_global_css() -> None:
             extra = css_path.read_bytes().decode(errors="ignore").strip()
         v = int(css_path.stat().st_mtime)
         st.markdown(f"<style>{extra}</style><!-- v:{v} -->", unsafe_allow_html=True)
-
     # 2) Inject the theme LAST so it wins the cascade
     inject_theme()
 
-# Call once on startup (before you render anything)
 _inject_global_css()
 
 # ==========================================
@@ -49,7 +48,6 @@ _inject_global_css()
 # ==========================================
 def _syntax_preflight(paths=("pages",), stop_on_error=True):
     import pathlib, io, tokenize
-
     errors = []
     for root in paths:
         for p in pathlib.Path(root).rglob("*.py"):
@@ -59,14 +57,12 @@ def _syntax_preflight(paths=("pages",), stop_on_error=True):
                 errors.append((p, 0, 0, f"read error: {e}", ""))
                 continue
             try:
-                # Tokenize first to flush out invisible bad chars, then compile
                 tokenize.generate_tokens(io.StringIO(src).readline)
                 compile(src, str(p), "exec", dont_inherit=True)
             except SyntaxError as e:
                 errors.append((p, e.lineno or 0, e.offset or 0, e.msg, e.text or ""))
             except Exception as e:
                 errors.append((p, 0, 0, f"{type(e).__name__}: {e}", ""))
-
     if errors:
         st.error("Syntax/parse error(s) found. Fix these before running pages.")
         for p, line, col, msg, txt in errors:
@@ -87,30 +83,34 @@ if "is_authenticated" not in st.session_state:
     st.session_state.is_authenticated = False
 
 # ==========================================
-# First-load boot redirect (force Welcome once per session)
+# Design mode helpers
 # ==========================================
+def _is_design_mode() -> bool:
+    # Enable via sidebar checkbox, URL ?dev=1, or env SN_DEV=1
+    try:
+        qp_flag = str(st.query_params.get("dev", "")).lower() in ("1", "true", "yes")
+    except Exception:
+        qp_flag = False
+    env_flag = os.environ.get("SN_DEV", "") == "1"
+    ss_flag = bool(st.session_state.get("dev_design_mode"))
+    return qp_flag or env_flag or ss_flag
+
 def _force_welcome_once() -> None:
+    """Default behavior: on first run of a session, bounce to Welcome.
+    This is DISABLED while in design mode.
     """
-    On the first run of a new session, clear query params so the router
-    chooses the default page (Welcome). Subsequent runs in the same
-    session keep the user's current page.
-    """
+    if _is_design_mode():
+        return
     if st.session_state.get("_boot_forced_welcome"):
         return
-
-    # Mark before rerun to avoid loops
     st.session_state["_boot_forced_welcome"] = True
-
-    # Clear any URL hints (?page=...) that would deep-link past Welcome
     try:
-        st.query_params.clear()  # Streamlit ≥ 1.33
+        st.query_params.clear()  # Streamlit >= 1.33
     except Exception:
         try:
-            st.experimental_set_query_params()  # older API
+            st.experimental_set_query_params()
         except Exception:
             pass
-
-    # Rerun so navigation resolves to the default page
     st.rerun()
 
 # ==========================================
@@ -119,13 +119,11 @@ def _force_welcome_once() -> None:
 def ensure_page(path: str, title: str, icon: str, default: bool = False):
     p = Path(path)
     if not p.exists():
-        return None, path
-    page = (
+        return None
+    return (
         st.Page(path, title=title, icon=icon, default=True)
-        if default
-        else st.Page(path, title=title, icon=icon)
+        if default else st.Page(path, title=title, icon=icon)
     )
-    return page, None
 
 # ==========================================
 # Pages to register (controls nav order)
@@ -134,7 +132,7 @@ INTENDED = [
     ("pages/welcome.py", "Welcome", "👋", True),
     ("pages/hub.py", "Your Concierge Care Hub", "🏠", False),
 
-    # ✅ contextual welcome wrappers (keep these)
+    # contextual welcome wrappers
     ("pages/contextual_welcome_self.py", "Contextual Welcome - For You", "ℹ️", False),
     ("pages/contextual_welcome_loved_one.py", "Contextual Welcome - For Loved Ones", "ℹ️", False),
 
@@ -177,26 +175,35 @@ INTENDED = [
 
 # Build the Page objects (ignore missing silently)
 pages = []
-for args in INTENDED:
-    page, _ = ensure_page(*args)  # (path, title, icon, default)
+for path, title, icon, default in INTENDED:
+    page = ensure_page(path, title, icon, default)
     if page:
         pages.append(page)
 
-
-# Kick the session back to Welcome on first load
+# Kick the session back to Welcome on first load (disabled in design mode)
+_fo rce_welcome_once = _force_welcome_once  # alias to avoid accidental rename
 _force_welcome_once()
 
+# Render navigation (always sidebar, expanded)
 if pages:
-    pg = st.navigation(pages)
+    pg = st.navigation(pages, position="sidebar", expanded=True)
     pg.run()
 else:
     st.error("No pages available. Check file paths in app.py.")
 
 # ==========================================
-# Sidebar auth toggle (prototype)
+# Sidebar tools (Design mode + Auth)
 # ==========================================
 with st.sidebar:
     st.markdown("---")
+    # Design mode toggle
+    st.checkbox(
+        "Design mode (keep nav visible; skip welcome redirect)",
+        key="dev_design_mode",
+        help="You can also enable with ?dev=1 in the URL or SN_DEV=1 in env.",
+    )
+    st.markdown("---")
+    # Prototype auth toggle
     st.caption("Authentication")
     if st.session_state.is_authenticated:
         st.success("Signed in")
