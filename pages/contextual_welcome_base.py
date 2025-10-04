@@ -222,16 +222,24 @@ def render(which: str="you") -> None:
             aud["relationship_code"] = None
             aud["relationship_other"] = None
 
+    
+    # Inline name + Continue row
+    st.markdown('<div class="name-row">', unsafe_allow_html=True)
+    c_name, c_btn = st.columns([1, 1])
+    with c_name:
+        # re-render input (keeps same key so it's the same widget)
+        name = st.text_input(name_ph, value=(aud.get("recipient_name") or ""), key=name_key, label_visibility="collapsed").strip()
+        aud["recipient_name"] = name or aud.get("recipient_name")
+    with c_btn:
+        if st.button("Continue", key="cw_continue", use_container_width=False, disabled=not can_continue):
+            if not aud.get("recipient_name"):
+                aud["recipient_name"] = "You" if entry == "self" else "Your Loved One"
+            _safe_switch_page("pages/hub.py")
+    st.markdown('</div>', unsafe_allow_html=True)
+
     name_ok = bool((aud.get("recipient_name") or "").strip())
     rel_ok = True if entry=="self" else bool(aud.get("relationship_code"))
     can_continue = name_ok and rel_ok
-
-    st.markdown('<div class="cta">', unsafe_allow_html=True)
-    if st.button("Continue", key="cw_continue", use_container_width=False, disabled=not can_continue):
-        if not aud.get("recipient_name"):
-            aud["recipient_name"] = "You" if entry=="self" else "Your Loved One"
-        _safe_switch_page("pages/hub.py")
-    st.markdown('</div>', unsafe_allow_html=True)
 
     if not name_ok:
         st.caption("Please enter a name to continue.")
