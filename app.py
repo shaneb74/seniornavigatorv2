@@ -135,8 +135,8 @@ INTENDED = [
     ("pages/hub.py", "Your Concierge Care Hub", "🏠", False),
 
     # ✅ contextual welcome wrappers (keep these)
-    ("pages/contextual_welcome_self.py", "Contextual Welcome – For You", "ℹ️", False),
-    ("pages/contextual_welcome_loved_one.py", "Contextual Welcome – For Loved Ones", "ℹ️", False),
+    ("pages/contextual_welcome_self.py", "Contextual Welcome - For You", "ℹ️", False),
+    ("pages/contextual_welcome_loved_one.py", "Contextual Welcome - For Loved Ones", "ℹ️", False),
 
     ("pages/professional_mode.py", "Professional Mode", "🧑", False),
     ("pages/gcp.py", "Guided Care Plan", "🗺️", False),
