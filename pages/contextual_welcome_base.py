@@ -191,7 +191,8 @@ def render(which: str="you") -> None:
 
     name_key = "cw_name_self" if entry=="self" else "cw_name_proxy"
     name_ph = copy["name_placeholder"]
-    name = st.text_input(name_ph, value=(aud.get("recipient_name") or ""), key=name_key, label_visibility="collapsed").strip()
+    name = st.write("")
+    name = (aud.get("recipient_name") or "").strip()
 
     if entry=="self":
         aud["recipient_name"] = name or aud.get("recipient_name")
