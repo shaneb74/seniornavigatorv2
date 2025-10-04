@@ -18,7 +18,7 @@ except Exception:  # pragma: no cover
               footer{visibility:hidden;}
             
 @media (min-height: 900px){
-  .cw-wrap{ padding:clamp(8px,2vh,16px) clamp(8px,2vw,16px); min-height:64vh; }
+  .cw-wrap{ padding:clamp(4px,1.5vh,12px) clamp(8px,2vw,16px); min-height:64vh; }
   .cw-card{ margin:clamp(8px,5vh,80px) 0 0 min(3vw, 24px); }
   .cw-collage{ top:2%; right:0.5%; width:min(580px, 54%); }
 }
@@ -89,10 +89,10 @@ def _inject_page_css() -> None:
         """
         <style>
           /* canvas */
-          .cw-wrap{ padding:clamp(8px,2vh,16px) clamp(8px,2vw,16px);
+          .cw-wrap{ padding:clamp(4px,1.5vh,12px) clamp(8px,2vw,16px);
             position:relative;
             min-height:auto;
-            background:var(--surface-subtle,#eef4ff);
+            background:transparent;
             border-radius:18px;
             overflow:visible;
           }
@@ -121,8 +121,8 @@ def _inject_page_css() -> None:
             z-index:10;         /* above collage */
             isolation:isolate;  /* new stacking context */
             background:#fff;
-            margin:clamp(8px,3vh,48px) 0 0 min(3vw, 24px);
-            padding: 22px 22px 16px;
+            margin:clamp(4px,2vh,32px) 0 0 min(3vw, 24px);
+            padding: 20px 20px 14px;
             width:min(520px, 92vw);
             border-radius:14px;
             box-shadow:0 24px 60px rgba(2,12,27,.18);
@@ -161,7 +161,7 @@ def _inject_page_css() -> None:
           }
         
 @media (min-height: 900px){
-  .cw-wrap{ padding:clamp(8px,2vh,16px) clamp(8px,2vw,16px); min-height:64vh; }
+  .cw-wrap{ padding:clamp(4px,1.5vh,12px) clamp(8px,2vw,16px); min-height:64vh; }
   .cw-card{ margin:clamp(8px,5vh,80px) 0 0 min(3vw, 24px); }
   .cw-collage{ top:2%; right:0.5%; width:min(580px, 54%); }
 }
