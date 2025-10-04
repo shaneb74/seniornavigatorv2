@@ -181,7 +181,6 @@ for path, title, icon, default in INTENDED:
         pages.append(page)
 
 # Kick the session back to Welcome on first load (disabled in design mode)
-_fo rce_welcome_once = _force_welcome_once  # alias to avoid accidental rename
 _force_welcome_once()
 
 # Render navigation (always sidebar, expanded)
