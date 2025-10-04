@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from senior_nav.components import card
+from senior_nav.components import buttons, card
 from senior_nav.cost_planner import nav, state
 
 
@@ -12,6 +12,7 @@ def _open_login_modal() -> None:
 
 
 def render() -> None:
+    buttons.page_start()
     copy = state.get_copy()
     mode_copy = copy["mode_selection"]
 
@@ -42,10 +43,12 @@ def render() -> None:
         modal = mode_copy["login_modal"]
         with st.modal(modal["title"]):
             st.write(modal["body"])
-            if st.button(modal["confirm"], key="cp_login_confirm"):
+            if buttons.primary(modal["confirm"], key="cp_login_confirm"):
                 st.session_state["__cp_show_login_modal__"] = False
                 _set_mode("planning")
                 nav.go_next()
+
+    buttons.page_end()
 
 
 def _set_mode(mode: str) -> None:

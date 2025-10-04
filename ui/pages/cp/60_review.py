@@ -3,11 +3,12 @@ from __future__ import annotations
 
 import streamlit as st
 
-from senior_nav.components import banners, layout
+from senior_nav.components import banners, buttons, layout
 from senior_nav.cost_planner import nav, state
 
 
 def render() -> None:
+    buttons.page_start()
     copy = state.get_copy()
     review_copy = copy["review"]
     app_copy = copy["app"]
@@ -31,6 +32,10 @@ def render() -> None:
 
     back_col, next_col = st.columns([1, 1])
     with back_col:
-        st.button(app_copy["navigation"]["back"], key="cp_review_back", on_click=nav.go_previous)
+        with buttons.variant("secondary"):
+            if buttons.secondary(app_copy["navigation"]["back"], key="cp_review_back"):
+                nav.go_previous()
     with next_col:
-        st.button(app_copy["navigation"]["continue"], key="cp_review_continue", on_click=nav.go_next)
+        if buttons.primary(app_copy["navigation"]["continue"], key="cp_review_continue"):
+            nav.go_next()
+    buttons.page_end()

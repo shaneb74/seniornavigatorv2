@@ -3,11 +3,12 @@ from __future__ import annotations
 
 import streamlit as st
 
-from senior_nav.components import banners, formbits
+from senior_nav.components import banners, buttons, formbits
 from senior_nav.cost_planner import nav, state
 
 
 def render() -> None:
+    buttons.page_start()
     copy = state.get_copy()
     qualifiers_copy = copy["qualifiers"]
     app_copy = copy["app"]
@@ -38,8 +39,8 @@ def render() -> None:
             default="yes" if cp_state["qualifiers"].get("is_veteran") else "no",
             horizontal=True,
         )
-
-        submitted = st.form_submit_button(qualifiers_copy["continue"])
+        with buttons.variant("primary"):
+            submitted = st.form_submit_button(qualifiers_copy["continue"])
 
     if flags.get("medicaid_unsure"):
         banner = qualifiers_copy["medicaid_banner"]
@@ -47,7 +48,9 @@ def render() -> None:
 
     back_col, next_col = st.columns([1, 1])
     with back_col:
-        st.button(app_copy["navigation"]["back"], key="cp_qual_back", on_click=nav.go_previous)
+        with buttons.variant("secondary"):
+            if buttons.secondary(app_copy["navigation"]["back"], key="cp_qual_back"):
+                nav.go_previous()
     with next_col:
         if submitted:
             state.update_qualifier("contribution_style", contribution)
@@ -56,3 +59,5 @@ def render() -> None:
             nav.go_next()
         else:
             st.write(" ")
+
+    buttons.page_end()

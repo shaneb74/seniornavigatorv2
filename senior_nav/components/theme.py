@@ -12,6 +12,8 @@ _STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 _CHIP_CSS_PATH = _STATIC_DIR / "chips.css"
 
 _THEME_STATE_KEY = "__sn_theme_injected__"
+_BUTTONS_STATE_KEY = "__sn_buttons_css__"
+_BUTTONS_CSS_CACHE: str | None = None
 
 
 def _build_css() -> str:
@@ -106,17 +108,9 @@ def _build_css() -> str:
           color: rgba(17, 20, 24, 0.72);
         }}
 
-        .sn-banner--info {{
-          background: var(--sn-color-info-bg);
-        }}
-
-        .sn-banner--warning {{
-          background: var(--sn-color-warn-bg);
-        }}
-
-        .sn-banner--success {{
-          background: var(--sn-color-success-bg);
-        }}
+        .sn-banner--info {{ background: var(--sn-color-info-bg); }}
+        .sn-banner--warning {{ background: var(--sn-color-warn-bg); }}
+        .sn-banner--success {{ background: var(--sn-color-success-bg); }}
 
         .sn-stepper {{
           display: flex;
@@ -162,13 +156,38 @@ def _build_css() -> str:
     )
 
 
+def _load_buttons_css() -> str:
+    """Read and cache the scoped primary/secondary/link button CSS."""
+    global _BUTTONS_CSS_CACHE
+    if _BUTTONS_CSS_CACHE is not None:
+        return _BUTTONS_CSS_CACHE
+
+    css_path = _STATIC_DIR / "buttons.css"
+    try:
+        _BUTTONS_CSS_CACHE = css_path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        _BUTTONS_CSS_CACHE = ""
+    return _BUTTONS_CSS_CACHE
+
+
 def inject_theme() -> None:
-    """Inject shared theme CSS once per session."""
+    """Inject shared theme + component CSS once per session."""
     if st.session_state.get(_THEME_STATE_KEY):
         return
 
+    # Base token-driven theme
     st.markdown(_build_css(), unsafe_allow_html=True)
+
+    # Scoped button styles (primary/secondary/link)
+    buttons_css = _load_buttons_css()
+    if buttons_css:
+        st.markdown(f"<style>{buttons_css}</style>", unsafe_allow_html=True)
+
+    # Choice chips styling
     if _CHIP_CSS_PATH.exists():
         chips_css = _CHIP_CSS_PATH.read_text(encoding="utf-8")
         st.markdown(f"<style>{chips_css}</style>", unsafe_allow_html=True)
+
+    # Mark injected
     st.session_state[_THEME_STATE_KEY] = True
+    st.session_state.setdefault(_BUTTONS_STATE_KEY, True)
