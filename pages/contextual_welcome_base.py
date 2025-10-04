@@ -162,19 +162,6 @@ def render(which: str = "you") -> None:
     left, right = st.columns([1, 1])
 
     with left:
-        # Pills
-        st.markdown('<div class="pill-row">', unsafe_allow_html=True)
-        p1, p2, p3 = st.columns([1, 1, 0.3])
-        with p1:
-            if st.button(copy["pill_left"], key="cw_pill_left", use_container_width=False):
-                _safe_switch_page("pages/contextual_welcome_loved_one.py")
-        with p2:
-            if st.button(copy["pill_right"], key="cw_pill_right", use_container_width=False):
-                _safe_switch_page("pages/contextual_welcome_self.py")
-        with p3:
-            st.button("x", key="cw_close", use_container_width=False, type="secondary")
-        st.markdown('</div>', unsafe_allow_html=True)
-
         # Headline
         st.markdown(f'<div class="cw-headline">{copy["headline"]}</div>', unsafe_allow_html=True)
 
