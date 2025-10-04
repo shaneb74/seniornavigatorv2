@@ -43,20 +43,21 @@ def main():
         # persist answers
         st.session_state["gcp_answers"] = answers
 
-        # bottom nav
-        c1, c2 = st.columns([1, 1])
-
-        with c1:
-            st.markdown('<div data-variant="secondary">', unsafe_allow_html=True)
-            if buttons.secondary("Return to Hub", key="gcp_return_hub"):
-                safe_switch_page("ui/pages/app.py")
-            st.markdown("</div>", unsafe_allow_html=True)
-
-        with c2:
-            if buttons.primary("Continue to Daily Life & Support", key="gcp_to_daily"):
-                safe_switch_page("ui/pages/gcp_daily_life.py")
-
     gcp_section("Guided Care Plan", "Financial", form)
+
+    # bottom nav rendered outside the section to keep button interactions working
+    c1, c2 = st.columns([1, 1])
+
+    with c1:
+        st.markdown('<div data-variant="secondary">', unsafe_allow_html=True)
+        if buttons.secondary("Return to Hub", key="gcp_return_hub"):
+            safe_switch_page("ui/pages/app.py")
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    with c2:
+        if buttons.primary("Continue to Daily Life & Support", key="gcp_to_daily"):
+            safe_switch_page("ui/pages/gcp_daily_life.py")
+
     buttons.page_end()
 
 
