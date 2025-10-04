@@ -1,55 +1,68 @@
 import streamlit as st
-from ui.theme import inject_theme
+
+from ui.cost_planner_template import (
+    NavButton,
+    apply_cost_planner_theme,
+    cost_planner_page_container,
+    render_app_header,
+    render_nav_buttons,
+    render_wizard_help,
+    render_wizard_hero,
+)
 
 
-inject_theme()
-st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
+apply_cost_planner_theme()
 
-
-if 'care_context' not in st.session_state:
+if "care_context" not in st.session_state:
     st.session_state.care_context = {
-        'gcp_answers': {},
-        'decision_trace': [],
-        'planning_mode': 'estimating',
-        'care_flags': {},
-        'person_name': 'Your Loved One',
+        "gcp_answers": {},
+        "decision_trace": [],
+        "planning_mode": "estimating",
+        "care_flags": {},
+        "person_name": "Your Loved One",
     }
 
 ctx = st.session_state.care_context
-person_name = ctx.get('person_name', 'Your Loved One')
+person_name = ctx.get("person_name", "Your Loved One")
 
-st.title(f"Cost Planner for {person_name}")
-st.caption("Choose the level of detail that fits your needs right now.")
 
-st.markdown(
+with cost_planner_page_container():
+    render_app_header()
+    render_wizard_hero(
+        f"Cost Planner for {person_name}",
+        "Choose the level of detail that fits your needs right now.",
+    )
+
+    st.markdown(
+        """
+Families can start light and go deeper when they're ready. Pick the path
+that best fits the decisions you're making today. You can always return
+to switch modes later.
+
+- **Estimate Costs** — quick, high-level monthly estimate using a few
+  selections.
+- **Plan Costs** — full planning workflow with modules, offsets, and
+  runway tracking.
 """
-Not everyone needs the same level of detail. Some families just want a ballpark idea of what care might cost, while others
-want a fully personalized view based on their situation.
+    )
 
-- **Estimate Costs**  
-  Quick, high-level monthly estimate using a few selections. You can refine later.
+    render_wizard_help(
+        "You can switch between estimating and planning. We'll remember your progress in each path.",
+    )
 
-- **Plan Costs**  
-  Full, personalized planning with detailed modules. Best if you're ready to go deeper.
-"""
-)
+    clicked = render_nav_buttons(
+        [
+            NavButton("Estimate Costs", "cp_estimate", type="primary"),
+            NavButton("Plan Costs", "cp_plan", type="primary"),
+            NavButton("Back to Hub", "cp_back_hub"),
+        ]
+    )
 
-st.markdown('---')
-
-col1, col2, col3 = st.columns([1,1,1])
-
-with col1:
-    if st.button("Estimate Costs", key="cp_estimate"):
-        ctx['planning_mode'] = 'estimating'
-        st.switch_page('pages/cost_planner_estimate.py')
-
-with col2:
-    if st.button("Plan Costs", key="cp_plan"):
-        ctx['planning_mode'] = 'planning'
-        st.switch_page('pages/cost_planner_estimate.py')
-
-with col3:
-    if st.button("Back to Hub", key="cp_back_hub"):
-        st.switch_page('pages/hub.py')
-
-st.markdown('</div>', unsafe_allow_html=True)
+    if clicked == "cp_estimate":
+        ctx["planning_mode"] = "estimating"
+        st.switch_page("pages/cost_planner_estimate.py")
+    elif clicked == "cp_plan":
+        ctx["planning_mode"] = "planning"
+        st.switch_page("pages/cost_planner_estimate.py")
+    elif clicked == "cp_back_hub":
+        st.switch_page("pages/hub.py")

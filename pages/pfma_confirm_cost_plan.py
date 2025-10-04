@@ -1,50 +1,93 @@
+"""Plan for MyAdvisor cost plan confirmation wireframe."""
+from __future__ import annotations
 
 import streamlit as st
-from ui.theme import inject_theme
+
+from ui.cost_planner_template import (
+    NavButton,
+    apply_turbotax_wizard_theme,
+    cost_planner_page_container,
+    render_app_header,
+    render_assessment_header,
+    render_nav_buttons,
+    render_suggestion,
+    render_wizard_help,
+)
 
 
-inject_theme()
-st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
+def render_cost_summary(estimate: dict[str, object]) -> None:
+    setting = estimate.get("setting_label") or estimate.get("setting") or "In-home care"
+    monthly = estimate.get("estimate_monthly")
+    zipcode = estimate.get("zip")
+    monthly_text = f"${monthly:,.0f}/mo" if isinstance(monthly, (int, float)) and monthly > 0 else "Estimate coming soon"
+    zipcode_text = f"ZIP {zipcode}" if zipcode else "Update ZIP during call"
+
+    st.markdown(
+        f"""
+        <table class="summary-table">
+          <tbody>
+            <tr>
+              <td>Setting focus</td>
+              <td class="amount">{setting}</td>
+            </tr>
+            <tr>
+              <td>Estimated monthly cost</td>
+              <td class="amount">{monthly_text}</td>
+            </tr>
+            <tr>
+              <td>Location check</td>
+              <td class="amount">{zipcode_text}</td>
+            </tr>
+          </tbody>
+        </table>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
-# Guard
-if 'care_context' not in st.session_state:
-    st.session_state.care_context = {}
+apply_turbotax_wizard_theme()
 
-ctx = st.session_state.care_context
-person_name = ctx.get('person_name', 'Your Loved One')
+ctx = st.session_state.setdefault("care_context", {"person_name": "Your Loved One"})
+person_name = ctx.get("person_name", "Your Loved One")
+estimate = ctx.get("cost_estimate")
+estimate_dict = estimate if isinstance(estimate, dict) else {}
 
-st.title("Cost Plan Confirmer")
-st.caption("Confirm your cost plan summary. If something looks off, go back to edit, then return here.")
 
-st.markdown('---')
-st.subheader("Summary")
+with cost_planner_page_container():
+    render_app_header()
+    render_assessment_header(
+        "Plan for MyAdvisor · Confirmation",
+        persona=person_name,
+        mode="Step 2 of 7",
+    )
 
-estimate = ctx.get('cost_estimate', {}) if isinstance(ctx.get('cost_estimate', {}), dict) else {}
-setting = estimate.get('setting_label') or estimate.get('setting') or "In-home care"
-monthly = estimate.get('estimate_monthly')
-zip_code = estimate.get('zip')
+    st.subheader("Cost Plan")
+    st.caption("Confirm the high-level cost view so your advisor can tailor financial options.")
 
-line = f"{setting}"
-if isinstance(monthly, (int, float)) and monthly > 0:
-    line += f" * ${monthly:,.0f}/mo"
-if zip_code:
-    line += f" * ZIP {zip_code}"
+    render_cost_summary(estimate_dict)
 
-st.write(line or "Quick estimate details will appear here.")
+    render_suggestion(
+        "Bring recent bills or statements to the call if you want help exploring payment offsets.",
+        tone="warn",
+    )
 
-st.markdown('---')
-agreed = st.checkbox("This looks right", key="pfma_confirm_cost_plan_agree", value=False)
+    agreed = st.checkbox("This looks right", key="pfma_confirm_cost_plan_agree", value=False)
 
-col1, col2, col3 = st.columns(3)
-with col1:
-    if st.button("Back to Cost Planner", key="pfma_cost_back"):
+    render_wizard_help(
+        "Need to make adjustments? Open Cost Planner in another tab, refresh this page, and continue when ready.",
+    )
+
+    clicked = render_nav_buttons(
+        [
+            NavButton("Edit cost plan", "pfma_cost_plan_edit"),
+            NavButton("Back to overview", "pfma_cost_plan_overview"),
+            NavButton("Continue", "pfma_cost_plan_next", type="primary", disabled=not agreed),
+        ]
+    )
+
+    if clicked == "pfma_cost_plan_edit":
         st.switch_page("pages/cost_planner_modules.py")
-with col2:
-    if st.button("Back to PFMA", key="pfma_cost_pfma"):
+    elif clicked == "pfma_cost_plan_overview":
         st.switch_page("pages/pfma.py")
-with col3:
-    if st.button("Next", key="pfma_cost_next", disabled=not agreed):
+    elif clicked == "pfma_cost_plan_next":
         st.switch_page("pages/pfma_confirm_care_needs.py")
-
-st.markdown('</div>', unsafe_allow_html=True)

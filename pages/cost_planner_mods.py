@@ -1,61 +1,78 @@
 
+from __future__ import annotations
+
 import streamlit as st
-from ui.theme import inject_theme
+
+from ui.cost_planner_template import (
+    NavButton,
+    apply_cost_planner_theme,
+    cost_planner_page_container,
+    render_app_header,
+    render_nav_buttons,
+    render_wizard_help,
+    render_wizard_hero,
+)
 
 
-inject_theme()
-st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
+apply_cost_planner_theme()
 
 
-# Debug: non-visual logger
-def _debug_log(msg: str):
+def _debug_log(msg: str) -> None:
     try:
         print(f"[SNAV] {msg}")
     except Exception:
         pass
 
-_debug_log('LOADED: cost_planner_mods.py')
+
+_debug_log("LOADED: cost_planner_mods.py")
 
 
-# Guard: ensure session state keys exist across cold restarts
-if 'care_context' not in st.session_state:
+if "care_context" not in st.session_state:
     st.session_state.care_context = {
-        'gcp_answers': {},
-        'decision_trace': [],
-        'planning_mode': 'exploring',
-        'care_flags': {}
+        "gcp_answers": {},
+        "decision_trace": [],
+        "planning_mode": "exploring",
+        "care_flags": {},
     }
-ctx = st.session_state.care_context
 
 
-# Cost Planner: Age-in-Place Upgrades
-st.markdown('<div class="scn-hero">', unsafe_allow_html=True)
-st.title("Age-in-Place Upgrades for your loved one")
-st.markdown("<h2>Make his home safer.</h2>", unsafe_allow_html=True)
-st.markdown("<p>Add upgrades to support independence.</p>", unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
+with cost_planner_page_container():
+    render_app_header()
+    render_wizard_hero(
+        "Age-in-place upgrades",
+        "Capture accessibility improvements that keep the home safe and comfortable.",
+    )
 
-# Upgrades options with tile style
-st.markdown('<div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 1.5rem; text-align: left; min-height: 250px;">', unsafe_allow_html=True)
-st.markdown("### Upgrade Options")
-st.markdown("<p>Select upgrades for your loved one's home.</p>", unsafe_allow_html=True)
-st.write("Grab bars?")
-st.button("Yes", key="cm_grab_yes", type="primary")
-st.button("No", key="cm_grab_no", type="primary")
+    st.subheader("Upgrade options")
+    grab_bars = st.checkbox("Grab bars and bathroom supports")
+    stair_lift = st.checkbox("Stair lift or ramp installation")
+    lighting = st.checkbox("Smart lighting and fall prevention sensors")
 
-st.write("Stair lift?")
-st.button("Yes", key="cm_stair_yes", type="primary")
-st.button("No", key="cm_stair_no", type="primary")
+    selected = [
+        label
+        for label, checked in [
+            ("Grab bars", grab_bars),
+            ("Stair lift", stair_lift),
+            ("Smart lighting", lighting),
+        ]
+        if checked
+    ]
 
-st.markdown('</div>', unsafe_allow_html=True)
+    if selected:
+        render_wizard_help(
+            "We'll translate selected upgrades into estimated project budgets during implementation.",
+        )
+    else:
+        render_wizard_help("Not ready to choose upgrades? You can revisit this later.")
 
-# Navigation
-st.markdown('<div class="scn-nav-row">', unsafe_allow_html=True)
-col1, col2 = st.columns([1, 1])
-with col1:
-    st.button("Back to Modules", key="back_cm", type="secondary")
-with col2:
-    st.button("Next Option", key="next_cm", type="primary")
-st.markdown('</div>', unsafe_allow_html=True)
+    clicked = render_nav_buttons(
+        [
+            NavButton("Back to Modules", "mods_back_modules"),
+            NavButton("Next Option", "mods_next_option", type="primary"),
+        ]
+    )
 
-st.markdown('</div>', unsafe_allow_html=True)
+    if clicked == "mods_back_modules":
+        st.switch_page("pages/cost_planner_modules.py")
+    elif clicked == "mods_next_option":
+        st.switch_page("pages/cost_planner_skipped.py")
