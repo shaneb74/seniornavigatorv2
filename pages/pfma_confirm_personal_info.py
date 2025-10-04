@@ -1,91 +1,91 @@
-"""Plan for MyAdvisor personal info confirmation wireframe."""
+"""PFMA Personal Info confirmer."""
 from __future__ import annotations
 
 import streamlit as st
 
-from ui.cost_planner_template import (
-    NavButton,
-    apply_turbotax_wizard_theme,
-    cost_planner_page_container,
-    render_app_header,
-    render_assessment_header,
-    render_nav_buttons,
-    render_suggestion,
-    render_wizard_help,
+from ui.pfma import (
+    apply_pfma_theme,
+    ensure_pfma_state,
+    go_to_step,
+    render_drawer,
+    update_section,
 )
 
 
-def render_person_summary(person: dict[str, object]) -> None:
-    phone = person.get("phone") or "Add best call-back number"
-    email = person.get("email") or "Add email for follow-up notes"
-    contact = person.get("preferred_contact") or "Advisor will confirm during call"
+SECTION_KEY = "personal_info"
+
+
+apply_pfma_theme()
+state = ensure_pfma_state()
+error_placeholder = st.empty()
+
+
+def _drawer_body(pfma_state: dict[str, object]) -> dict[str, object]:
+    section_data = pfma_state["sections"].get(SECTION_KEY, {}).get("data", {})
+    booking = pfma_state.get("booking", {})
 
     st.markdown(
-        f"""
-        <table class="summary-table">
-          <tbody>
-            <tr>
-              <td>Phone</td>
-              <td class="amount">{phone}</td>
-            </tr>
-            <tr>
-              <td>Email</td>
-              <td class="amount">{email}</td>
-            </tr>
-            <tr>
-              <td>Preferred contact method</td>
-              <td class="amount">{contact}</td>
-            </tr>
-          </tbody>
-        </table>
-        """,
+        "<div class='pfma-note'>Double-check contact details so reminders go to the right place.</div>",
         unsafe_allow_html=True,
     )
 
+    name_key = "pfma_personal_name"
+    if name_key not in st.session_state:
+        st.session_state[name_key] = section_data.get("name") or booking.get("name", "")
+    st.text_input("Confirmed name", key=name_key, max_chars=100)
 
-apply_turbotax_wizard_theme()
+    phone_key = "pfma_personal_phone"
+    if phone_key not in st.session_state:
+        st.session_state[phone_key] = section_data.get("phone") or booking.get("phone", "")
+    st.text_input("Confirmed phone", key=phone_key, max_chars=20)
 
-ctx = st.session_state.setdefault("care_context", {"person_name": "Your Loved One"})
-person_name = ctx.get("person_name", "Your Loved One")
-personal = ctx.get("personal_info")
-personal_dict = personal if isinstance(personal, dict) else {}
+    email_key = "pfma_personal_email"
+    if email_key not in st.session_state:
+        st.session_state[email_key] = section_data.get("email") or booking.get("email", "")
+    st.text_input("Confirmed email", key=email_key, max_chars=120)
+
+    referral_key = "pfma_personal_referral"
+    if referral_key not in st.session_state:
+        st.session_state[referral_key] = section_data.get("referral") or booking.get("referral_source", "")
+    st.text_input("Referral (if applicable)", key=referral_key, max_chars=200)
+
+    confirm_key = "pfma_personal_confirmed"
+    if confirm_key not in st.session_state:
+        st.session_state[confirm_key] = bool(section_data.get("confirmed"))
+    st.checkbox("Everything above is accurate", key=confirm_key)
+
+    return {
+        "name": st.session_state[name_key].strip(),
+        "phone": st.session_state[phone_key].strip(),
+        "email": st.session_state[email_key].strip(),
+        "referral": st.session_state[referral_key].strip(),
+        "confirmed": st.session_state[confirm_key],
+    }
 
 
-with cost_planner_page_container():
-    render_app_header()
-    render_assessment_header(
-        "Plan for MyAdvisor · Confirmation",
-        persona=person_name,
-        mode="Step 7 of 7",
-    )
+result = render_drawer(
+    step_key=SECTION_KEY,
+    title="Personal Info 🌟",
+    badge="Finishes the You duck",
+    description="Confirm how we should address you and where to send follow-ups.",
+    body=_drawer_body,
+    footer_note="Personal info stays private—only your advisor sees it.",
+)
 
-    st.subheader("Personal Info")
-    st.caption("Confirm contact information so your advisor can follow up with next steps.")
 
-    render_person_summary(personal_dict)
-
-    render_suggestion(
-        "Double-check voicemail and inbox access—advisors often send summaries within a few hours.",
-        tone="info",
-    )
-
-    agreed = st.checkbox("This looks right", key="pfma_confirm_personal_info_agree", value=False)
-
-    render_wizard_help(
-        "If you're done, finish prep to return to the hub with everything marked ready for your advisor.",
-    )
-
-    clicked = render_nav_buttons(
-        [
-            NavButton("Edit personal info", "pfma_personal_edit"),
-            NavButton("Back to overview", "pfma_personal_overview"),
-            NavButton("Finish prep", "pfma_personal_finish", type="primary", disabled=not agreed),
-        ]
-    )
-
-    if clicked == "pfma_personal_edit":
-        st.switch_page("pages/personal_info.py")
-    elif clicked == "pfma_personal_overview":
-        st.switch_page("pages/pfma.py")
-    elif clicked == "pfma_personal_finish":
-        st.switch_page("pages/hub.py")
+if result.saved:
+    payload = result.payload
+    errors: list[str] = []
+    if not payload.get("name"):
+        errors.append("Add the name you want your advisor to use.")
+    if not payload.get("phone"):
+        errors.append("Confirm a phone number.")
+    if not payload.get("confirmed"):
+        errors.append("Tick the confirmation to continue.")
+    if errors:
+        error_placeholder.error("\n".join(errors))
+    else:
+        update_section(SECTION_KEY, payload)
+        st.toast("Contact info confirmed—time for the duck parade! 🦆")
+        if result.next_step:
+            go_to_step(result.next_step)

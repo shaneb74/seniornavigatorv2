@@ -1,93 +1,108 @@
-"""Plan for MyAdvisor cost plan confirmation wireframe."""
+"""PFMA Cost Planner confirmer."""
 from __future__ import annotations
 
 import streamlit as st
 
-from ui.cost_planner_template import (
-    NavButton,
-    apply_turbotax_wizard_theme,
-    cost_planner_page_container,
-    render_app_header,
-    render_assessment_header,
-    render_nav_buttons,
-    render_suggestion,
-    render_wizard_help,
+from ui.pfma import (
+    apply_pfma_theme,
+    ensure_pfma_state,
+    go_to_step,
+    render_drawer,
+    segmented_control,
+    update_section,
 )
 
 
-def render_cost_summary(estimate: dict[str, object]) -> None:
-    setting = estimate.get("setting_label") or estimate.get("setting") or "In-home care"
-    monthly = estimate.get("estimate_monthly")
-    zipcode = estimate.get("zip")
-    monthly_text = f"${monthly:,.0f}/mo" if isinstance(monthly, (int, float)) and monthly > 0 else "Estimate coming soon"
-    zipcode_text = f"ZIP {zipcode}" if zipcode else "Update ZIP during call"
+SECTION_KEY = "cost_plan"
+HEALTH_CONDITIONS = (
+    "Dementia",
+    "Diabetes",
+    "Heart condition",
+    "Stroke",
+    "Parkinson’s",
+    "Recent surgery",
+    "Chronic pain",
+)
+MOBILITY_OPTIONS = ("Independent", "Uses a cane", "Uses a walker", "Wheelchair", "Bed-bound")
+
+
+apply_pfma_theme()
+state = ensure_pfma_state()
+error_placeholder = st.empty()
+
+
+def _drawer_body(pfma_state: dict[str, object]) -> dict[str, object]:
+    section_data = pfma_state["sections"].get(SECTION_KEY, {}).get("data", {})
+    cost_state = st.session_state.get("cost_planner", {}) or {}
+    audiencing_state = st.session_state.get("audiencing", {}) or {}
+    qualifiers = audiencing_state.get("qualifiers", {}) or {}
 
     st.markdown(
-        f"""
-        <table class="summary-table">
-          <tbody>
-            <tr>
-              <td>Setting focus</td>
-              <td class="amount">{setting}</td>
-            </tr>
-            <tr>
-              <td>Estimated monthly cost</td>
-              <td class="amount">{monthly_text}</td>
-            </tr>
-            <tr>
-              <td>Location check</td>
-              <td class="amount">{zipcode_text}</td>
-            </tr>
-          </tbody>
-        </table>
-        """,
+        "<div class='pfma-note'>We pulled cost insights from your recent Cost Planner run. Update anything that changed.</div>",
         unsafe_allow_html=True,
     )
 
+    current_conditions = section_data.get("health_conditions") or cost_state.get("health_conditions") or []
+    if isinstance(current_conditions, str):
+        current_conditions = [current_conditions]
 
-apply_turbotax_wizard_theme()
-
-ctx = st.session_state.setdefault("care_context", {"person_name": "Your Loved One"})
-person_name = ctx.get("person_name", "Your Loved One")
-estimate = ctx.get("cost_estimate")
-estimate_dict = estimate if isinstance(estimate, dict) else {}
-
-
-with cost_planner_page_container():
-    render_app_header()
-    render_assessment_header(
-        "Plan for MyAdvisor · Confirmation",
-        persona=person_name,
-        mode="Step 2 of 7",
+    st.multiselect(
+        "Health considerations we should flag",
+        HEALTH_CONDITIONS,
+        current_conditions,
+        key="pfma_cost_conditions",
+        help="Add anything else in the notes box—your advisor will read the full context.",
     )
 
-    st.subheader("Cost Plan")
-    st.caption("Confirm the high-level cost view so your advisor can tailor financial options.")
-
-    render_cost_summary(estimate_dict)
-
-    render_suggestion(
-        "Bring recent bills or statements to the call if you want help exploring payment offsets.",
-        tone="warn",
+    mobility_default = section_data.get("mobility") or qualifiers.get("mobility_status")
+    segmented_control(
+        "Current mobility support",
+        MOBILITY_OPTIONS,
+        key=f"{SECTION_KEY}_mobility",
+        default=mobility_default,
     )
 
-    agreed = st.checkbox("This looks right", key="pfma_confirm_cost_plan_agree", value=False)
-
-    render_wizard_help(
-        "Need to make adjustments? Open Cost Planner in another tab, refresh this page, and continue when ready.",
+    why_key = f"pfma_{SECTION_KEY}_why_now"
+    if why_key not in st.session_state:
+        st.session_state[why_key] = section_data.get("why_now") or cost_state.get("notes") or ""
+    st.text_area(
+        "Why are you planning now?",
+        key=why_key,
+        max_chars=400,
+        height=110,
     )
 
-    clicked = render_nav_buttons(
-        [
-            NavButton("Edit cost plan", "pfma_cost_plan_edit"),
-            NavButton("Back to overview", "pfma_cost_plan_overview"),
-            NavButton("Continue", "pfma_cost_plan_next", type="primary", disabled=not agreed),
-        ]
-    )
+    monthly_total = cost_state.get("monthly_total")
+    offsets = cost_state.get("subtotals", {}).get("offsets") if isinstance(cost_state.get("subtotals"), dict) else None
 
-    if clicked == "pfma_cost_plan_edit":
-        st.switch_page("pages/cost_planner_modules.py")
-    elif clicked == "pfma_cost_plan_overview":
-        st.switch_page("pages/pfma.py")
-    elif clicked == "pfma_cost_plan_next":
-        st.switch_page("pages/pfma_confirm_care_needs.py")
+    return {
+        "health_conditions": st.session_state.get("pfma_cost_conditions", []),
+        "mobility": st.session_state.get(f"pfma_segment_{SECTION_KEY}_mobility"),
+        "why_now": st.session_state[why_key],
+        "monthly_total": monthly_total,
+        "offsets": offsets,
+    }
+
+
+result = render_drawer(
+    step_key=SECTION_KEY,
+    title="Cost Planner Confirmer 💡",
+    badge="Locks in the Money duck",
+    description="Highlight budget factors so the advisor knows how flexible the plan can be.",
+    body=_drawer_body,
+    footer_note="Need deeper edits? Reopen Cost Planner to refresh the numbers.",
+)
+
+
+if result.saved:
+    payload = result.payload
+    errors: list[str] = []
+    if not payload.get("mobility"):
+        errors.append("Tell us the current mobility support so we can prep resources.")
+    if errors:
+        error_placeholder.error("\n".join(errors))
+    else:
+        update_section(SECTION_KEY, payload)
+        st.toast("Cost context saved for your advisor.")
+        if result.next_step:
+            go_to_step(result.next_step)
