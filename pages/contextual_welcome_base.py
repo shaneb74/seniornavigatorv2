@@ -90,6 +90,20 @@ def _inject_page_css() -> None:
         <style>
           /* canvas */
 
+          /* TRUE vertical centering just for this page */
+          section.main{
+            display: grid !important;
+            align-content: center !important;   /* vertical centering */
+            justify-content: start !important;  /* keep left alignment */
+            min-height: 100vh !important;
+          }
+          section.main > div.block-container{
+            min-height: auto !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+          }
+
+
           /* Shrink Streamlit canvas to content on THIS page only */
           section.main > div.block-container{
             min-height: auto !important;
