@@ -89,6 +89,16 @@ def _inject_page_css() -> None:
         """
         <style>
           /* canvas */
+
+          /* tighten Streamlit content pane (the big white rounded container) */
+          .block-container{
+            padding-top: 6px !important;
+            padding-bottom: 12px !important;
+            min-height: auto !important;
+          }
+          section.main > div.block-container{ min-height: auto !important; }
+          [data-testid="stVerticalBlock"]{ padding-top: 0 !important; padding-bottom: 0 !important; }
+
           .cw-wrap{ padding:clamp(4px,1.5vh,12px) clamp(8px,2vw,16px);
             position:relative;
             min-height:auto;
