@@ -16,7 +16,7 @@ def main():
     answers = st.session_state["gcp_answers"]
     gcp = st.session_state.get("gcp", {})
 
-    # Scope the page so our primary/secondary/link button CSS doesn't affect other modules
+    # Scope page-level button CSS
     buttons.page_start()
 
     def rec_body():
@@ -42,29 +42,21 @@ def main():
         else:
             st.info("You can continue to the Cost Planner to explore costs, offsets, and timeline.")
 
+        # Bottom CTAs
         c1, c2 = st.columns([1, 1])
         with c1:
             st.markdown('<div data-variant="secondary">', unsafe_allow_html=True)
-            buttons.secondary(
-                "Back",
-                key="gcp_rec_back",
-                on_click=lambda: safe_switch_page("ui/pages/gcp_context_prefs.py"),
-            )
+            if buttons.secondary("Back", key="gcp_rec_back"):
+                safe_switch_page("ui/pages/gcp_context_prefs.py")
             st.markdown("</div>", unsafe_allow_html=True)
 
         with c2:
             if pay == "medicaid":
-                buttons.primary(
-                    "Continue to Plan for My Advisor",
-                    key="gcp_to_pfma",
-                    on_click=lambda: safe_switch_page("ui/pages/05_plan_for_my_advisor.py"),
-                )
+                if buttons.primary("Continue to Plan for My Advisor", key="gcp_to_pfma"):
+                    safe_switch_page("ui/pages/05_plan_for_my_advisor.py")
             else:
-                buttons.primary(
-                    "Continue to Cost Planner",
-                    key="gcp_to_cp",
-                    on_click=lambda: safe_switch_page("ui/pages/03_cost_planner.py"),
-                )
+                if buttons.primary("Continue to Cost Planner", key="gcp_to_cp"):
+                    safe_switch_page("ui/pages/03_cost_planner.py")
 
     gcp_section("Guided Care Plan", "Recommendation", rec_body)
 

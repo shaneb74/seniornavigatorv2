@@ -11,8 +11,9 @@ def _init_state():
 
 def main():
     _init_state()
-    gcp_header(3)
+    gcp_header(3)           # section 4 of 5
     buttons.page_start()
+
     answers = st.session_state["gcp_answers"]
 
     def form():
@@ -34,23 +35,21 @@ def main():
             )
         )
 
+        # persist
         st.session_state["gcp_answers"] = answers
 
+        # bottom nav
         c1, c2 = st.columns([1, 1])
+
         with c1:
             st.markdown('<div data-variant="secondary">', unsafe_allow_html=True)
-            buttons.secondary(
-                "Back",
-                key="gcp_context_back",
-                on_click=lambda: safe_switch_page("ui/pages/gcp_health_safety.py"),
-            )
+            if buttons.secondary("Back", key="gcp_context_back"):
+                safe_switch_page("ui/pages/gcp_health_safety.py")
             st.markdown("</div>", unsafe_allow_html=True)
+
         with c2:
-            buttons.primary(
-                "See Care Recommendation",
-                key="gcp_to_rec",
-                on_click=lambda: safe_switch_page("ui/pages/gcp_recommendation.py"),
-            )
+            if buttons.primary("See Care Recommendation", key="gcp_to_rec"):
+                safe_switch_page("ui/pages/gcp_recommendation.py")
 
     gcp_section("Guided Care Plan", "Context & Preferences", form)
     buttons.page_end()

@@ -12,8 +12,8 @@ def _init_state():
 
 def main():
     _init_state()
-    gcp_header(0)
-    buttons.page_start()
+    gcp_header(0)           # section 1 of 5
+    buttons.page_start()    # scope button CSS to this page
 
     answers = st.session_state["gcp_answers"]
 
@@ -36,28 +36,25 @@ def main():
             )
         else:
             st.info(
-                "Medicaid changes how care is paid. We’ll still show a care recommendation, then guide the next step."
+                "Medicaid changes how care is paid. We’ll still show a care recommendation, "
+                "then guide the next step."
             )
 
+        # persist answers
         st.session_state["gcp_answers"] = answers
 
+        # bottom nav
         c1, c2 = st.columns([1, 1])
 
         with c1:
             st.markdown('<div data-variant="secondary">', unsafe_allow_html=True)
-            buttons.secondary(
-                "Return to Hub",
-                key="gcp_return_hub",
-                on_click=lambda: safe_switch_page("ui/pages/app.py"),
-            )
+            if buttons.secondary("Return to Hub", key="gcp_return_hub"):
+                safe_switch_page("ui/pages/app.py")
             st.markdown("</div>", unsafe_allow_html=True)
 
         with c2:
-            buttons.primary(
-                "Continue to Daily Life & Support",
-                key="gcp_to_daily",
-                on_click=lambda: safe_switch_page("ui/pages/gcp_daily_life.py"),
-            )
+            if buttons.primary("Continue to Daily Life & Support", key="gcp_to_daily"):
+                safe_switch_page("ui/pages/gcp_daily_life.py")
 
     gcp_section("Guided Care Plan", "Financial", form)
     buttons.page_end()

@@ -11,8 +11,9 @@ def _init_state():
 
 def main():
     _init_state()
-    gcp_header(1)
+    gcp_header(2)           # section 3 of 5: Daily Life & Support
     buttons.page_start()
+
     answers = st.session_state["gcp_answers"]
 
     def form():
@@ -41,23 +42,21 @@ def main():
             key="gcp_adl_help",
         )
 
+        # persist
         st.session_state["gcp_answers"] = answers
 
+        # bottom nav
         c1, c2 = st.columns([1, 1])
+
         with c1:
             st.markdown('<div data-variant="secondary">', unsafe_allow_html=True)
-            buttons.secondary(
-                "Back to financial questions",
-                key="gcp_daily_back",
-                on_click=lambda: safe_switch_page("ui/pages/gcp.py"),
-            )
+            if buttons.secondary("Back to financial questions", key="gcp_daily_back"):
+                safe_switch_page("ui/pages/gcp.py")
             st.markdown("</div>", unsafe_allow_html=True)
+
         with c2:
-            buttons.primary(
-                "Continue to Health & Safety",
-                key="gcp_to_health",
-                on_click=lambda: safe_switch_page("ui/pages/gcp_health_safety.py"),
-            )
+            if buttons.primary("Continue to Health & Safety", key="gcp_to_health"):
+                safe_switch_page("ui/pages/gcp_health_safety.py")
 
     gcp_section("Guided Care Plan", "Daily Life & Support", form)
     buttons.page_end()
