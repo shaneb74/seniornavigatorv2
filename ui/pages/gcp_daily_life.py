@@ -1,7 +1,8 @@
 import streamlit as st
 from senior_nav.components.choice_chips import choice_single
 from senior_nav.components.nav import safe_switch_page
-from senior_nav.components.gcp_shell import gcp_header, gcp_section, primary_secondary
+from senior_nav.components.gcp_shell import gcp_header, gcp_section
+from senior_nav.components import buttons
 
 
 def _init_state():
@@ -11,6 +12,7 @@ def _init_state():
 def main():
     _init_state()
     gcp_header(1)
+    buttons.page_start()
     answers = st.session_state["gcp_answers"]
 
     def form():
@@ -41,15 +43,18 @@ def main():
 
         st.session_state["gcp_answers"] = answers
 
-        def _back():
-            safe_switch_page("ui/pages/gcp.py")
-
-        def _next():
-            safe_switch_page("ui/pages/gcp_health_safety.py")
-
-        primary_secondary("Continue", _next, "Back", _back)
+        c1, c2 = st.columns([1, 1])
+        with c1:
+            st.markdown('<div data-variant="secondary">', unsafe_allow_html=True)
+            if buttons.secondary("Back to financial questions", key="gcp_daily_back"):
+                safe_switch_page("ui/pages/gcp.py")
+            st.markdown("</div>", unsafe_allow_html=True)
+        with c2:
+            if buttons.primary("Continue to Health & Safety", key="gcp_to_health"):
+                safe_switch_page("ui/pages/gcp_health_safety.py")
 
     gcp_section("Guided Care Plan", "Daily Life & Support", form)
+    buttons.page_end()
 
 
 if __name__ == "__main__":
