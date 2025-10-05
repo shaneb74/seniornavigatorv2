@@ -200,6 +200,11 @@ def ensure_page(path: str, title: str, icon: str, default: bool = False):
 # Pages to register (controls nav order)
 # ==========================================
 INTENDED = [
+    ("pages/gcp_v2/gcp_landing_v2.py", "Guided Care Plan · Start", "🗺️", False),
+    ("pages/gcp_v2/gcp_daily_life_v2.py", "GCP · Daily Life & Support", "🧭", False),
+    ("pages/gcp_v2/gcp_health_safety_v2.py", "GCP · Health & Safety", "🩺", False),
+    ("pages/gcp_v2/gcp_context_prefs_v2.py", "GCP · Context & Preferences", "🎯", False),
+    ("pages/gcp_v2/gcp_recommendation_v2.py", "GCP · Recommendation", "✅", False),
 
     ("pages/welcome.py", "Welcome", "👋", True),
     ("pages/hub.py", "Your Concierge Care Hub", "🏠", False),
