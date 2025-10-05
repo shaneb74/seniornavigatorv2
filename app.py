@@ -1,33 +1,26 @@
 from __future__ import annotations
 
-# app.py — Senior Navigator bootstrap (Cloud-safe)
+# app.py - Senior Navigator bootstrap with safe, persistent debug + guardrails
 
 import os
 import sys
+import inspect
 from pathlib import Path
 import streamlit as st
 
-# =====================================================================
-# 1) MUST be first: global page config (prevents per-page config errors)
-# =====================================================================
-st.set_page_config(page_title="Senior Navigator", layout="wide")
+def register_pages(*args, **kwargs):
+    # disabled: we register pages solely via INTENDED + st.navigation
+    return None
 
-# Block any later st.set_page_config(...) calls inside page modules.
-def _disable_per_page_set_page_config() -> None:
-    try:
-        def _no_op(*args, **kwargs):
-            # swallow late calls silently
-            return
-        st.set_page_config = _no_op  # type: ignore
-    except Exception:
-        pass
+from pathlib import Path
 
-_disable_per_page_set_page_config()
-
+# (removed) legacy auto-registration of subfolder pages
 # =========================
-# 2) Debug / design toggles
+
+# Debug / guardrail toggles
 # =========================
 def _debug_enabled() -> bool:
+    # Enable via URL ?debug=1 or env SN_DEBUG_PAGES=1
     try:
         qp_flag = str(st.query_params.get("debug", "")).lower() in ("1", "true", "yes")
     except Exception:
@@ -41,11 +34,36 @@ def _design_mode_enabled() -> bool:
     except Exception:
         qp_flag = False
     env_flag = os.environ.get("SN_DEV", "") == "1"
-    ss_flag  = bool(st.session_state.get("dev_design_mode"))
+    ss_flag = bool(st.session_state.get("dev_design_mode"))
     return qp_flag or env_flag or ss_flag
 
 # ==========================================
-# 3) Sys.path hygiene: keep repo clean/stable
+# Guard: exactly one active ./pages directory
+# ==========================================
+# in app.py, replace _enforce_single_pages_dir with this version:
+
+
+def _enforce_single_pages_dir() -> None:
+    from pathlib import Path
+    roots = []
+    for d in Path(".").glob("**/pages"):
+        sd = str(d.resolve()).replace("\\","/").lower()
+        if not d.is_dir(): 
+            continue
+        if ("_graveyard" in sd) or ("/.venv/" in sd) or ("/.git/" in sd):
+            continue
+        if not any(d.rglob("*.py")):
+            continue
+        roots.append(d)
+    expected = (Path.cwd() / "pages").resolve()
+    if len(roots) != 1 or roots[0].resolve() != expected:
+        raise RuntimeError(f"❌ Invalid pages directories detected: {roots}\n"
+                           f"Expected exactly one at {expected}")
+_enforce_single_pages_dir()
+
+
+# ==========================================
+# Sys.path hygiene: keep repo clean & stable
 # ==========================================
 def _sanitize_sys_path() -> None:
     bad_markers = ("/_graveyard/", "/Designer-Development-8/", "/designer-development-8/", "/ui/pages/")
@@ -56,12 +74,12 @@ def _sanitize_sys_path() -> None:
             continue
         keep.append(p)
     sys.path[:] = keep
-
 _sanitize_sys_path()
 
-# ==================================================
-# 4) Optional: log imports from /pages when debugging
-# ==================================================
+# ==========================================
+# Live import logger (kept on; lightweight)
+# Logs any module imported from /pages/ at runtime
+# ==========================================
 class _PageImportLogger:
     def find_spec(self, fullname, path=None, target=None):  # type: ignore[override]
         from importlib.machinery import PathFinder
@@ -72,15 +90,16 @@ class _PageImportLogger:
                 print(f"📄 import: {origin}")
         return spec
 
+# Insert logger only once and only when debug is enabled
 if _debug_enabled():
     # place before default PathFinder so it sees imports
     sys.meta_path.insert(0, _PageImportLogger())
 
 # ===============================
-# 5) Theme import with fallback
+# Theme import with safe fallback
 # ===============================
 try:
-    from ui.theme import inject_theme  # preferred path if available
+    from ui.theme import inject_theme  # preferred path
 except Exception:
     def inject_theme() -> None:
         st.markdown(
@@ -95,7 +114,7 @@ except Exception:
         )
 
 # ==========================================
-# 6) Global CSS injection (theme applied last)
+# Global CSS injection (theme comes in last)
 # ==========================================
 def _inject_global_css() -> None:
     css_path = Path("static/style.css")
@@ -104,17 +123,14 @@ def _inject_global_css() -> None:
             extra = css_path.read_text(encoding="utf-8").strip()
         except Exception:
             extra = css_path.read_bytes().decode(errors="ignore").strip()
-        try:
-            v = int(css_path.stat().st_mtime)
-        except Exception:
-            v = 0
+        v = int(css_path.stat().st_mtime)
         st.markdown(f"<style>{extra}</style><!-- v:{v} -->", unsafe_allow_html=True)
     inject_theme()
-
 _inject_global_css()
 
 # ==========================================
-# 7) Pre-flight syntax check for page modules
+# Pre-flight syntax check for page modules
+# (kept: catches bad edits before navigation)
 # ==========================================
 def _syntax_preflight(paths=("pages",), stop_on_error=True):
     import pathlib, io, tokenize
@@ -142,17 +158,16 @@ def _syntax_preflight(paths=("pages",), stop_on_error=True):
             st.markdown("---")
         if stop_on_error:
             st.stop()
-
 _syntax_preflight()
 
 # ==========================================
-# 8) Session bootstrap (prototype auth flag)
+# Session bootstrap (prototype auth flag)
 # ==========================================
 if "is_authenticated" not in st.session_state:
     st.session_state.is_authenticated = False
 
 # ==========================================
-# 9) Welcome redirect (first load; not in design)
+# Design mode helpers
 # ==========================================
 def _force_welcome_once() -> None:
     """On first run of a session, bounce to Welcome unless in design mode."""
@@ -171,7 +186,7 @@ def _force_welcome_once() -> None:
     st.rerun()
 
 # ==========================================
-# 10) Page registration helpers
+# Page registration helpers
 # ==========================================
 def ensure_page(path: str, title: str, icon: str, default: bool = False):
     p = Path(path)
@@ -183,9 +198,10 @@ def ensure_page(path: str, title: str, icon: str, default: bool = False):
     )
 
 # ==========================================
-# 11) Pages to register (controls nav order)
+# Pages to register (controls nav order)
 # ==========================================
 INTENDED = [
+
     ("pages/welcome.py", "Welcome", "👋", True),
     ("pages/hub.py", "Your Concierge Care Hub", "🏠", False),
 
@@ -209,9 +225,9 @@ INTENDED = [
     ("pages/cost_planner_housing.py", "Housing Path", "🏡", False),
     ("pages/cost_planner_benefits.py", "Benefits Check", "💳", False),
     ("pages/cost_planner_mods.py", "Age-in-Place Upgrades", "🔧", False),
-
-    ("pages/expert_review.py", "Expert Review", "🔎", False),
-    ("pages/cost_planner_evaluation.py", "Cost Planner: Evaluation", "🔍", False),
+    # --- Cost Planner v2 (PFMA-style UI) ---
+                                        ("pages/expert_review.py", "Expert Review", "🔎", False),
+        ("pages/cost_planner_evaluation.py", "Cost Planner: Evaluation", "🔍", False),
     ("pages/cost_planner_skipped.py", "Cost Planner: Skipped", "⚠️", False),
 
     ("pages/pfma.py", "Plan for My Advisor", "🧭", False),
@@ -223,6 +239,14 @@ INTENDED = [
     ("pages/pfma_confirm_household_legal.py", "PFMA * Household & Legal", "🏠", False),
     ("pages/pfma_confirm_benefits_coverage.py", "PFMA * Benefits & Coverage", "💳", False),
     ("pages/pfma_confirm_personal_info.py", "PFMA * Personal Info", "👤", False),
+
+    ("pages/login.py", "Login", "🔐", False),
+    ("pages/ai_advisor.py", "AI Advisor", "🤖", False),
+    ("pages/waiting_room.py", "Waiting Room", "⏳", False),
+    ("pages/trusted_partners.py", "Trusted Partners", "🤝", False),
+    ("pages/export_results.py", "Export Results", "📥", False),
+    ("pages/my_documents.py", "My Documents", "📁", False),
+    ("pages/my_account.py", "My Account", "👤", False),
 
     # --- Cost Planner v2 (PFMA style) ---
     ("pages/cost_planner_v2/cost_planner_landing_v2.py", "Cost Planner v2 · Landing", "💰", False),
@@ -237,10 +261,7 @@ INTENDED = [
     ("pages/cost_planner_v2/cost_planner_assets_v2.py", "Cost Planner v2 · Assets", "🏦", False),
     ("pages/cost_planner_v2/cost_planner_timeline_v2.py", "Cost Planner v2 · Timeline", "📈", False),
 ]
-
-# ==========================================
-# 12) Build the pages and render navigation
-# ==========================================
+# Build the Page objects (ignore missing silently)
 pages = []
 for path, title, icon, default in INTENDED:
     page = ensure_page(path, title, icon, default)
@@ -258,7 +279,7 @@ else:
     st.error("No pages available. Check file paths in app.py.")
 
 # ==========================================
-# 13) Sidebar tools (Design mode + Auth)
+# Sidebar tools (Design mode + Auth)
 # ==========================================
 with st.sidebar:
     st.markdown("---")
