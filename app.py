@@ -201,6 +201,9 @@ def ensure_page(path: str, title: str, icon: str, default: bool = False):
 # ==========================================
 INTENDED = [    ("pages/welcome.py", "Welcome", "👋", True),
     ("pages/hub.py", "Your Concierge Care Hub", "🏠", False),
+    ("pages/SeniorNav_terms.py", "Terms of Use", "📄", False),
+    ("pages/SeniorNav_privacy.py", "Privacy Policy", "🔒", False),
+
     ("pages/SeniorNav_welcome_self.py", "Welcome · For You", "🙂", False),
     ("pages/SeniorNav_welcome_someone_else.py", "Welcome · Someone Else", "👥", False),
     ("pages/SeniorNav_welcome_professional.py", "Welcome · Professional", "🩺", False),
