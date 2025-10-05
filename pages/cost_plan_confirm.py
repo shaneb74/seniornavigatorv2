@@ -5,13 +5,16 @@ import json
 
 import streamlit as st
 
-st.set_page_config(layout="wide")
 from ui.theme import inject_theme
+
+st.set_page_config(layout="wide")
+
 inject_theme()
 
 from cost_planner_shared import ensure_core_state, format_currency, recompute_costs
 from ui.cost_planner_template import (
-    Metric,
+
+Metric,
     NavButton,
     apply_cost_planner_theme,
     cost_planner_page_container,

@@ -3,12 +3,15 @@ from __future__ import annotations
 
 import streamlit as st
 
-st.set_page_config(layout="wide")
 from ui.theme import inject_theme
+
+st.set_page_config(layout="wide")
+
 inject_theme()
 
 from ui.pfma import (
-    apply_pfma_theme,
+
+apply_pfma_theme,
     ensure_pfma_state,
     go_to_step,
     render_drawer,

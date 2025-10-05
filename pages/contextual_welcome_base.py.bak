@@ -5,6 +5,8 @@ from __future__ import annotations
 import base64, mimetypes
 from pathlib import Path
 import streamlit as st
+
+st.set_page_config(layout="wide")
 from ui.theme import inject_theme
 
 inject_theme()

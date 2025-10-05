@@ -209,25 +209,9 @@ INTENDED = [
     ("pages/contextual_welcome_loved_one.py", "Contextual Welcome - For Loved Ones", "ℹ️", False),
 
     ("pages/professional_mode.py", "Professional Mode", "🧑", False),
-    ("pages/gcp.py", "Guided Care Plan", "🗺️", False),
-    ("pages/gcp_daily_life.py", "GCP - Daily Life & Support", "🗺️", False),
-    ("pages/gcp_health_safety.py", "GCP - Health & Safety", "🗺️", False),
-    ("pages/gcp_context_prefs.py", "GCP - Context & Preferences", "🗺️", False),
-    ("pages/gcp_recommendation.py", "GCP Recommendation", "🗺️", False),
 
-    ("pages/cost_planner.py", "Cost Planner: Mode", "💰", False),
-    ("pages/cost_planner_estimate.py", "Cost Planner: Estimate", "💰", False),
-    ("pages/cost_planner_estimate_summary.py", "Cost Planner: Quick Summary", "💰", False),
-    ("pages/cost_planner_modules.py", "Cost Planner: Modules", "📊", False),
-    ("pages/cost_planner_home_care.py", "Home Care Support", "🏠", False),
-    ("pages/cost_planner_daily_aids.py", "Daily Living Aids", "🛠️", False),
-    ("pages/cost_planner_housing.py", "Housing Path", "🏡", False),
-    ("pages/cost_planner_benefits.py", "Benefits Check", "💳", False),
-    ("pages/cost_planner_mods.py", "Age-in-Place Upgrades", "🔧", False),
     # --- Cost Planner v2 (PFMA-style UI) ---
                                         ("pages/expert_review.py", "Expert Review", "🔎", False),
-        ("pages/cost_planner_evaluation.py", "Cost Planner: Evaluation", "🔍", False),
-    ("pages/cost_planner_skipped.py", "Cost Planner: Skipped", "⚠️", False),
 
     ("pages/pfma.py", "Plan for My Advisor", "🧭", False),
 

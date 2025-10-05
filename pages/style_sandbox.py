@@ -1,7 +1,9 @@
 import streamlit as st
 
-st.set_page_config(layout="wide")
 from ui.theme import inject_theme
+
+st.set_page_config(layout="wide")
+
 inject_theme()
 
 from ui.pfma import render_drawer as pfma_drawer, segmented_control as pfma_seg, ensure_pfma_state
@@ -11,6 +13,7 @@ st.title("Style Sandbox")
 
 st.subheader("Tokens")
 import ui.theme as ut
+
 st.json(ut.TOKENS)
 
 st.divider()

@@ -2,6 +2,8 @@
 from __future__ import annotations
 import streamlit as st
 
+st.set_page_config(page_title="Care Planning Hub", layout="wide")
+
 try:
     from ui.theme import inject_theme as _pfma_theme
 except Exception:
@@ -34,7 +36,7 @@ def _tile(*, icon: str, status: str, title: str, desc: str, cta: str, dest: str,
 
 def render_hub() -> None:
     _pfma_theme()
-    st.set_page_config(page_title="Care Planning Hub", layout="wide")
+
     st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
     st.markdown(

@@ -1,6 +1,9 @@
 import streamlit as st
-st.set_page_config(layout="wide")
+
 from ui.theme import inject_theme
+
+st.set_page_config(layout="wide")
+
 inject_theme()
 
 # pages/contextual_welcome.py
