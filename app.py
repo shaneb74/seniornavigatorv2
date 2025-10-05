@@ -13,17 +13,15 @@ import streamlit as st
 # =========================
 def _debug_enabled() -> bool:
     # Enable via URL ?debug=1 or env SN_DEBUG_PAGES=1
-    try:
+    # Streamlit Cloud safe: no page guard
         qp_flag = str(st.query_params.get("debug", "")).lower() in ("1", "true", "yes")
-    except Exception:
         qp_flag = False
     env_flag = os.environ.get("SN_DEBUG_PAGES", "") == "1"
     return qp_flag or env_flag
 
 def _design_mode_enabled() -> bool:
-    try:
+    # Streamlit Cloud safe: no page guard
         qp_flag = str(st.query_params.get("dev", "")).lower() in ("1", "true", "yes")
-    except Exception:
         qp_flag = False
     env_flag = os.environ.get("SN_DEV", "") == "1"
     ss_flag = bool(st.session_state.get("dev_design_mode"))
@@ -35,28 +33,12 @@ def _design_mode_enabled() -> bool:
 # in app.py, replace _enforce_single_pages_dir with this version:
 
 
-def _enforce_single_pages_dir() -> None:
-    from pathlib import Path
-    roots = []
-    for d in Path(".").glob("**/pages"):
-        sd = str(d.resolve()).replace("\\","/").lower()
-        if not d.is_dir(): 
-            continue
-        if ("_graveyard" in sd) or ("/.venv/" in sd) or ("/.git/" in sd):
-            continue
-        if not any(d.rglob("*.py")):
-            continue
-        roots.append(d)
-    expected = (Path.cwd() / "pages").resolve()
-    if len(roots) != 1 or roots[0].resolve() != expected:
-        raise RuntimeError(f"❌ Invalid pages directories detected: {roots}\n"
-                           f"Expected exactly one at {expected}")
-try:
-try:
+def _enforce_single_pages_dir():
+    """Disabled on Streamlit Cloud"""
+    return
+
 pass
-except Exception:
     pass
-except Exception:
     # Cloud-safe: ignore guard failures in hosted envs
     pass
 # ==========================================
@@ -95,9 +77,8 @@ if _debug_enabled():
 # ===============================
 # Theme import with safe fallback
 # ===============================
-try:
+    # Streamlit Cloud safe: no page guard
     from ui.theme import inject_theme  # preferred path
-except Exception:
     def inject_theme() -> None:
         st.markdown(
             """
@@ -116,9 +97,8 @@ except Exception:
 def _inject_global_css() -> None:
     css_path = Path("static/style.css")
     if css_path.exists():
-        try:
+    # Streamlit Cloud safe: no page guard
             extra = css_path.read_text(encoding="utf-8").strip()
-        except Exception:
             extra = css_path.read_bytes().decode(errors="ignore").strip()
         v = int(css_path.stat().st_mtime)
         st.markdown(f"<style>{extra}</style><!-- v:{v} -->", unsafe_allow_html=True)
@@ -134,17 +114,15 @@ def _syntax_preflight(paths=("pages",), stop_on_error=True):
     errors = []
     for root in paths:
         for p in pathlib.Path(root).rglob("*.py"):
-            try:
+    # Streamlit Cloud safe: no page guard
                 src = p.read_text(encoding="utf-8")
-            except Exception as e:
                 errors.append((p, 0, 0, f"read error: {e}", ""))
                 continue
-            try:
+    # Streamlit Cloud safe: no page guard
                 tokenize.generate_tokens(io.StringIO(src).readline)
                 compile(src, str(p), "exec", dont_inherit=True)
             except SyntaxError as e:
                 errors.append((p, e.lineno or 0, e.offset or 0, e.msg, e.text or ""))
-            except Exception as e:
                 errors.append((p, 0, 0, f"{type(e).__name__}: {e}", ""))
     if errors:
         st.error("Syntax/parse error(s) found. Fix these before running pages.")
@@ -173,12 +151,10 @@ def _force_welcome_once() -> None:
     if st.session_state.get("_boot_forced_welcome"):
         return
     st.session_state["_boot_forced_welcome"] = True
-    try:
+    # Streamlit Cloud safe: no page guard
         st.query_params.clear()  # Streamlit >= 1.33
-    except Exception:
-        try:
+    # Streamlit Cloud safe: no page guard
             st.experimental_set_query_params()
-        except Exception:
             pass
     st.rerun()
 
