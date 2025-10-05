@@ -72,13 +72,13 @@ if why_key not in st.session_state:
 if st.button("Why this step?", key="pfma_booking_why_button"):
     st.session_state[why_key] = not st.session_state[why_key]
 if st.session_state[why_key]:
-    st.info("Capturing booking details now means no back-and-forth later—your concierge arrives ready with next steps.")
+    st.info("Capturing booking details now means no back-and-forth later-your concierge arrives ready with next steps.")
 
 booking = state["booking"]
 urgency_value = booking.get("urgency")
 if urgency_value in {"Ready this week", "ASAP"}:
     st.markdown(
-        "<div class=\"pfma-banner\">You’ve marked this as urgent — we’ll prioritize your call.</div>",
+        "<div class=\"pfma-banner\">You've marked this as urgent - we'll prioritize your call.</div>",
         unsafe_allow_html=True,
     )
 
@@ -94,7 +94,7 @@ with left:
           <p>Lock in a time that works best for you. If anything changes, you can update details right up until the call.</p>
           <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:.6rem;">
             <div style="display:flex;align-items:center;gap:.45rem;font-weight:600;color:#0b3e91;">
-              <span>📞</span> <span>We’ll text and email a confirmation instantly.</span>
+              <span>📞</span> <span>We'll text and email a confirmation instantly.</span>
             </div>
             <div style="display:flex;align-items:center;gap:.45rem;color:var(--ink-muted);">
               <span>🕑</span> <span>Need to reschedule? Reply to the confirmation or hop back here.</span>
@@ -190,7 +190,7 @@ if submit:
     if not name_value:
         errors.append("Add the contact name for the call.")
     if not relationship_value:
-        errors.append("Select how you’re connected.")
+        errors.append("Select how you're connected.")
     if not phone_digits or not PHONE_PATTERN.match(phone_digits):
         errors.append("Enter a 10-digit phone number so we can confirm details by text.")
     if zip_value and not zip_value.isdigit():
@@ -206,7 +206,7 @@ if submit:
     if not isinstance(preferred_date, date) or preferred_date < (date.today() + timedelta(days=1)):
         errors.append("Select a date at least a day in the future.")
     if email_value and "@" not in email_value:
-        errors.append("Email looks off—double-check for typos.")
+        errors.append("Email looks off-double-check for typos.")
 
     if errors:
         errors_placeholder.error("\n".join(errors))

@@ -51,7 +51,7 @@ def _drawer_body(pfma_state: dict[str, object]) -> dict[str, object]:
     verify_key = "pfma_benefits_verified"
     if verify_key not in st.session_state:
         st.session_state[verify_key] = bool(section_data.get("verified"))
-    st.checkbox("I’ve verified this information", key=verify_key)
+    st.checkbox("I've verified this information", key=verify_key)
 
     return {
         "insurance_company": st.session_state[carrier_key],
@@ -68,7 +68,7 @@ result = render_drawer(
     badge="Proud of the Money duck",
     description="Confirm funding levers so your advisor can fast-track offsets and paperwork.",
     body=_drawer_body,
-    footer_note="Not sure on coverage? Share what you know—your advisor will help verify.",
+    footer_note="Not sure on coverage? Share what you know-your advisor will help verify.",
 )
 
 
@@ -78,7 +78,7 @@ if result.saved:
     if not payload.get("insurance_company"):
         errors.append("Add the primary insurance carrier.")
     if not payload.get("verified"):
-        errors.append("Confirm you’ve verified the coverage details—or tick it once you do.")
+        errors.append("Confirm you've verified the coverage details-or tick it once you do.")
     if errors:
         error_placeholder.error("\n".join(errors))
     else:

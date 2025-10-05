@@ -102,7 +102,7 @@ with cost_planner_page_container():
     elif triggered == "open_mods":
         st.switch_page("pages/cost_planner_mods.py")
 
-    render_wizard_help("You can revisit modules any time—progress saves automatically.")
+    render_wizard_help("You can revisit modules any time-progress saves automatically.")
 
     clicked = render_nav_buttons(
         [

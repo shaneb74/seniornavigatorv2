@@ -19,7 +19,7 @@ HEALTH_CONDITIONS = (
     "Diabetes",
     "Heart condition",
     "Stroke",
-    "Parkinson’s",
+    "Parkinson's",
     "Recent surgery",
     "Chronic pain",
 )
@@ -51,7 +51,7 @@ def _drawer_body(pfma_state: dict[str, object]) -> dict[str, object]:
         HEALTH_CONDITIONS,
         current_conditions,
         key="pfma_cost_conditions",
-        help="Add anything else in the notes box—your advisor will read the full context.",
+        help="Add anything else in the notes box-your advisor will read the full context.",
     )
 
     mobility_default = section_data.get("mobility") or qualifiers.get("mobility_status")

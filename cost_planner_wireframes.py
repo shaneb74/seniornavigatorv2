@@ -979,9 +979,9 @@ def render_cost_planner_skipped() -> None:
     st.caption("These steps were skipped or only partially completed.")
 
     skipped_items = [
-        "Benefits & income — Add pension statement",
-        "Home modifications — Confirm vendor quotes",
-        "Notes & extras — Capture sibling commitments",
+        "Benefits & income - Add pension statement",
+        "Home modifications - Confirm vendor quotes",
+        "Notes & extras - Capture sibling commitments",
     ]
     for item in skipped_items:
         st.markdown(f"<div class='wizard-suggestion wizard-suggestion-warn'>{item}</div>", unsafe_allow_html=True)
@@ -1003,7 +1003,7 @@ def render_cost_planner_evaluation() -> None:
     st.caption("Navi checked your plan and found a few things to confirm.")
 
     st.markdown(
-        "<div class='wizard-suggestion wizard-suggestion-info'>Hey, I'm Navi. Your plan is coming together—here are a few items to double-check.</div>",
+        "<div class='wizard-suggestion wizard-suggestion-info'>Hey, I'm Navi. Your plan is coming together-here are a few items to double-check.</div>",
         unsafe_allow_html=True,
     )
     st.markdown(

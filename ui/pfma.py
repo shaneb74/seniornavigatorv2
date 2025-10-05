@@ -420,7 +420,7 @@ def render_header(subtitle: str | None = None) -> None:
     st.markdown('<div class="pfma-hero">', unsafe_allow_html=True)
     st.markdown("<h1>Plan for My Advisor</h1>", unsafe_allow_html=True)
     st.markdown(
-        "<p>Get your ducks in a row 🦆 before your concierge call. We’ll gather the essentials so your advisor can jump straight into solutions.</p>",
+        "<p>Get your ducks in a row 🦆 before your concierge call. We'll gather the essentials so your advisor can jump straight into solutions.</p>",
         unsafe_allow_html=True,
     )
     if subtitle:

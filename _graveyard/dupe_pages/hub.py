@@ -17,7 +17,7 @@ def main() -> None:
     planner_display = planner.get("name") or "You"
 
     st.title("Care Planning Hub")
-    st.caption(f"Planning for **{display_name}** — set up by **{planner_display}**")
+    st.caption(f"Planning for **{display_name}** - set up by **{planner_display}**")
 
     # Existing hub tiles remain unchanged for this patch.
 

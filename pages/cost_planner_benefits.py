@@ -117,7 +117,7 @@ with cost_planner_page_container():
             set_numeric("offset_va_benefits", va)
         else:
             set_numeric("offset_va_benefits", 0.0)
-            render_suggestion("VA benefits hidden – not eligible per Audiencing.", tone="warn")
+            render_suggestion("VA benefits hidden - not eligible per Audiencing.", tone="warn")
     with col_benefit2:
         medicaid = st.number_input(
             "Medicaid coverage",

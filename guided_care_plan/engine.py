@@ -11,7 +11,7 @@ CARE_INTENSITIES = ["low", "med", "high"]
 
 CHRONIC_FRIENDLY_LABELS = {
     "diabetes": "Diabetes",
-    "parkinson": "Parkinson’s",
+    "parkinson": "Parkinson's",
     "stroke": "Stroke",
     "copd": "COPD",
     "chf": "Heart failure (CHF)",

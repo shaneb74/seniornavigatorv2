@@ -69,7 +69,7 @@ result = render_drawer(
     badge="Finishes the You duck",
     description="Confirm how we should address you and where to send follow-ups.",
     body=_drawer_body,
-    footer_note="Personal info stays private—only your advisor sees it.",
+    footer_note="Personal info stays private-only your advisor sees it.",
 )
 
 
@@ -86,6 +86,6 @@ if result.saved:
         error_placeholder.error("\n".join(errors))
     else:
         update_section(SECTION_KEY, payload)
-        st.toast("Contact info confirmed—time for the duck parade! 🦆")
+        st.toast("Contact info confirmed-time for the duck parade! 🦆")
         if result.next_step:
             go_to_step(result.next_step)

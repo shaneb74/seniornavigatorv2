@@ -43,7 +43,7 @@ all_ready = all(sections.get(key, {}).get("complete") for key in DRAWER_KEYS)
 st.markdown('<div class="pfma-card">', unsafe_allow_html=True)
 st.markdown("<h3>Your ducks are lining up!</h3>", unsafe_allow_html=True)
 if all_ready:
-    st.success("Every badge is unlocked. Your advisor can jump straight into next steps—great work!")
+    st.success("Every badge is unlocked. Your advisor can jump straight into next steps-great work!")
 else:
     st.info("You can still polish details later. Anything marked in progress stays editable.")
 st.markdown('</div>', unsafe_allow_html=True)
@@ -90,6 +90,6 @@ with right:
     st.markdown("<h3>Exports</h3><p style='margin:0;color:var(--ink-muted);'>Share with family or care pros.</p>", unsafe_allow_html=True)
     st.download_button("Download PFMA (PDF)", data=pdf_buffer, file_name="pfma_summary.pdf", mime="application/pdf")
     st.download_button("Download Data (CSV)", data=csv_buffer, file_name="pfma_data.csv", mime="text/csv")
-    st.markdown('<div class="pfma-note">We’ll call you soon — check your messages for confirmation.</div>', unsafe_allow_html=True)
+    st.markdown("<div class=\"pfma-note\">We'll call you soon - check your messages for confirmation.</div>", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 

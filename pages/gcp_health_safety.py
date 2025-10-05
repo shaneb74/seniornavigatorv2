@@ -84,7 +84,7 @@ owns_home = snapshot.get("qualifiers", {}).get("owns_home")
 
 _ensure_widget_defaults(answers)
 
-st.title("Guided Care Plan — Health & Safety")
+st.title("Guided Care Plan - Health & Safety")
 st.caption("Section 4 of 5")
 
 render_stepper(4)

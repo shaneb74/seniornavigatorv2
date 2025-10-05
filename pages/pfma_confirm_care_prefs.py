@@ -42,7 +42,7 @@ def _drawer_body(pfma_state: dict[str, object]) -> dict[str, object]:
     section_data = pfma_state["sections"].get(SECTION_KEY, {}).get("data", {})
 
     st.markdown(
-        "<div class='pfma-note'>Little preferences make a big difference. Capture what sparks joy or what’s a dealbreaker.</div>",
+        "<div class='pfma-note'>Little preferences make a big difference. Capture what sparks joy or what's a dealbreaker.</div>",
         unsafe_allow_html=True,
     )
 
@@ -61,7 +61,7 @@ def _drawer_body(pfma_state: dict[str, object]) -> dict[str, object]:
     radius_key = "pfma_care_prefs_radius"
     if radius_key not in st.session_state:
         st.session_state[radius_key] = section_data.get("radius", 15)
-    st.slider("Preferred radius from home (miles)", 5, 50, key=radius_key, help="We’ll expand if there are limited matches.")
+    st.slider("Preferred radius from home (miles)", 5, 50, key=radius_key, help="We'll expand if there are limited matches.")
 
     settings = chip_multiselect(
         "Preferred care settings",
@@ -82,9 +82,9 @@ result = render_drawer(
     step_key=SECTION_KEY,
     title="Care Preferences ⭐",
     badge="Celebrates the Joy duck",
-    description="Flag lifestyle non-negotiables so your advisor can shortlist matches you’ll feel good about.",
+    description="Flag lifestyle non-negotiables so your advisor can shortlist matches you'll feel good about.",
     body=_drawer_body,
-    footer_note="Preference tweaks? Update anytime—even after the advisor call.",
+    footer_note="Preference tweaks? Update anytime-even after the advisor call.",
 )
 
 
@@ -97,6 +97,6 @@ if result.saved:
         error_placeholder.error("\n".join(errors))
     else:
         update_section(SECTION_KEY, payload)
-        st.toast("Preferences saved—your ducks are delighted.")
+        st.toast("Preferences saved-your ducks are delighted.")
         if result.next_step:
             go_to_step(result.next_step)

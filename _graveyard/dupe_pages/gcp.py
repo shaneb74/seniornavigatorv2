@@ -39,7 +39,7 @@ def main():
                 answers["funding_confidence"] = funding_choice
             else:
                 st.info(
-                    "Medicaid changes how care is paid. We’ll still show a care recommendation, "
+                    "Medicaid changes how care is paid. We'll still show a care recommendation, "
                     "then guide the next step."
                 )
                 funding_choice = answers.get("funding_confidence")

@@ -39,9 +39,9 @@ Families can start light and go deeper when they're ready. Pick the path
 that best fits the decisions you're making today. You can always return
 to switch modes later.
 
-- **Estimate Costs** — quick, high-level monthly estimate using a few
+- **Estimate Costs** - quick, high-level monthly estimate using a few
   selections.
-- **Plan Costs** — full planning workflow with modules, offsets, and
+- **Plan Costs** - full planning workflow with modules, offsets, and
   runway tracking.
 """
     )

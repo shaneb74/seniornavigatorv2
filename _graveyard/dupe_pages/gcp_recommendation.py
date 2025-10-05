@@ -28,7 +28,7 @@ def main():
             st.rerun()
         st.markdown("</div>", unsafe_allow_html=True)
 
-        st.write("We’ll show your personalized recommendation here with a short explanation.")
+        st.write("We'll show your personalized recommendation here with a short explanation.")
 
         pay = gcp.get("payment_context") or (
             "medicaid" if answers.get("medicaid_status") == "yes" else "private"
@@ -36,7 +36,7 @@ def main():
 
         if pay == "medicaid":
             st.info(
-                "Medicaid covers long-term care differently. Next we’ll guide you to Plan for My Advisor. "
+                "Medicaid covers long-term care differently. Next we'll guide you to Plan for My Advisor. "
                 "Cost Planner is optional."
             )
         else:

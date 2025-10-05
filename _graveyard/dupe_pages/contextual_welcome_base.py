@@ -33,7 +33,7 @@ def render(which: str) -> None:
     _left, center_col, _right = st.columns([1, 2, 1])
     with center_col:
         st.title("Welcome")
-        st.caption("Let’s set up your planning details. You can change these later.")
+        st.caption("Let's set up your planning details. You can change these later.")
 
         def form_body() -> None:
             care_recipient = people["care_recipient"]
@@ -77,7 +77,7 @@ def render(which: str) -> None:
                 planner["name"] = care_recipient["name"]
                 planner["relationship"] = "self"
                 st.info(
-                    "You’re planning for yourself. We’ll use your name for both planner and person."
+                    "You're planning for yourself. We'll use your name for both planner and person."
                 )
 
             st.session_state["people"] = {
@@ -87,7 +87,7 @@ def render(which: str) -> None:
 
             errors: list[str] = []
             if not care_recipient["name"]:
-                errors.append("Please enter the name of the person you’re planning for.")
+                errors.append("Please enter the name of the person you're planning for.")
             if is_proxy and not planner["name"]:
                 errors.append("Please enter your name.")
             if is_proxy and not planner["relationship"]:

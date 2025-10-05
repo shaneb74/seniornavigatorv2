@@ -42,7 +42,7 @@ def _render_multiselect(question_id: str) -> list[str]:
 answers, _ = ensure_gcp_session()
 _ensure_widget_defaults(answers)
 
-st.title("Guided Care Plan — Context & Preferences")
+st.title("Guided Care Plan - Context & Preferences")
 st.caption("Section 5 of 5")
 
 render_stepper(5)

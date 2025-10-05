@@ -159,7 +159,7 @@ def render_intro() -> None:
             unsafe_allow_html=True,
         )
 
-        st.markdown("### Section 1 — Financial Eligibility")
+        st.markdown("### Section 1 - Financial Eligibility")
         medicaid_default = st.session_state.get(MEDICAID_SESSION_KEY)
         if medicaid_default not in medicaid_values:
             medicaid_default = medicaid_values[0]
@@ -191,7 +191,7 @@ def render_intro() -> None:
 
         funding_choice = None
         if medicaid_choice and medicaid_choice != "yes":
-            st.markdown("### Section 2 — Financial Confidence")
+            st.markdown("### Section 2 - Financial Confidence")
             funding_default = st.session_state.get(FUNDING_SESSION_KEY)
             if funding_default not in funding_values:
                 funding_default = funding_values[0]

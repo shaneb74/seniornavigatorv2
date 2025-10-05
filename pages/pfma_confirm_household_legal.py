@@ -70,7 +70,7 @@ def _drawer_body(pfma_state: dict[str, object]) -> dict[str, object]:
     toggle_key = "pfma_household_verified"
     if toggle_key not in st.session_state:
         st.session_state[toggle_key] = bool(section_data.get("household_confirmed"))
-    st.checkbox("Household confirmed", key=toggle_key, help="Tick this when you’ve double-checked with your loved one.")
+    st.checkbox("Household confirmed", key=toggle_key, help="Tick this when you've double-checked with your loved one.")
 
     return {
         "marital_status": st.session_state.get(f"pfma_segment_{SECTION_KEY}_marital"),
