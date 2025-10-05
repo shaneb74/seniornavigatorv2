@@ -199,27 +199,18 @@ def ensure_page(path: str, title: str, icon: str, default: bool = False):
 # ==========================================
 # Pages to register (controls nav order)
 # ==========================================
-INTENDED = [
+INTENDED = [    ("pages/welcome.py", "Welcome", "👋", True),
+    ("pages/hub.py", "Your Concierge Care Hub", "🏠", False),
     ("pages/gcp_v2/gcp_landing_v2.py", "Guided Care Plan · Start", "🗺️", False),
     ("pages/gcp_v2/gcp_daily_life_v2.py", "GCP · Daily Life & Support", "🧭", False),
     ("pages/gcp_v2/gcp_health_safety_v2.py", "GCP · Health & Safety", "🩺", False),
     ("pages/gcp_v2/gcp_context_prefs_v2.py", "GCP · Context & Preferences", "🎯", False),
     ("pages/gcp_v2/gcp_recommendation_v2.py", "GCP · Recommendation", "✅", False),
-
-    ("pages/welcome.py", "Welcome", "👋", True),
-    ("pages/hub.py", "Your Concierge Care Hub", "🏠", False),
-
-    # contextual welcome wrappers
     ("pages/contextual_welcome_self.py", "Contextual Welcome - For You", "ℹ️", False),
     ("pages/contextual_welcome_loved_one.py", "Contextual Welcome - For Loved Ones", "ℹ️", False),
-
     ("pages/professional_mode.py", "Professional Mode", "🧑", False),
-
-    # --- Cost Planner v2 (PFMA-style UI) ---
-                                        ("pages/expert_review.py", "Expert Review", "🔎", False),
-
+    ("pages/expert_review.py", "Expert Review", "🔎", False),
     ("pages/pfma.py", "Plan for My Advisor", "🧭", False),
-
     ("pages/pfma_confirm_care_plan.py", "PFMA * Care Plan Confirmer", "✅", False),
     ("pages/pfma_confirm_cost_plan.py", "PFMA * Cost Plan Confirmer", "💰", False),
     ("pages/pfma_confirm_care_needs.py", "PFMA * Care Needs", "🩺", False),
@@ -227,7 +218,6 @@ INTENDED = [
     ("pages/pfma_confirm_household_legal.py", "PFMA * Household & Legal", "🏠", False),
     ("pages/pfma_confirm_benefits_coverage.py", "PFMA * Benefits & Coverage", "💳", False),
     ("pages/pfma_confirm_personal_info.py", "PFMA * Personal Info", "👤", False),
-
     ("pages/login.py", "Login", "🔐", False),
     ("pages/ai_advisor.py", "AI Advisor", "🤖", False),
     ("pages/waiting_room.py", "Waiting Room", "⏳", False),
@@ -235,8 +225,6 @@ INTENDED = [
     ("pages/export_results.py", "Export Results", "📥", False),
     ("pages/my_documents.py", "My Documents", "📁", False),
     ("pages/my_account.py", "My Account", "👤", False),
-
-    # --- Cost Planner v2 (PFMA style) ---
     ("pages/cost_planner_v2/cost_planner_landing_v2.py", "Cost Planner v2 · Landing", "💰", False),
     ("pages/cost_planner_v2/cost_planner_modules_hub_v2.py", "Cost Planner v2 · Modules", "🧰", False),
     ("pages/cost_planner_v2/cost_planner_income_v2.py", "Cost Planner v2 · Income", "🧾", False),
