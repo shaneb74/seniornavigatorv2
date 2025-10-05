@@ -34,16 +34,16 @@ def _design_mode_enabled() -> bool:
 # ==========================================
 # in app.py, replace _enforce_single_pages_dir with this version:
 
+
 def _enforce_single_pages_dir() -> None:
     from pathlib import Path
     roots = []
     for d in Path(".").glob("**/pages"):
-        sd = str(d).replace("\\", "/")
-        if not d.is_dir():
+        sd = str(d.resolve()).replace("\\","/").lower()
+        if not d.is_dir(): 
             continue
-        if any(tok in sd for tok in ("/_graveyard/", "/.venv/")):
+        if ("_graveyard" in sd) or ("/.venv/" in sd) or ("/.git/" in sd):
             continue
-        # Only count dirs that actually contain .py files
         if not any(d.rglob("*.py")):
             continue
         roots.append(d)
@@ -52,6 +52,7 @@ def _enforce_single_pages_dir() -> None:
         raise RuntimeError(f"❌ Invalid pages directories detected: {roots}\n"
                            f"Expected exactly one at {expected}")
 _enforce_single_pages_dir()
+
 
 # ==========================================
 # Sys.path hygiene: keep repo clean & stable
