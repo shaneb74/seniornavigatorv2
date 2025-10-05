@@ -65,6 +65,7 @@ def _as_date(v) -> date | None:
         if isinstance(v, date):
             return v
     if isinstance(v, str) and v:
+        # try ISO first, then a couple common formats
         try:
             return datetime.fromisoformat(v).date()
         except Exception:
@@ -164,17 +165,34 @@ with right:
 
     segmented_control("Preferred time of day", TIME_SLOTS, key="time_slot", default=booking.get("time_slot"))
 
-    # --- Preferred date (robust) ---
+    # --- Safe date handling (fixes the TypeError while preserving UI) ---
     min_date = date.today() + timedelta(days=1)
-    raw = booking.get("preferred_date")
+    stored_date_raw = booking.get("preferred_date")
+    # First try the shared helper, then our local coercion as a belt-and-suspenders
+    stored_date = ensure_date(stored_date_raw) or _as_date(stored_date_raw) or min_date
+    # --- robust date coercion to avoid comparing SimpleNamespace/str to date ---
+_sd = stored_date
+# unwrap SimpleNamespace(date=...)
+if isinstance(_sd, SimpleNamespace):
+    _sd = getattr(_sd, "date", None)
 
-    # Try shared helper, then local coercion
-    stored_date = ensure_date(raw) or _as_date(raw)
+# parse ISO string if present
+if isinstance(_sd, str):
+    try:
+        _sd = datetime.fromisoformat(_sd).date()
+    except Exception:
+        _sd = None
 
-    if not isinstance(stored_date, date):
-        stored_date = min_date
-    elif stored_date < min_date:
-        stored_date = min_date
+# default to min_date if still not a real date
+if not isinstance(_sd, date):
+    _sd = min_date
+
+# clamp to min_date
+if _sd < min_date:
+    _sd = min_date
+
+stored_date = _sd
+# --- end robust date coercion ---
 
     st.date_input(
         "Preferred date",
