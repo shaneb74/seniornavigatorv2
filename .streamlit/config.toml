@@ -1,5 +1,9 @@
+[server]
+headless = true
+enableCORS = false
+
 [theme]
-primaryColor = "#0B5CD8"
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F6F8FA"
-textColor = "#111418"
+primaryColor="#0b5cd8"
+backgroundColor="#ffffff"
+secondaryBackgroundColor="#f6f8fa"
+textColor="#111418"
