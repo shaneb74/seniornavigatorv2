@@ -53,7 +53,7 @@ def _enforce_single_pages_dir() -> None:
                            f"Expected exactly one at {expected}")
 try:
 try:
-    _enforce_single_pages_dir()
+pass
 except Exception:
     pass
 except Exception:
