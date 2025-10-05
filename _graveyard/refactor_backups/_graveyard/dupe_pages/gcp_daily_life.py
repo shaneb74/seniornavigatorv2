@@ -51,12 +51,12 @@ def main():
         with c1:
             st.markdown('<div data-variant="secondary">', unsafe_allow_html=True)
             if buttons.secondary("Back to financial questions", key="gcp_daily_back"):
-                safe_switch_page("pages/gcp.py")
+                safe_switch_page("ui/pages/gcp.py")
             st.markdown("</div>", unsafe_allow_html=True)
 
         with c2:
             if buttons.primary("Continue to Health & Safety", key="gcp_to_health"):
-                safe_switch_page("pages/gcp_health_safety.py")
+                safe_switch_page("ui/pages/gcp_health_safety.py")
 
     gcp_section("Guided Care Plan", "Daily Life & Support", form)
     buttons.page_end()

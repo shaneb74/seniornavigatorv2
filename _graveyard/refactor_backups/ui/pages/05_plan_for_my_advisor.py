@@ -20,7 +20,7 @@ back_col, next_col = st.columns([1, 1])
 with back_col:
     with buttons.variant("secondary"):
         if buttons.secondary("Back", key="pfma_back"):
-            safe_switch_page("pages/gcp_recommendation.py")
+            safe_switch_page("ui/pages/gcp_recommendation.py")
 with next_col:
     if buttons.primary("Book Time with an Advisor", key="pfma_next"):
         st.info("Booking flow coming soon.")

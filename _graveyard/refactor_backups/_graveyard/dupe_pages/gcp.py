@@ -61,7 +61,7 @@ def main():
             st.markdown("</div>", unsafe_allow_html=True)
 
             if go:
-                safe_switch_page("pages/gcp_daily_life.py")
+                safe_switch_page("ui/pages/gcp_daily_life.py")
 
     gcp_section("Guided Care Plan", "Financial", form)
 

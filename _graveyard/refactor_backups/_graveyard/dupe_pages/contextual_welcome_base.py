@@ -109,7 +109,7 @@ def render(which: str) -> None:
                 st.session_state.setdefault("cp_status", "start")
                 st.session_state.setdefault("pfma_status", "start")
 
-                safe_switch_page("pages/hub.py")
+                safe_switch_page("ui/pages/hub.py")
 
         card_panel(
             title=(

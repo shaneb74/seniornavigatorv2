@@ -19,21 +19,21 @@ class Step:
 
 
 STEPS: List[Step] = [
-    Step("mode", "Mode", "pages/cost_planner.py"),
-    Step("qualifiers", "Qualifiers", "pages/cost_planner.py"),
-    Step("housing", "Housing", "pages/cost_planner_housing.py", drawer_key="housing"),
-    Step("care", "Care", "pages/cost_planner_home_care.py", drawer_key="care"),
-    Step("medical", "Medical", "pages/cost_planner_daily_aids.py", drawer_key="medical"),
+    Step("mode", "Mode", "ui/pages/cp/00_mode_selection.py"),
+    Step("qualifiers", "Qualifiers", "ui/pages/cp/01_qualifiers.py"),
+    Step("housing", "Housing", "ui/pages/cp/10_housing.py", drawer_key="housing"),
+    Step("care", "Care", "ui/pages/cp/20_care.py", drawer_key="care"),
+    Step("medical", "Medical", "ui/pages/cp/30_medical.py", drawer_key="medical"),
     Step(
         "insurance_benefits",
         "Insurance & Benefits",
-        "pages/cost_planner_benefits.py",
+        "ui/pages/cp/40_insurance_benefits.py",
         drawer_key="insurance_benefits",
     ),
-    Step("debts_other", "Debts & Other", "pages/cost_planner_modules.py", drawer_key="debts_other"),
-    Step("review", "Review", "pages/cost_planner_estimate_summary.py"),
-    Step("summary", "Summary", "pages/cost_planner_estimate_summary.py"),
-    Step("confirm", "Confirm", "pages/cost_planner_evaluation.py"),
+    Step("debts_other", "Debts & Other", "ui/pages/cp/50_debts_other.py", drawer_key="debts_other"),
+    Step("review", "Review", "ui/pages/cp/60_review.py"),
+    Step("summary", "Summary", "ui/pages/cp/70_summary.py"),
+    Step("confirm", "Confirm", "ui/pages/cp/80_confirm.py"),
 ]
 
 

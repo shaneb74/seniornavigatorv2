@@ -20,10 +20,10 @@ def main() -> None:
     with center_col:
         if st.button("I'm planning for myself", use_container_width=True):
             _set_entry("self")
-            safe_switch_page("pages/contextual_welcome.py")
+            safe_switch_page("ui/pages/contextual_welcome.py")
         if st.button("I'm helping someone", use_container_width=True):
             _set_entry("proxy")
-            safe_switch_page("pages/contextual_welcome.py")
+            safe_switch_page("ui/pages/contextual_welcome.py")
 
 
 if __name__ == "__main__":

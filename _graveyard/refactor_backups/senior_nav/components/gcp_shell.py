@@ -5,11 +5,11 @@ from senior_nav.components.card import card_panel
 from senior_nav.components.stepper import render as render_stepper
 
 GCP_STEPS = [
-    ("Financial", "pages/gcp.py"),
-    ("Daily Life & Support", "pages/gcp_daily_life.py"),
-    ("Health & Safety", "pages/gcp_health_safety.py"),
-    ("Context & Preferences", "pages/gcp_context_prefs.py"),
-    ("Recommendation", "pages/gcp_recommendation.py"),
+    ("Financial", "ui/pages/gcp.py"),
+    ("Daily Life & Support", "ui/pages/gcp_daily_life.py"),
+    ("Health & Safety", "ui/pages/gcp_health_safety.py"),
+    ("Context & Preferences", "ui/pages/gcp_context_prefs.py"),
+    ("Recommendation", "ui/pages/gcp_recommendation.py"),
 ]
 
 

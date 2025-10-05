@@ -74,12 +74,12 @@ def main():
         with c1:
             st.markdown('<div data-variant="secondary">', unsafe_allow_html=True)
             if buttons.secondary("Back", key="gcp_health_back"):
-                safe_switch_page("pages/gcp_daily_life.py")
+                safe_switch_page("ui/pages/gcp_daily_life.py")
             st.markdown("</div>", unsafe_allow_html=True)
 
         with c2:
             if buttons.primary("Continue to Context & Preferences", key="gcp_to_context"):
-                safe_switch_page("pages/gcp_context_prefs.py")
+                safe_switch_page("ui/pages/gcp_context_prefs.py")
 
     gcp_section("Guided Care Plan", "Health & Safety", form)
     buttons.page_end()

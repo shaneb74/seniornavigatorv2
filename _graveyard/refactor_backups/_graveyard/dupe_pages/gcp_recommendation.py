@@ -47,13 +47,13 @@ def main():
         with c1:
             st.markdown('<div data-variant="secondary">', unsafe_allow_html=True)
             if buttons.secondary("Back", key="gcp_rec_back"):
-                safe_switch_page("pages/gcp_context_prefs.py")
+                safe_switch_page("ui/pages/gcp_context_prefs.py")
             st.markdown("</div>", unsafe_allow_html=True)
 
         with c2:
             if pay == "medicaid":
                 if buttons.primary("Continue to Plan for My Advisor", key="gcp_to_pfma"):
-                    safe_switch_page("pages/pfma.py")
+                    safe_switch_page("ui/pages/05_plan_for_my_advisor.py")
             else:
                 if buttons.primary("Continue to Cost Planner", key="gcp_to_cp"):
                     safe_switch_page("ui/pages/03_cost_planner.py")
