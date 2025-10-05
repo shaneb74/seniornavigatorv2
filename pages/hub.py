@@ -15,7 +15,7 @@ def _goto(path: str) -> None:
         st.switch_page(path)  # type: ignore[attr-defined]
     except Exception:
         st.query_params["next"] = path
-        st.experimental_rerun()
+        st.rerun()
 
 def _tile(*, icon: str, status: str, title: str, desc: str, cta: str, dest: str, key: str) -> None:
     with st.container(border=True):
