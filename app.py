@@ -32,12 +32,21 @@ def _design_mode_enabled() -> bool:
 # ==========================================
 # Guard: exactly one active ./pages directory
 # ==========================================
+# in app.py, replace _enforce_single_pages_dir with this version:
+
 def _enforce_single_pages_dir() -> None:
     from pathlib import Path
-    roots = [
-        p for p in Path(".").glob("**/pages")
-        if p.is_dir() and "_graveyard" not in str(p) and ".venv" not in str(p)
-    ]
+    roots = []
+    for d in Path(".").glob("**/pages"):
+        sd = str(d).replace("\\", "/")
+        if not d.is_dir():
+            continue
+        if any(tok in sd for tok in ("/_graveyard/", "/.venv/")):
+            continue
+        # Only count dirs that actually contain .py files
+        if not any(d.rglob("*.py")):
+            continue
+        roots.append(d)
     expected = (Path.cwd() / "pages").resolve()
     if len(roots) != 1 or roots[0].resolve() != expected:
         raise RuntimeError(f"❌ Invalid pages directories detected: {roots}\n"
