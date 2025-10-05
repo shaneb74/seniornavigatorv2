@@ -3,6 +3,10 @@ from __future__ import annotations
 
 import streamlit as st
 
+st.set_page_config(layout="wide")
+from ui.theme import inject_theme
+inject_theme()
+
 from ui.pfma import (
     apply_pfma_theme,
     ensure_pfma_state,
@@ -11,7 +15,6 @@ from ui.pfma import (
     segmented_control,
     update_section,
 )
-
 
 SECTION_KEY = "cost_plan"
 HEALTH_CONDITIONS = (
@@ -25,11 +28,9 @@ HEALTH_CONDITIONS = (
 )
 MOBILITY_OPTIONS = ("Independent", "Uses a cane", "Uses a walker", "Wheelchair", "Bed-bound")
 
-
 apply_pfma_theme()
 state = ensure_pfma_state()
 error_placeholder = st.empty()
-
 
 def _drawer_body(pfma_state: dict[str, object]) -> dict[str, object]:
     section_data = pfma_state["sections"].get(SECTION_KEY, {}).get("data", {})
@@ -83,7 +84,6 @@ def _drawer_body(pfma_state: dict[str, object]) -> dict[str, object]:
         "offsets": offsets,
     }
 
-
 result = render_drawer(
     step_key=SECTION_KEY,
     title="Cost Planner Confirmer 💡",
@@ -92,7 +92,6 @@ result = render_drawer(
     body=_drawer_body,
     footer_note="Need deeper edits? Reopen Cost Planner to refresh the numbers.",
 )
-
 
 if result.saved:
     payload = result.payload

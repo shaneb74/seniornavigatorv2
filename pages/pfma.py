@@ -7,6 +7,10 @@ from types import SimpleNamespace
 
 import streamlit as st
 
+st.set_page_config(layout="wide")
+from ui.theme import inject_theme
+inject_theme()
+
 from ui.pfma import (
     apply_pfma_theme,
     ensure_date,
@@ -41,7 +45,6 @@ TIME_SLOTS = ("Morning", "Midday", "Afternoon", "Evening")
 
 PHONE_PATTERN = re.compile(r"^\d{10}$")
 
-
 def _init_field(key: str, default: str | None = "") -> str:
     session_key = f"pfma_booking_{key}"
     booking = ensure_pfma_state()["booking"]
@@ -49,12 +52,10 @@ def _init_field(key: str, default: str | None = "") -> str:
         st.session_state[session_key] = booking.get(key, default)
     return session_key
 
-
 def _format_phone(digits: str) -> str:
     if len(digits) != 10:
         return digits
     return f"({digits[:3]}) {digits[3:6]}-{digits[6:]}"
-
 
 def _as_date(v) -> date | None:
     """Coerce assorted values into a datetime.date or return None."""
@@ -74,7 +75,6 @@ def _as_date(v) -> date | None:
                 except Exception:
                     pass
     return None
-
 
 apply_pfma_theme()
 state = ensure_pfma_state()

@@ -126,8 +126,7 @@ def _inject_global_css() -> None:
         v = int(css_path.stat().st_mtime)
         st.markdown(f"<style>{extra}</style><!-- v:{v} -->", unsafe_allow_html=True)
     inject_theme()
-_inject_global_css()
-
+# _inject_global_css()  # moved into pages after set_page_config
 # ==========================================
 # Pre-flight syntax check for page modules
 # (kept: catches bad edits before navigation)

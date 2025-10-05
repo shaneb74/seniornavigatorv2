@@ -3,11 +3,13 @@ from __future__ import annotations
 
 import streamlit as st
 
+st.set_page_config(layout="wide")
+from ui.theme import inject_theme
+inject_theme()
+
 from audiencing import ensure_audiencing_state
 from guided_care_plan import ensure_gcp_session, evaluate_guided_care, get_question_meta, render_stepper
 from guided_care_plan.state import current_audiencing_snapshot
-from ui.theme import inject_theme
-
 
 def _safe_switch_page(target: str) -> None:
     try:
@@ -16,10 +18,7 @@ def _safe_switch_page(target: str) -> None:
         st.query_params["next"] = target
         st.experimental_rerun()
 
-
-inject_theme()
 st.markdown('<div class="sn-scope gcp">', unsafe_allow_html=True)
-
 
 def _ensure_care_context():
     return st.session_state.setdefault(
@@ -31,7 +30,6 @@ def _ensure_care_context():
             "gcp_cost": None,
         },
     )
-
 
 def _render_chronic_selector(current_values):
     meta = get_question_meta("chronic")
@@ -49,7 +47,6 @@ def _render_chronic_selector(current_values):
         )
         submitted = st.form_submit_button("Refresh recommendation", type="primary")
     return submitted, selections
-
 
 answers, gcp_result = ensure_gcp_session()
 care_context = _ensure_care_context()

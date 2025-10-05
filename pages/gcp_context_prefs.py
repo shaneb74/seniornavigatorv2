@@ -3,23 +3,22 @@ from __future__ import annotations
 
 import streamlit as st
 
+st.set_page_config(layout="wide")
+from ui.theme import inject_theme
+inject_theme()
+
 from guided_care_plan import ensure_gcp_session, get_question_meta, render_stepper
 from senior_nav.components.choice_chips import choice_multi, normalize_none
-from ui.theme import inject_theme
 
-
-inject_theme()
 st.markdown('<div class="sn-scope gcp">', unsafe_allow_html=True)
 
 SECTION_QUESTIONS = ["chronic", "preferences"]
 NONE_EXCLUSIVE = {"chronic"}
 
-
 def _ensure_widget_defaults(answers):
     for question_id in SECTION_QUESTIONS:
         default_value = answers.get(question_id) or []
         st.session_state.setdefault(f"gcp_{question_id}", list(default_value))
-
 
 def _render_multiselect(question_id: str) -> list[str]:
     meta = get_question_meta(question_id)
@@ -37,7 +36,6 @@ def _render_multiselect(question_id: str) -> list[str]:
         if meta.get("description"):
             st.caption(meta["description"])
     return list(selections)
-
 
 answers, _ = ensure_gcp_session()
 _ensure_widget_defaults(answers)

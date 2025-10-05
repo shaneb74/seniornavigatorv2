@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-
 import streamlit as st
-from ui.cost_planner_template import render_nav
+st.set_page_config(layout="wide")
 from ui.theme import inject_theme
 inject_theme()
+
+from ui.cost_planner_template import render_nav
 
 from ui.cost_planner_template import (
 
@@ -17,9 +18,7 @@ from ui.cost_planner_template import (
     render_wizard_hero,
 )
 
-
 apply_cost_planner_theme()
-
 
 def _debug_log(msg: str) -> None:
     try:
@@ -27,9 +26,7 @@ def _debug_log(msg: str) -> None:
     except Exception:
         pass
 
-
 _debug_log("LOADED: cost_planner_mods.py")
-
 
 if "care_context" not in st.session_state:
     st.session_state.care_context = {
@@ -38,7 +35,6 @@ if "care_context" not in st.session_state:
         "planning_mode": "exploring",
         "care_flags": {},
     }
-
 
 with cost_planner_page_container():
     render_app_header()

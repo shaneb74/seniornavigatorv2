@@ -1,9 +1,10 @@
 from ui.ux_enhancements import apply_global_ux, render_stepper
 import streamlit as st
+
+st.set_page_config(layout="wide")
 from ui.theme import inject_theme
-
-
 inject_theme()
+
 st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
 apply_global_ux()

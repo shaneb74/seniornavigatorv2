@@ -3,11 +3,12 @@ from __future__ import annotations
 
 import streamlit as st
 
-from ui.components import card_panel
+st.set_page_config(layout="wide")
 from ui.theme import inject_theme
-
-
 inject_theme()
+
+from ui.components import card_panel
+
 # (moved to app.py) st.set_page_config(...)
 st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 

@@ -3,6 +3,10 @@ from __future__ import annotations
 
 import streamlit as st
 
+st.set_page_config(layout="wide")
+from ui.theme import inject_theme
+inject_theme()
+
 from ui.pfma import (
     apply_pfma_theme,
     chip_multiselect,
@@ -12,7 +16,6 @@ from ui.pfma import (
     segmented_control,
     update_section,
 )
-
 
 SECTION_KEY = "care_plan"
 ADL_OPTIONS = (
@@ -25,11 +28,9 @@ ADL_OPTIONS = (
     "Transportation",
 )
 
-
 apply_pfma_theme()
 state = ensure_pfma_state()
 error_placeholder = st.empty()
-
 
 def _drawer_body(pfma_state: dict[str, object]) -> dict[str, object]:
     section_data = pfma_state["sections"].get(SECTION_KEY, {}).get("data", {})
@@ -89,7 +90,6 @@ def _drawer_body(pfma_state: dict[str, object]) -> dict[str, object]:
         "safety_flags": safety_flags,
     }
 
-
 result = render_drawer(
     step_key=SECTION_KEY,
     title="Care Plan Confirmer 📋",
@@ -98,7 +98,6 @@ result = render_drawer(
     body=_drawer_body,
     footer_note="Need edits? Jump back to Guided Care Plan and come right back.",
 )
-
 
 if result.saved:
     payload = result.payload

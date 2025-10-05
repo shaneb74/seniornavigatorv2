@@ -1,9 +1,12 @@
 import streamlit as st
+
+st.set_page_config(layout="wide")
 from ui.theme import inject_theme
+inject_theme()
+
 from ui.pfma import render_drawer as pfma_drawer, segmented_control as pfma_seg, ensure_pfma_state
 from ui.cost_planner_template import render_drawer as cp_drawer, segmented_control as cp_seg, ensure_cp_state, NavButton, render_nav_buttons
 
-inject_theme()
 st.title("Style Sandbox")
 
 st.subheader("Tokens")

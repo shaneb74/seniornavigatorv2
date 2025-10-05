@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import streamlit as st
-from ui.theme import inject_theme
 
+st.set_page_config(layout="wide")
+from ui.theme import inject_theme
 inject_theme()
 
 st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
@@ -15,7 +16,6 @@ import base64
 import mimetypes
 from urllib.parse import urlparse
 from pathlib import Path
-from ui.theme import inject_theme
 
 import streamlit as st
 from PIL import Image, UnidentifiedImageError

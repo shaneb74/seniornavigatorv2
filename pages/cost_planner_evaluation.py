@@ -2,9 +2,11 @@
 from __future__ import annotations
 
 import streamlit as st
-from ui.cost_planner_template import render_nav
+st.set_page_config(layout="wide")
 from ui.theme import inject_theme
 inject_theme()
+
+from ui.cost_planner_template import render_nav
 
 from cost_planner_shared import (
     ensure_core_state,
@@ -27,9 +29,7 @@ from ui.cost_planner_template import (
     render_wizard_hero,
 )
 
-
 apply_cost_planner_theme()
-
 
 ensure_core_state()
 cp = st.session_state["cost_planner"]
@@ -52,7 +52,6 @@ if gcp.get("care_intensity") == "high" and get_numeric("care_base_rate") == 0:
 
 if cp["mode"] == "planning" and cp.get("runway_months") is None:
     expert_flag("Planning mode without positive runway")
-
 
 with cost_planner_page_container():
     render_app_header()

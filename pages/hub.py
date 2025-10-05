@@ -3,10 +3,12 @@ from __future__ import annotations
 
 import streamlit as st
 
+st.set_page_config(layout="wide")
+from ui.theme import inject_theme
+inject_theme()
+
 from audiencing import apply_audiencing_sanitizer, ensure_audiencing_state, snapshot_audiencing
 from ui.components import card_panel
-from ui.theme import inject_theme
-
 
 def safe_switch_page(target: str) -> None:
     try:
@@ -14,7 +16,6 @@ def safe_switch_page(target: str) -> None:
     except Exception:
         st.query_params["next"] = target
         st.experimental_rerun()
-
 
 def _ensure_care_context() -> dict[str, object]:
     return st.session_state.setdefault(
@@ -27,7 +28,6 @@ def _ensure_care_context() -> dict[str, object]:
         },
     )
 
-
 def _determine_gcp_status() -> tuple[str, str, str]:
     answers = st.session_state.get("gcp_answers", {})
     gcp_state = st.session_state.get("gcp", {})
@@ -39,7 +39,6 @@ def _determine_gcp_status() -> tuple[str, str, str]:
         return "In progress", "Resume plan", "primary"
     return "Start here", "Begin plan", "primary"
 
-
 def _determine_cost_status() -> tuple[str, str]:
     cost_planner = st.session_state.get("cost_planner", {})
     monthly_total = cost_planner.get("monthly_total")
@@ -47,13 +46,11 @@ def _determine_cost_status() -> tuple[str, str]:
         return "In progress", "Review costs"
     return "Optional", "Explore costs"
 
-
 def _determine_pfma_status() -> tuple[str, str]:
     pfma = st.session_state.get("pfma", {})
     if pfma.get("appointment_booked"):
         return "Scheduled", "View details"
     return "Next step", "Connect now"
-
 
 def _render_tile(
     *,
@@ -85,9 +82,8 @@ def _render_tile(
         if st.button(cta_label, type=cta_kind, use_container_width=True, key=f"hub_{destination}"):
             safe_switch_page(destination)
 
-
 def render_hub() -> None:
-    inject_theme()
+
     # (moved to app.py) st.set_page_config(...)
     st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
@@ -164,7 +160,6 @@ def render_hub() -> None:
             )
 
     st.markdown("</div>", unsafe_allow_html=True)
-
 
 render_hub()
 

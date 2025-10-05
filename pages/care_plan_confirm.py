@@ -1,11 +1,10 @@
-
 import streamlit as st
+
+st.set_page_config(layout="wide")
 from ui.theme import inject_theme
-
-
 inject_theme()
-st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
+st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
 # Debug: non-visual logger
 def _debug_log(msg: str):
@@ -16,7 +15,6 @@ def _debug_log(msg: str):
 
 _debug_log('LOADED: care_plan_confirm.py')
 
-
 # Guard: ensure session state keys exist across cold restarts
 if 'care_context' not in st.session_state:
     st.session_state.care_context = {
@@ -26,7 +24,6 @@ if 'care_context' not in st.session_state:
         'care_flags': {}
     }
 ctx = st.session_state.care_context
-
 
 # Care Plan Confirmation
 st.markdown('<div class="scn-hero">', unsafe_allow_html=True)

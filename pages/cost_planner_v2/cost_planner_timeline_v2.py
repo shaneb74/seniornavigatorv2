@@ -3,6 +3,10 @@ from __future__ import annotations
 
 import streamlit as st
 
+st.set_page_config(layout="wide")
+from ui.theme import inject_theme
+inject_theme()
+
 # Prefer shared theme/components if available, else graceful fallbacks.
 try:
     from ui.cost_planner_template import (

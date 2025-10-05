@@ -2,11 +2,13 @@
 from __future__ import annotations
 
 import streamlit as st
-from ui.cost_planner_template import render_nav
+st.set_page_config(layout="wide")
 from ui.theme import inject_theme
+inject_theme()
+
+from ui.cost_planner_template import render_nav
 
 from cost_planner_shared import ensure_core_state, format_currency, get_numeric, recompute_costs, set_numeric
-inject_theme()
 
 from ui.cost_planner_template import (
 
@@ -22,14 +24,11 @@ from ui.cost_planner_template import (
     render_wizard_hero,
 )
 
-
 apply_cost_planner_theme()
-
 
 ensure_core_state()
 cp = st.session_state["cost_planner"]
 gcp = st.session_state.get("gcp", {})
-
 
 with cost_planner_page_container():
     render_app_header()

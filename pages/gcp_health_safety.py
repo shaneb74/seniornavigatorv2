@@ -1,19 +1,17 @@
 """Guided Care Plan - Health & Safety section."""
 from __future__ import annotations
 
-
-
 import streamlit as st
+
+st.set_page_config(layout="wide")
+from ui.theme import inject_theme
+inject_theme()
 
 from guided_care_plan import ensure_gcp_session, get_question_meta, render_stepper
 from guided_care_plan.state import current_audiencing_snapshot
 from senior_nav.components.choice_chips import choice_multi, choice_single, normalize_none
-from ui.theme import inject_theme
 
-
-inject_theme()
 st.markdown('<div class="sn-scope gcp">', unsafe_allow_html=True)
-
 
 SECTION_QUESTIONS = [
     "cognition",
@@ -25,7 +23,6 @@ SECTION_QUESTIONS = [
 ]
 
 MULTI_QUESTIONS = {"behavior_risks"}
-
 
 def _ensure_widget_defaults(answers):
     for question_id in SECTION_QUESTIONS:
@@ -39,7 +36,6 @@ def _ensure_widget_defaults(answers):
             if default_value not in options:
                 default_value = options[0]
             st.session_state.setdefault(f"gcp_{question_id}", default_value)
-
 
 def _render_question(question_id: str, owns_home: bool | None):
     meta = get_question_meta(question_id).copy()
@@ -76,7 +72,6 @@ def _render_question(question_id: str, owns_home: bool | None):
                 help_text=meta.get("description"),
             )
     return choice
-
 
 answers, _ = ensure_gcp_session()
 snapshot = current_audiencing_snapshot()

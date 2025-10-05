@@ -5,6 +5,10 @@ import base64, mimetypes
 from pathlib import Path
 import streamlit as st
 
+st.set_page_config(layout="wide")
+from ui.theme import inject_theme
+inject_theme()
+
 # --- theme fallback (keeps app running even if theme import fails) ---
 try:
     from ui.theme import inject_theme  # type: ignore
@@ -176,7 +180,7 @@ main > div {
     )
 
 def render(which: str = "you") -> None:
-    inject_theme()
+
     # (moved to app.py) st.set_page_config(...)
     # Which flow?
     entry = "self" if str(which).lower() in ("you", "self", "me") else "proxy"

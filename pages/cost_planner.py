@@ -1,7 +1,9 @@
 import streamlit as st
-from ui.cost_planner_template import render_nav
+st.set_page_config(layout="wide")
 from ui.theme import inject_theme
 inject_theme()
+
+from ui.cost_planner_template import render_nav
 
 from ui.cost_planner_template import (
 
@@ -13,7 +15,6 @@ from ui.cost_planner_template import (
     render_wizard_help,
     render_wizard_hero,
 )
-
 
 apply_cost_planner_theme()
 
@@ -28,7 +29,6 @@ if "care_context" not in st.session_state:
 
 ctx = st.session_state.care_context
 person_name = ctx.get("person_name", "Your Loved One")
-
 
 with cost_planner_page_container():
     render_app_header()

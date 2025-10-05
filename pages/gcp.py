@@ -3,6 +3,10 @@ from __future__ import annotations
 
 import streamlit as st
 
+st.set_page_config(layout="wide")
+from ui.theme import inject_theme
+inject_theme()
+
 from audiencing import (
     apply_audiencing_sanitizer,
     compute_audiencing_route,
@@ -13,11 +17,9 @@ from guided_care_plan import ensure_gcp_session, get_question_meta, render_stepp
 from guided_care_plan.state import current_audiencing_snapshot
 from senior_nav.components.choice_chips import choice_single
 from ui.components import card_panel
-from ui.theme import inject_theme
 
 MEDICAID_SESSION_KEY = "gcp_medicaid_choice"
 FUNDING_SESSION_KEY = "gcp_funding_confidence"
-
 
 def safe_switch_page(target: str) -> None:
     try:
@@ -26,10 +28,8 @@ def safe_switch_page(target: str) -> None:
         st.query_params["next"] = target
         st.experimental_rerun()
 
-
 def _ensure_gate_state() -> dict[str, object]:
     return st.session_state.setdefault("gate", {})
-
 
 def _ensure_care_context() -> dict[str, object]:
     return st.session_state.setdefault(
@@ -42,13 +42,11 @@ def _ensure_care_context() -> dict[str, object]:
         },
     )
 
-
 def _persist_snapshot(state: dict[str, object]) -> None:
     apply_audiencing_sanitizer(state)
     compute_audiencing_route(state)
     snapshot = snapshot_audiencing(state)
     st.session_state["audiencing_snapshot"] = snapshot
-
 
 def _question_config(question_id: str) -> tuple[dict[str, object], list[str], dict[str, str]]:
     meta = get_question_meta(question_id)
@@ -67,7 +65,6 @@ def _question_config(question_id: str) -> tuple[dict[str, object], list[str], di
         option_map[value] = label
     return meta, values, option_map
 
-
 def _persist_medicaid(state: dict[str, object], choice: str | None) -> None:
     qualifiers = state.setdefault("qualifiers", {})
     if choice == "yes":
@@ -84,7 +81,6 @@ def _persist_medicaid(state: dict[str, object], choice: str | None) -> None:
     else:
         context_state["medicaid_unsure_flag"] = choice == "unsure"
 
-
 def _persist_gcp_context(choice: str | None, funding: str | None) -> None:
     _, gcp_state = ensure_gcp_session()
     if choice == "yes":
@@ -99,9 +95,8 @@ def _persist_gcp_context(choice: str | None, funding: str | None) -> None:
     elif funding is None:
         gcp_state["funding_confidence"] = None
 
-
 def render_intro() -> None:
-    inject_theme()
+
     # (moved to app.py) st.set_page_config(...)
     st.markdown('<div class="sn-scope gcp">', unsafe_allow_html=True)
 
@@ -260,7 +255,6 @@ def render_intro() -> None:
             )
 
     st.markdown("</div>", unsafe_allow_html=True)
-
 
 render_intro()
 

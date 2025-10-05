@@ -1,7 +1,9 @@
 import streamlit as st
-from ui.cost_planner_template import render_nav
+st.set_page_config(layout="wide")
 from ui.theme import inject_theme
 inject_theme()
+
+from ui.cost_planner_template import render_nav
 
 from ui.cost_planner_template import (
 
@@ -15,9 +17,7 @@ from ui.cost_planner_template import (
     render_wizard_hero,
 )
 
-
 apply_cost_planner_theme()
-
 
 if "care_context" not in st.session_state:
     st.session_state.care_context = {}
@@ -29,7 +29,6 @@ est_completed = bool(estimate.get("completed"))
 est_setting = estimate.get("setting_label") or estimate.get("setting") or ""
 est_zip = estimate.get("zip", "")
 est_monthly = estimate.get("estimate_monthly")
-
 
 with cost_planner_page_container():
     render_app_header()

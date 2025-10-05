@@ -1,18 +1,16 @@
 """Guided Care Plan - Daily Life & Support section."""
 from __future__ import annotations
 
-
-
 import streamlit as st
+
+st.set_page_config(layout="wide")
+from ui.theme import inject_theme
+inject_theme()
 
 from guided_care_plan import ensure_gcp_session, get_question_meta, render_stepper
 from senior_nav.components.choice_chips import choice_single
-from ui.theme import inject_theme
 
-
-inject_theme()
 st.markdown('<div class="sn-scope gcp">', unsafe_allow_html=True)
-
 
 SECTION_QUESTIONS = [
     "who_for",
@@ -20,7 +18,6 @@ SECTION_QUESTIONS = [
     "caregiver_support",
     "adl_help",
 ]
-
 
 def _ensure_widget_defaults(answers):
     for question_id in SECTION_QUESTIONS:
@@ -30,7 +27,6 @@ def _ensure_widget_defaults(answers):
         if default_value not in options:
             default_value = options[0]
         st.session_state.setdefault(f"gcp_{question_id}", default_value)
-
 
 def _render_radio(question_id: str) -> str:
     meta = get_question_meta(question_id)
@@ -50,7 +46,6 @@ def _render_radio(question_id: str) -> str:
         if meta.get("description"):
             st.caption(meta["description"])
     return choice
-
 
 answers, _ = ensure_gcp_session()
 _ensure_widget_defaults(answers)

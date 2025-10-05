@@ -3,6 +3,10 @@ from __future__ import annotations
 
 import streamlit as st
 
+st.set_page_config(layout="wide")
+from ui.theme import inject_theme
+inject_theme()
+
 from ui.pfma import (
     apply_pfma_theme,
     chip_multiselect,
@@ -11,7 +15,6 @@ from ui.pfma import (
     render_drawer,
     update_section,
 )
-
 
 SECTION_KEY = "care_prefs"
 PET_OPTIONS = ("Yes", "No", "Allergic", "Service animal only")
@@ -32,11 +35,9 @@ SETTING_OPTIONS = (
     "Skilled nursing",
 )
 
-
 apply_pfma_theme()
 state = ensure_pfma_state()
 error_placeholder = st.empty()
-
 
 def _drawer_body(pfma_state: dict[str, object]) -> dict[str, object]:
     section_data = pfma_state["sections"].get(SECTION_KEY, {}).get("data", {})
@@ -77,7 +78,6 @@ def _drawer_body(pfma_state: dict[str, object]) -> dict[str, object]:
         "settings": settings,
     }
 
-
 result = render_drawer(
     step_key=SECTION_KEY,
     title="Care Preferences ⭐",
@@ -86,7 +86,6 @@ result = render_drawer(
     body=_drawer_body,
     footer_note="Preference tweaks? Update anytime-even after the advisor call.",
 )
-
 
 if result.saved:
     payload = result.payload

@@ -5,6 +5,10 @@ import json
 
 import streamlit as st
 
+st.set_page_config(layout="wide")
+from ui.theme import inject_theme
+inject_theme()
+
 from cost_planner_shared import ensure_core_state, format_currency, recompute_costs
 from ui.cost_planner_template import (
     Metric,
@@ -18,16 +22,13 @@ from ui.cost_planner_template import (
     render_wizard_hero,
 )
 
-
 apply_cost_planner_theme()
-
 
 ensure_core_state()
 cp = st.session_state["cost_planner"]
 aud_snapshot = st.session_state.get("audiencing_snapshot") or st.session_state.get("audiencing")
 
 recompute_costs()
-
 
 with cost_planner_page_container():
     render_app_header()

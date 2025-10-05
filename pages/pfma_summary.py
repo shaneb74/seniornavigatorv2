@@ -3,6 +3,10 @@ from __future__ import annotations
 
 import streamlit as st
 
+st.set_page_config(layout="wide")
+from ui.theme import inject_theme
+inject_theme()
+
 from ui.pfma import (
     DRAWER_KEYS,
     DUCK_BADGES,
@@ -16,7 +20,6 @@ from ui.pfma import (
     set_badges_from_progress,
 )
 
-
 SECTION_LABELS = {
     "care_plan": "Care Plan Confirmer",
     "cost_plan": "Cost Planner Confirmer",
@@ -26,7 +29,6 @@ SECTION_LABELS = {
     "benefits_coverage": "Benefits & Coverage",
     "personal_info": "Personal Info",
 }
-
 
 apply_pfma_theme()
 state = ensure_pfma_state()
