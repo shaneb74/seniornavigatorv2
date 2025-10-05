@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 import re
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
+from types import SimpleNamespace
 
 import streamlit as st
 
@@ -17,7 +18,6 @@ from ui.pfma import (
     segmented_control,
     set_badges_from_progress,
 )
-
 
 RELATIONSHIP_OPTIONS = (
     "Self",
@@ -39,7 +39,6 @@ URGENCY_OPTIONS = (
 
 TIME_SLOTS = ("Morning", "Midday", "Afternoon", "Evening")
 
-
 PHONE_PATTERN = re.compile(r"^\d{10}$")
 
 
@@ -57,6 +56,27 @@ def _format_phone(digits: str) -> str:
     return f"({digits[:3]}) {digits[3:6]}-{digits[6:]}"
 
 
+def _as_date(v) -> date | None:
+    """Coerce assorted values into a datetime.date or return None."""
+    if isinstance(v, date):
+        return v
+    if isinstance(v, SimpleNamespace):
+        v = getattr(v, "date", None)
+        if isinstance(v, date):
+            return v
+    if isinstance(v, str) and v:
+        # try ISO first, then a couple common formats
+        try:
+            return datetime.fromisoformat(v).date()
+        except Exception:
+            for fmt in ("%m/%d/%Y", "%m/%d/%y"):
+                try:
+                    return datetime.strptime(v, fmt).date()
+                except Exception:
+                    pass
+    return None
+
+
 apply_pfma_theme()
 state = ensure_pfma_state()
 
@@ -72,13 +92,13 @@ if why_key not in st.session_state:
 if st.button("Why this step?", key="pfma_booking_why_button"):
     st.session_state[why_key] = not st.session_state[why_key]
 if st.session_state[why_key]:
-    st.info("Capturing booking details now means no back-and-forth later-your concierge arrives ready with next steps.")
+    st.info("Capturing booking details now means no back-and-forth later—your concierge arrives ready with next steps.")
 
 booking = state["booking"]
 urgency_value = booking.get("urgency")
 if urgency_value in {"Ready this week", "ASAP"}:
     st.markdown(
-        "<div class=\"pfma-banner\">You've marked this as urgent - we'll prioritize your call.</div>",
+        '<div class="pfma-banner">You’ve marked this as urgent — we’ll prioritize your call.</div>',
         unsafe_allow_html=True,
     )
 
@@ -94,7 +114,7 @@ with left:
           <p>Lock in a time that works best for you. If anything changes, you can update details right up until the call.</p>
           <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:.6rem;">
             <div style="display:flex;align-items:center;gap:.45rem;font-weight:600;color:#0b3e91;">
-              <span>📞</span> <span>We'll text and email a confirmation instantly.</span>
+              <span>📞</span> <span>We’ll text and email a confirmation instantly.</span>
             </div>
             <div style="display:flex;align-items:center;gap:.45rem;color:var(--ink-muted);">
               <span>🕑</span> <span>Need to reschedule? Reply to the confirmation or hop back here.</span>
@@ -145,10 +165,14 @@ with right:
 
     segmented_control("Preferred time of day", TIME_SLOTS, key="time_slot", default=booking.get("time_slot"))
 
+    # --- Safe date handling (fixes the TypeError while preserving UI) ---
     min_date = date.today() + timedelta(days=1)
-    stored_date = ensure_date(booking.get("preferred_date")) or min_date
+    stored_date_raw = booking.get("preferred_date")
+    # First try the shared helper, then our local coercion as a belt-and-suspenders
+    stored_date = ensure_date(stored_date_raw) or _as_date(stored_date_raw) or min_date
     if stored_date < min_date:
         stored_date = min_date
+
     st.date_input(
         "Preferred date",
         key="pfma_booking_preferred_date",
@@ -159,19 +183,22 @@ with right:
 
     st.text_area("Notes for your advisor", key=notes_key, max_chars=500, height=120)
     st.text_input("Referral source (optional)", key=referral_key, max_chars=200, placeholder="Hospital discharge planner")
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 errors_placeholder = st.empty()
 
 st.markdown('<div class="pfma-sticky-nav">', unsafe_allow_html=True)
 st.markdown('<div class="pfma-nav-inner">', unsafe_allow_html=True)
-st.markdown('<div class="pfma-note">You can revisit any section from the hub to keep details fresh.</div>', unsafe_allow_html=True)
+st.markdown(
+    "<div class='pfma-note'>You can revisit any section from the hub to keep details fresh.</div>",
+    unsafe_allow_html=True,
+)
 
 submit = st.button("Confirm booking", type="primary", key="pfma_booking_submit")
-st.markdown('</div>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("</div>", unsafe_allow_html=True)
 
 if submit:
     name_value = (st.session_state.get(name_key) or "").strip()
@@ -190,7 +217,7 @@ if submit:
     if not name_value:
         errors.append("Add the contact name for the call.")
     if not relationship_value:
-        errors.append("Select how you're connected.")
+        errors.append("Select how you’re connected.")
     if not phone_digits or not PHONE_PATTERN.match(phone_digits):
         errors.append("Enter a 10-digit phone number so we can confirm details by text.")
     if zip_value and not zip_value.isdigit():
@@ -206,7 +233,7 @@ if submit:
     if not isinstance(preferred_date, date) or preferred_date < (date.today() + timedelta(days=1)):
         errors.append("Select a date at least a day in the future.")
     if email_value and "@" not in email_value:
-        errors.append("Email looks off-double-check for typos.")
+        errors.append("Email looks off—double-check for typos.")
 
     if errors:
         errors_placeholder.error("\n".join(errors))
