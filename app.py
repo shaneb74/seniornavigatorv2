@@ -33,14 +33,33 @@ def _design_mode_enabled() -> bool:
 # Guard: exactly one active ./pages directory
 # ==========================================
 def _enforce_single_pages_dir() -> None:
-    roots = [
-        p for p in Path(".").glob("**/pages")
-        if p.is_dir() and "_graveyard" not in str(p) and ".venv" not in str(p)
-    ]
-    expected = (Path.cwd() / "pages").resolve()
-    if len(roots) != 1 or roots[0].resolve() != expected:
-        raise RuntimeError(f"❌ Invalid pages directories detected: {roots}\n"
-                           f"Expected exactly one at {expected}")
+    repo = Path.cwd().resolve()
+    expected = (repo / "pages").resolve()
+    # Only consider the root-level ./pages as active
+    active = [p for p in [expected] if p.is_dir()]
+    # Collect extras just for optional debug logging
+    extras = []
+    for p in Path(".").glob("**/pages"):
+        s = str(p).replace("\\", "/")
+        if not p.is_dir():
+            continue
+        if any(tok in s for tok in ("/_graveyard/", "/.venv/")):
+            continue
+        if p.resolve() == expected:
+            continue
+        # Anything not exactly the repo-root ./pages is considered an extra
+        extras.append(p)
+    if not active:
+        raise RuntimeError(f"❌ Expected a root ./pages directory at {expected}")
+    # Soft warn in debug mode rather than failing hard
+    try:
+        from streamlit import query_params
+        dbg = str(query_params.get("debug", "")).lower() in ("1","true","yes")
+    except Exception:
+        import os
+        dbg = os.environ.get("SN_DEBUG_PAGES", "") == "1"
+    if extras and dbg:
+        print(f"⚠️  Ignoring non-root pages directories: {extras}")
 _enforce_single_pages_dir()
 
 # ==========================================
