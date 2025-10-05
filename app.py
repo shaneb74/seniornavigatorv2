@@ -1,46 +1,52 @@
 from __future__ import annotations
 
-# app.py - Senior Navigator bootstrap with safe, persistent debug + guardrails
+# app.py — Senior Navigator bootstrap (Streamlit Cloud–safe)
 
 import os
 import sys
-import inspect
 from pathlib import Path
 import streamlit as st
+
+# One global page config (must be first Streamlit call)
+st.set_page_config(
+    page_title="Senior Navigator",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
 
 # =========================
 # Debug / guardrail toggles
 # =========================
 def _debug_enabled() -> bool:
     # Enable via URL ?debug=1 or env SN_DEBUG_PAGES=1
-    # Streamlit Cloud safe: no page guard
+    try:
         qp_flag = str(st.query_params.get("debug", "")).lower() in ("1", "true", "yes")
+    except Exception:
         qp_flag = False
     env_flag = os.environ.get("SN_DEBUG_PAGES", "") == "1"
     return qp_flag or env_flag
 
+
 def _design_mode_enabled() -> bool:
-    # Streamlit Cloud safe: no page guard
+    # Enable via URL ?dev=1 or env SN_DEV=1, or sidebar toggle
+    try:
         qp_flag = str(st.query_params.get("dev", "")).lower() in ("1", "true", "yes")
+    except Exception:
         qp_flag = False
     env_flag = os.environ.get("SN_DEV", "") == "1"
     ss_flag = bool(st.session_state.get("dev_design_mode"))
     return qp_flag or env_flag or ss_flag
 
-# ==========================================
-# Guard: exactly one active ./pages directory
-# ==========================================
-# in app.py, replace _enforce_single_pages_dir with this version:
 
-
-def _enforce_single_pages_dir():
-    """Disabled on Streamlit Cloud"""
+# ==================================================
+# (Cloud-safe) pages dir guard — disabled/no-op here
+# ==================================================
+def _enforce_single_pages_dir() -> None:
+    """Disabled on Streamlit Cloud to avoid container-layout false positives."""
     return
+# NOTE: We intentionally do NOT call this, since it's a no-op.
 
-pass
-    pass
-    # Cloud-safe: ignore guard failures in hosted envs
-    pass
+
 # ==========================================
 # Sys.path hygiene: keep repo clean & stable
 # ==========================================
@@ -53,6 +59,8 @@ def _sanitize_sys_path() -> None:
             continue
         keep.append(p)
     sys.path[:] = keep
+
+
 _sanitize_sys_path()
 
 # ==========================================
@@ -69,6 +77,7 @@ class _PageImportLogger:
                 print(f"📄 import: {origin}")
         return spec
 
+
 # Insert logger only once and only when debug is enabled
 if _debug_enabled():
     # place before default PathFinder so it sees imports
@@ -77,8 +86,9 @@ if _debug_enabled():
 # ===============================
 # Theme import with safe fallback
 # ===============================
-    # Streamlit Cloud safe: no page guard
+try:
     from ui.theme import inject_theme  # preferred path
+except Exception:
     def inject_theme() -> None:
         st.markdown(
             """
@@ -96,33 +106,49 @@ if _debug_enabled():
 # ==========================================
 def _inject_global_css() -> None:
     css_path = Path("static/style.css")
+    extra = ""
     if css_path.exists():
-    # Streamlit Cloud safe: no page guard
+        try:
             extra = css_path.read_text(encoding="utf-8").strip()
-            extra = css_path.read_bytes().decode(errors="ignore").strip()
-        v = int(css_path.stat().st_mtime)
-        st.markdown(f"<style>{extra}</style><!-- v:{v} -->", unsafe_allow_html=True)
+        except Exception:
+            try:
+                extra = css_path.read_bytes().decode(errors="ignore").strip()
+            except Exception:
+                extra = ""
+        try:
+            v = int(css_path.stat().st_mtime)
+        except Exception:
+            v = 0
+        if extra:
+            st.markdown(f"<style>{extra}</style><!-- v:{v} -->", unsafe_allow_html=True)
+    # Theme at the end so it can layer on top
     inject_theme()
+
+
 _inject_global_css()
 
 # ==========================================
 # Pre-flight syntax check for page modules
-# (kept: catches bad edits before navigation)
+# (catches bad edits before navigation)
 # ==========================================
 def _syntax_preflight(paths=("pages",), stop_on_error=True):
-    import pathlib, io, tokenize
+    import io
+    import tokenize
     errors = []
     for root in paths:
-        for p in pathlib.Path(root).rglob("*.py"):
-    # Streamlit Cloud safe: no page guard
+        for p in Path(root).rglob("*.py"):
+            try:
                 src = p.read_text(encoding="utf-8")
+            except Exception as e:
                 errors.append((p, 0, 0, f"read error: {e}", ""))
                 continue
-    # Streamlit Cloud safe: no page guard
+            try:
+                # tokenization+compile is a good, cheap syntax check
                 tokenize.generate_tokens(io.StringIO(src).readline)
                 compile(src, str(p), "exec", dont_inherit=True)
             except SyntaxError as e:
                 errors.append((p, e.lineno or 0, e.offset or 0, e.msg, e.text or ""))
+            except Exception as e:
                 errors.append((p, 0, 0, f"{type(e).__name__}: {e}", ""))
     if errors:
         st.error("Syntax/parse error(s) found. Fix these before running pages.")
@@ -133,6 +159,8 @@ def _syntax_preflight(paths=("pages",), stop_on_error=True):
             st.markdown("---")
         if stop_on_error:
             st.stop()
+
+
 _syntax_preflight()
 
 # ==========================================
@@ -151,10 +179,13 @@ def _force_welcome_once() -> None:
     if st.session_state.get("_boot_forced_welcome"):
         return
     st.session_state["_boot_forced_welcome"] = True
-    # Streamlit Cloud safe: no page guard
-        st.query_params.clear()  # Streamlit >= 1.33
-    # Streamlit Cloud safe: no page guard
+    try:
+        # Streamlit >= 1.33
+        st.query_params.clear()
+    except Exception:
+        try:
             st.experimental_set_query_params()
+        except Exception:
             pass
     st.rerun()
 
