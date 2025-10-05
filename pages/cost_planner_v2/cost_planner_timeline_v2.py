@@ -67,7 +67,7 @@ def _fmt_runway(r):
     return "Unlimited" if r == "Unlimited" else f"{int(round(r)):,} months"
 
 def main() -> None:
-    st.set_page_config(page_title="Cost Planner · Timeline", layout="wide")
+    # (moved to app.py) st.set_page_config(...)
     apply_cost_planner_theme()
 
     with cost_planner_page_container():

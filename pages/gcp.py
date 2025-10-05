@@ -102,7 +102,7 @@ def _persist_gcp_context(choice: str | None, funding: str | None) -> None:
 
 def render_intro() -> None:
     inject_theme()
-    st.set_page_config(page_title="Guided Care Plan", layout="centered")
+    # (moved to app.py) st.set_page_config(...)
     st.markdown('<div class="sn-scope gcp">', unsafe_allow_html=True)
 
     debug_flag = bool(st.session_state.get("dev_debug"))

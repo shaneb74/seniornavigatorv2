@@ -177,8 +177,7 @@ main > div {
 
 def render(which: str = "you") -> None:
     inject_theme()
-    st.set_page_config(page_title="Contextual Welcome", layout="wide")
-
+    # (moved to app.py) st.set_page_config(...)
     # Which flow?
     entry = "self" if str(which).lower() in ("you", "self", "me") else "proxy"
     copy = COPY[entry]

@@ -8,7 +8,7 @@ from ui.theme import inject_theme
 
 
 inject_theme()
-st.set_page_config(page_title="Medicaid Resources", layout="centered")
+# (moved to app.py) st.set_page_config(...)
 st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
 with card_panel():

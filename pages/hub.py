@@ -88,7 +88,7 @@ def _render_tile(
 
 def render_hub() -> None:
     inject_theme()
-    st.set_page_config(page_title="Care Planning Hub", layout="wide")
+    # (moved to app.py) st.set_page_config(...)
     st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
     debug_flag = bool(st.session_state.get("dev_debug"))

@@ -1,6 +1,6 @@
 [server]
-headless = false
-# remove enableCORS; Streamlit will set it safely with XSRF on
+headless = true
+enableCORS = false
 
 [theme]
 primaryColor="#0b5cd8"

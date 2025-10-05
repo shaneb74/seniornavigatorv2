@@ -21,8 +21,7 @@ import streamlit as st
 from PIL import Image, UnidentifiedImageError
 
 # ------------------ Page / session ------------------
-st.set_page_config(layout="wide")
-
+# (moved to app.py) st.set_page_config(...)
 # Minimal, safe session scaffolding so this page never dies
 if "care_context" not in st.session_state:
     st.session_state.care_context = {"person_name": "Your Loved One"}
