@@ -3,3 +3,29 @@ __pycache__/
 *.pyc
 .env
 .venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.ipynb_checkpoints/
+
+# Envs
+.venv/
+.env
+.env.*
+
+# OS junk
+.DS_Store
+
+# Build/Cache
+.streamlit/cache/
+.cache/
+dist/
+build/
+
+# Local archives / graveyard
+_graveyard/
+archive/
