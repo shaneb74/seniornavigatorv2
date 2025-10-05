@@ -1,0 +1,121 @@
+{
+  "version": "1.1",
+  "namespace": "cost_planner",
+  "modules": {
+    "qualifiers": {
+      "fields": {
+        "planner_mode": {
+          "type": "enum",
+          "values": [
+            "Estimate",
+            "Plan"
+          ],
+          "default": "Plan"
+        },
+        "has_partner": {
+          "type": "enum",
+          "values": [
+            "none",
+            "unified",
+            "split"
+          ],
+          "default": "none"
+        },
+        "owns_home": {
+          "type": "bool",
+          "default": false
+        },
+        "is_veteran": {
+          "type": "bool",
+          "default": false
+        },
+        "care_setting": {
+          "type": "enum",
+          "values": [
+            "Home",
+            "Assisted Living",
+            "Memory Care",
+            "Skilled"
+          ],
+          "default": "Assisted Living"
+        },
+        "partner_maintaining_home": {
+          "type": "bool",
+          "default": false
+        }
+      }
+    },
+    "setting_cost": {
+      "fields": {
+        "monthly_cost": {
+          "type": "int",
+          "default": 4200
+        }
+      }
+    },
+    "income": {
+      "fields": {
+        "income_total": {
+          "type": "int",
+          "default": 0
+        }
+      }
+    },
+    "expenses": {
+      "fields": {
+        "other_monthly_total": {
+          "type": "int",
+          "default": 0
+        }
+      }
+    },
+    "caregiver": {
+      "fields": {
+        "caregiver_cost": {
+          "type": "int",
+          "default": 0
+        }
+      }
+    },
+    "benefits": {
+      "fields": {
+        "benefits_total": {
+          "type": "int",
+          "default": 0
+        }
+      }
+    },
+    "home": {
+      "fields": {
+        "reverse_mortgage_monthly": {
+          "type": "int",
+          "default": 0
+        }
+      }
+    },
+    "liquidity": {
+      "fields": {
+        "liquidity_total": {
+          "type": "int",
+          "default": 0
+        }
+      }
+    },
+    "home_mods": {
+      "fields": {
+        "mods_monthly_total": {
+          "type": "int",
+          "default": 0
+        }
+      }
+    },
+    "assets": {
+      "fields": {
+        "assets_total_effective": {
+          "type": "int",
+          "default": 0
+        }
+      }
+    }
+  }
+}
