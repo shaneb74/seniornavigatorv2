@@ -222,8 +222,6 @@ INTENDED = [
     ("pages/cost_planner_skipped.py", "Cost Planner: Skipped", "⚠️", False),
 
     ("pages/pfma.py", "Plan for My Advisor", "🧭", False),
-    ("pages/appointment_booking.py", "Appointment Booking", "📞", False),
-    ("pages/appointment_interstitial.py", "Call Scheduled", "⏰", False),
 
     ("pages/pfma_confirm_care_plan.py", "PFMA * Care Plan Confirmer", "✅", False),
     ("pages/pfma_confirm_cost_plan.py", "PFMA * Cost Plan Confirmer", "💰", False),
