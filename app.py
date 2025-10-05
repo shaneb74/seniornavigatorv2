@@ -213,6 +213,18 @@ INTENDED = [    ("pages/welcome.py", "Welcome", "👋", True),
     ("pages/SeniorNav_export_details.py", "Export Details", "📤", False),
     ("pages/SeniorNav_my_documents.py", "My Documents", "📁", False),
     ("pages/SeniorNav_my_account.py", "My Account", "👤", False),
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     ("pages/gcp_v2/gcp_landing_v2.py", "Guided Care Plan · Start", "🗺️", False),
     ("pages/gcp_v2/gcp_daily_life_v2.py", "GCP · Daily Life & Support", "🧭", False),
     ("pages/gcp_v2/gcp_health_safety_v2.py", "GCP · Health & Safety", "🩺", False),

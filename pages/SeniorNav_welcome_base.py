@@ -45,7 +45,7 @@ def render(kind: str):
         if st.button("Continue", type="primary", use_container_width=True, disabled=disabled):
             if not aud["recipient_name"].strip():
                 aud["recipient_name"] = "You"
-            safe_switch("pages/guided_care_hub.py")
+            safe_switch('pages/guided_care_hub.py')
     elif kind == "proxy":
         aud["entry"] = "proxy"
         aud["recipient_name"] = st.text_input("Their name", value=aud.get("recipient_name",""), placeholder=COPY["proxy"]["placeholder"])
@@ -61,7 +61,7 @@ def render(kind: str):
         if st.button("Continue", type="primary", use_container_width=True, disabled=disabled):
             if not aud["recipient_name"].strip():
                 aud["recipient_name"] = "Your Loved One"
-            safe_switch("pages/guided_care_hub.py")
+            safe_switch('pages/guided_care_hub.py')
     else:
         aud["entry"] = "professional"
         aud["recipient_name"] = st.text_input("Your name", value=aud.get("recipient_name",""), placeholder=COPY["professional"]["placeholder"])
