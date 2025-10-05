@@ -1,18 +1,19 @@
 from __future__ import annotations
 
-# app.py — Senior Navigator bootstrap (Streamlit Cloud–safe)
+# app.py - Senior Navigator bootstrap (Cloud-safe)
+
+import streamlit as st
+st.set_page_config(page_title="Senior Navigator", layout="wide")
 
 import os
 import sys
 from pathlib import Path
-import streamlit as st
 
-# One global page config (must be first Streamlit call)
-st.set_page_config(
-    page_title="Senior Navigator",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+# Streamlit navigation: we register pages via INTENDED + st.navigation
+def register_pages(*args, **kwargs):
+    # disabled: we register pages solely via INTENDED + st.navigation
+    return None
+
 
 # =========================
 # Debug / guardrail toggles
@@ -28,7 +29,6 @@ def _debug_enabled() -> bool:
 
 
 def _design_mode_enabled() -> bool:
-    # Enable via URL ?dev=1 or env SN_DEV=1, or sidebar toggle
     try:
         qp_flag = str(st.query_params.get("dev", "")).lower() in ("1", "true", "yes")
     except Exception:
@@ -38,20 +38,25 @@ def _design_mode_enabled() -> bool:
     return qp_flag or env_flag or ss_flag
 
 
-# ==================================================
-# (Cloud-safe) pages dir guard — disabled/no-op here
-# ==================================================
+# ==========================================
+# Guard: exactly one active ./pages directory
+# (Disabled on Cloud to avoid false positives)
+# ==========================================
 def _enforce_single_pages_dir() -> None:
-    """Disabled on Streamlit Cloud to avoid container-layout false positives."""
+    # Cloud-safe: disable this guard (Cloud images can include nested vendor 'pages' dirs)
     return
-# NOTE: We intentionally do NOT call this, since it's a no-op.
 
 
 # ==========================================
 # Sys.path hygiene: keep repo clean & stable
 # ==========================================
 def _sanitize_sys_path() -> None:
-    bad_markers = ("/_graveyard/", "/Designer-Development-8/", "/designer-development-8/", "/ui/pages/")
+    bad_markers = (
+        "/_graveyard/",
+        "/Designer-Development-8/",
+        "/designer-development-8/",
+        "/ui/pages/",
+    )
     keep: list[str] = []
     for p in sys.path:
         s = p.replace("\\", "/")
@@ -62,6 +67,7 @@ def _sanitize_sys_path() -> None:
 
 
 _sanitize_sys_path()
+
 
 # ==========================================
 # Live import logger (kept on; lightweight)
@@ -83,6 +89,7 @@ if _debug_enabled():
     # place before default PathFinder so it sees imports
     sys.meta_path.insert(0, _PageImportLogger())
 
+
 # ===============================
 # Theme import with safe fallback
 # ===============================
@@ -101,55 +108,52 @@ except Exception:
             unsafe_allow_html=True,
         )
 
+
 # ==========================================
 # Global CSS injection (theme comes in last)
 # ==========================================
 def _inject_global_css() -> None:
     css_path = Path("static/style.css")
-    extra = ""
     if css_path.exists():
         try:
             extra = css_path.read_text(encoding="utf-8").strip()
         except Exception:
-            try:
-                extra = css_path.read_bytes().decode(errors="ignore").strip()
-            except Exception:
-                extra = ""
+            extra = css_path.read_bytes().decode(errors="ignore").strip()
         try:
             v = int(css_path.stat().st_mtime)
         except Exception:
             v = 0
-        if extra:
-            st.markdown(f"<style>{extra}</style><!-- v:{v} -->", unsafe_allow_html=True)
-    # Theme at the end so it can layer on top
+        st.markdown(f"<style>{extra}</style><!-- v:{v} -->", unsafe_allow_html=True)
     inject_theme()
 
 
 _inject_global_css()
 
+
 # ==========================================
 # Pre-flight syntax check for page modules
-# (catches bad edits before navigation)
+# (kept: catches bad edits before navigation)
 # ==========================================
 def _syntax_preflight(paths=("pages",), stop_on_error=True):
-    import io
-    import tokenize
+    import pathlib, io, tokenize
+
     errors = []
     for root in paths:
-        for p in Path(root).rglob("*.py"):
+        for p in pathlib.Path(root).rglob("*.py"):
             try:
                 src = p.read_text(encoding="utf-8")
             except Exception as e:
                 errors.append((p, 0, 0, f"read error: {e}", ""))
                 continue
             try:
-                # tokenization+compile is a good, cheap syntax check
+                # tokenization + compile catches early syntax errors
                 tokenize.generate_tokens(io.StringIO(src).readline)
                 compile(src, str(p), "exec", dont_inherit=True)
             except SyntaxError as e:
                 errors.append((p, e.lineno or 0, e.offset or 0, e.msg, e.text or ""))
             except Exception as e:
                 errors.append((p, 0, 0, f"{type(e).__name__}: {e}", ""))
+
     if errors:
         st.error("Syntax/parse error(s) found. Fix these before running pages.")
         for p, line, col, msg, txt in errors:
@@ -163,11 +167,13 @@ def _syntax_preflight(paths=("pages",), stop_on_error=True):
 
 _syntax_preflight()
 
+
 # ==========================================
 # Session bootstrap (prototype auth flag)
 # ==========================================
 if "is_authenticated" not in st.session_state:
     st.session_state.is_authenticated = False
+
 
 # ==========================================
 # Design mode helpers
@@ -180,14 +186,14 @@ def _force_welcome_once() -> None:
         return
     st.session_state["_boot_forced_welcome"] = True
     try:
-        # Streamlit >= 1.33
-        st.query_params.clear()
+        st.query_params.clear()  # Streamlit >= 1.33
     except Exception:
         try:
             st.experimental_set_query_params()
         except Exception:
             pass
     st.rerun()
+
 
 # ==========================================
 # Page registration helpers
@@ -198,8 +204,10 @@ def ensure_page(path: str, title: str, icon: str, default: bool = False):
         return None
     return (
         st.Page(path, title=title, icon=icon, default=True)
-        if default else st.Page(path, title=title, icon=icon)
+        if default
+        else st.Page(path, title=title, icon=icon)
     )
+
 
 # ==========================================
 # Pages to register (controls nav order)
@@ -229,6 +237,7 @@ INTENDED = [
     ("pages/cost_planner_benefits.py", "Benefits Check", "💳", False),
     ("pages/cost_planner_mods.py", "Age-in-Place Upgrades", "🔧", False),
 
+    # Hand-off / review
     ("pages/expert_review.py", "Expert Review", "🔎", False),
     ("pages/cost_planner_evaluation.py", "Cost Planner: Evaluation", "🔍", False),
     ("pages/cost_planner_skipped.py", "Cost Planner: Skipped", "⚠️", False),
@@ -243,13 +252,18 @@ INTENDED = [
     ("pages/pfma_confirm_benefits_coverage.py", "PFMA * Benefits & Coverage", "💳", False),
     ("pages/pfma_confirm_personal_info.py", "PFMA * Personal Info", "👤", False),
 
-    ("pages/login.py", "Login", "🔐", False),
-    ("pages/ai_advisor.py", "AI Advisor", "🤖", False),
-    ("pages/waiting_room.py", "Waiting Room", "⏳", False),
-    ("pages/trusted_partners.py", "Trusted Partners", "🤝", False),
-    ("pages/export_results.py", "Export Results", "📥", False),
-    ("pages/my_documents.py", "My Documents", "📁", False),
-    ("pages/my_account.py", "My Account", "👤", False),
+    # --- Cost Planner v2 (PFMA style) ---
+    ("pages/cost_planner_v2/cost_planner_landing_v2.py", "Cost Planner v2 · Landing", "💰", False),
+    ("pages/cost_planner_v2/cost_planner_modules_hub_v2.py", "Cost Planner v2 · Modules", "🧰", False),
+    ("pages/cost_planner_v2/cost_planner_income_v2.py", "Cost Planner v2 · Income", "🧾", False),
+    ("pages/cost_planner_v2/cost_planner_expenses_v2.py", "Cost Planner v2 · Expenses", "🧮", False),
+    ("pages/cost_planner_v2/cost_planner_benefits_v2.py", "Cost Planner v2 · Benefits", "🎖️", False),
+    ("pages/cost_planner_v2/cost_planner_home_v2.py", "Cost Planner v2 · Home", "🏠", False),
+    ("pages/cost_planner_v2/cost_planner_home_mods_v2.py", "Cost Planner v2 · Home Mods", "🔧", False),
+    ("pages/cost_planner_v2/cost_planner_liquidity_v2.py", "Cost Planner v2 · Liquidity", "💵", False),
+    ("pages/cost_planner_v2/cost_planner_caregiver_v2.py", "Cost Planner v2 · Caregiver", "👥", False),
+    ("pages/cost_planner_v2/cost_planner_assets_v2.py", "Cost Planner v2 · Assets", "🏦", False),
+    ("pages/cost_planner_v2/cost_planner_timeline_v2.py", "Cost Planner v2 · Timeline", "📈", False),
 ]
 
 # Build the Page objects (ignore missing silently)
@@ -260,6 +274,23 @@ for path, title, icon, default in INTENDED:
         pages.append(page)
 
 # Kick the session back to Welcome on first load (disabled in design mode)
+def _force_welcome_once():
+    """On first run of a session, bounce to Welcome unless in design mode."""
+    if _design_mode_enabled():
+        return
+    if st.session_state.get("_boot_forced_welcome"):
+        return
+    st.session_state["_boot_forced_welcome"] = True
+    try:
+        st.query_params.clear()  # Streamlit >= 1.33
+    except Exception:
+        try:
+            st.experimental_set_query_params()
+        except Exception:
+            pass
+    st.rerun()
+
+
 _force_welcome_once()
 
 # Render navigation (always sidebar, expanded)
