@@ -1,6 +1,10 @@
 import streamlit as st
+from ui.cost_planner_template import render_nav
+from ui.theme import inject_theme
+inject_theme()
 
 from ui.cost_planner_template import (
+
     NavButton,
     apply_cost_planner_theme,
     cost_planner_page_container,
@@ -104,8 +108,7 @@ with cost_planner_page_container():
 
     render_wizard_help("You can revisit modules any time-progress saves automatically.")
 
-    clicked = render_nav_buttons(
-        [
+    clicked = render_nav([
             NavButton("Back to Mode", "mods_back_mode"),
             NavButton("Expert Review", "mods_expert_review", type="primary"),
         ]

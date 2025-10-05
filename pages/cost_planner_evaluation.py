@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 import streamlit as st
+from ui.cost_planner_template import render_nav
+from ui.theme import inject_theme
+inject_theme()
 
 from cost_planner_shared import (
     ensure_core_state,
@@ -11,6 +14,7 @@ from cost_planner_shared import (
     recompute_costs,
 )
 from ui.cost_planner_template import (
+
     Metric,
     NavButton,
     apply_cost_planner_theme,
@@ -79,8 +83,7 @@ with cost_planner_page_container():
         metrics.append(Metric("Runway (months)", f"{cp['runway_months']:.1f}"))
     render_metrics(metrics)
 
-    clicked = render_nav_buttons(
-        [
+    clicked = render_nav([
             NavButton("Return to Hub", "evaluation_back_hub"),
             NavButton("Back: Debts & Other", "evaluation_back_debts"),
             NavButton("Next: Summary", "evaluation_next_summary", type="primary"),

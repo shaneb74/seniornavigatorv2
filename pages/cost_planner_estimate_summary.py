@@ -6,9 +6,14 @@ import io
 import json
 
 import streamlit as st
+from ui.cost_planner_template import render_nav
+from ui.theme import inject_theme
 
 from cost_planner_shared import ensure_core_state, format_currency, recompute_costs
+inject_theme()
+
 from ui.cost_planner_template import (
+
     Metric,
     NavButton,
     apply_cost_planner_theme,
@@ -125,8 +130,7 @@ with cost_planner_page_container():
     with st.expander("Debug snapshot"):
         st.json(snapshot)
 
-    clicked = render_nav_buttons(
-        [
+    clicked = render_nav([
             NavButton("Return to Hub", "summary_back_hub"),
             NavButton("Back: Expert Review", "summary_back_review"),
             NavButton("Next: Confirm & Share", "summary_next_confirm", type="primary"),

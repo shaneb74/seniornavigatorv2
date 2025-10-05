@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 import streamlit as st
+from ui.cost_planner_template import render_nav
+from ui.theme import inject_theme
+inject_theme()
 
 from cost_planner_shared import (
     ensure_core_state,
@@ -11,6 +14,7 @@ from cost_planner_shared import (
     set_numeric,
 )
 from ui.cost_planner_template import (
+
     Metric,
     NavButton,
     apply_cost_planner_theme,
@@ -148,8 +152,7 @@ with cost_planner_page_container():
 
     render_wizard_help("Track both premiums you pay and the income that offsets monthly expenses.")
 
-    clicked = render_nav_buttons(
-        [
+    clicked = render_nav([
             NavButton("Return to Hub", "benefits_back_hub"),
             NavButton("Back: Medical", "benefits_back_medical"),
             NavButton("Next: Debts & Other", "benefits_next_debts", type="primary"),

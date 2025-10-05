@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 import streamlit as st
+from ui.cost_planner_template import render_nav
+from ui.theme import inject_theme
+inject_theme()
 
 from cost_planner_shared import (
     ensure_core_state,
@@ -11,6 +14,7 @@ from cost_planner_shared import (
     set_numeric,
 )
 from ui.cost_planner_template import (
+
     Metric,
     NavButton,
     apply_cost_planner_theme,
@@ -100,8 +104,7 @@ with cost_planner_page_container():
 
     render_wizard_help("Capture all ongoing staffing commitments before layering on medical costs.")
 
-    clicked = render_nav_buttons(
-        [
+    clicked = render_nav([
             NavButton("Return to Hub", "care_back_hub"),
             NavButton("Back: Housing", "care_back_housing"),
             NavButton("Next: Medical", "care_next_medical", type="primary"),

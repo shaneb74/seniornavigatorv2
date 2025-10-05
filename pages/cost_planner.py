@@ -1,6 +1,10 @@
 import streamlit as st
+from ui.cost_planner_template import render_nav
+from ui.theme import inject_theme
+inject_theme()
 
 from ui.cost_planner_template import (
+
     NavButton,
     apply_cost_planner_theme,
     cost_planner_page_container,
@@ -50,8 +54,7 @@ to switch modes later.
         "You can switch between estimating and planning. We'll remember your progress in each path.",
     )
 
-    clicked = render_nav_buttons(
-        [
+    clicked = render_nav([
             NavButton("Estimate Costs", "cp_estimate", type="primary"),
             NavButton("Plan Costs", "cp_plan", type="primary"),
             NavButton("Back to Hub", "cp_back_hub"),

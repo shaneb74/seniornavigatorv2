@@ -2,9 +2,14 @@
 from __future__ import annotations
 
 import streamlit as st
+from ui.cost_planner_template import render_nav
+from ui.theme import inject_theme
 
 from cost_planner_shared import add_decision_log, ensure_core_state, format_currency, get_numeric, recompute_costs, set_numeric
+inject_theme()
+
 from ui.cost_planner_template import (
+
     Metric,
     NavButton,
     apply_cost_planner_theme,
@@ -108,8 +113,7 @@ with cost_planner_page_container():
     )
     render_wizard_help(f"Other expenses currently total {other_subtotal} before debt payments.")
 
-    clicked = render_nav_buttons(
-        [
+    clicked = render_nav([
             NavButton("Return to Hub", "freeform_back_hub"),
             NavButton("Back: Benefits", "freeform_back_benefits"),
             NavButton("Next: Expert Review", "freeform_next_review", type="primary"),

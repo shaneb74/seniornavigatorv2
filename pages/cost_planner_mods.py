@@ -2,8 +2,12 @@ from __future__ import annotations
 
 
 import streamlit as st
+from ui.cost_planner_template import render_nav
+from ui.theme import inject_theme
+inject_theme()
 
 from ui.cost_planner_template import (
+
     NavButton,
     apply_cost_planner_theme,
     cost_planner_page_container,
@@ -65,8 +69,7 @@ with cost_planner_page_container():
     else:
         render_wizard_help("Not ready to choose upgrades? You can revisit this later.")
 
-    clicked = render_nav_buttons(
-        [
+    clicked = render_nav([
             NavButton("Back to Modules", "mods_back_modules"),
             NavButton("Next Option", "mods_next_option", type="primary"),
         ]

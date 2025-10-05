@@ -2,8 +2,12 @@ from __future__ import annotations
 
 
 import streamlit as st
+from ui.cost_planner_template import render_nav
+from ui.theme import inject_theme
+inject_theme()
 
 from ui.cost_planner_template import (
+
     NavButton,
     apply_cost_planner_theme,
     cost_planner_page_container,
@@ -50,8 +54,7 @@ with cost_planner_page_container():
 
     render_wizard_help("You can revisit these modules any time from the Cost Planner dashboard.")
 
-    clicked = render_nav_buttons(
-        [
+    clicked = render_nav([
             NavButton("Back to Evaluation", "skipped_back_evaluation"),
             NavButton("Revisit Modules", "skipped_revisit", type="primary"),
         ]

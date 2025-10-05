@@ -1,9 +1,19 @@
-"""Cost Planner entry: establish mode, household, and audience context."""
 from __future__ import annotations
 
+
+
+
+"""Cost Planner entry: establish mode, household, and audience context."""
+
 import streamlit as st
+from ui.cost_planner_template import render_nav
+from ui.cost_planner_template import card
+from ui.theme import inject_theme
 
 from cost_planner_shared import (
+
+
+
     audiencing_badges,
     ensure_core_state,
     format_currency,
@@ -11,6 +21,8 @@ from cost_planner_shared import (
     recompute_costs,
     set_numeric,
 )
+inject_theme()
+
 from ui.cost_planner_template import (
     Metric,
     NavButton,
@@ -133,8 +145,7 @@ with cost_planner_page_container():
             }
         )
 
-    clicked = render_nav_buttons(
-        [
+    clicked = render_nav([
             NavButton("Return to Hub", "cp_estimate_back_hub"),
             NavButton("Start Housing", "cp_estimate_next", type="primary"),
         ]
@@ -144,3 +155,8 @@ with cost_planner_page_container():
         st.switch_page("pages/hub.py")
     elif clicked == "cp_estimate_next":
         st.switch_page("pages/cost_planner_housing.py")
+
+
+# ---- visual card demo (safe to remove later) ----
+with card("Need a hand?"):
+    st.markdown("Helper tips will live here while we refactor content.")
