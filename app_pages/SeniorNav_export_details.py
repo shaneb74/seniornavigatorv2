@@ -3,7 +3,6 @@ import streamlit as st
 from ui.theme import inject_theme
 from app_pages.seniornav_util import top_nav, safe_switch
 
-st.set_page_config(layout="wide", page_title="Export Details")
 inject_theme()
 top_nav()
 st.markdown("## Export Details")
