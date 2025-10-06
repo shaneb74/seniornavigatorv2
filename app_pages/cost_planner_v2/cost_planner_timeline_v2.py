@@ -1,3 +1,4 @@
+from ui.cost_planner_template import apply_cost_planner_theme
 """Cost Planner · Your Money Timeline (v2)
 
 Final readout that combines monthly care costs, expenses, home mods, caregiver adders,
@@ -13,7 +14,6 @@ Rules:
 from __future__ import annotations
 import math
 import streamlit as st
-from ui.cost_planner_template import apply_cost_planner_theme
 
 def _to_num(x, default=0):
     """Coerce x into a float: handles None, dicts, and '$1,234' strings."""

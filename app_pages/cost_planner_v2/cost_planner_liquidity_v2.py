@@ -1,3 +1,4 @@
+from ui.cost_planner_template import apply_cost_planner_theme
 """Cost Planner · Liquidity Nudge (v2)
 Collect simple one-time sale proceeds (car, furniture, other) and an optional 'keeping_car' toggle.
 Stores values under st.session_state.cost_planner['liquidity'].
@@ -9,7 +10,6 @@ import streamlit as st
 # PFMA theme (safe fallback if unavailable)
 try:
     from ui.pfma import apply_pfma_theme
-from ui.cost_planner_template import apply_cost_planner_theme
 except Exception:
     def apply_pfma_theme():
         st.markdown(

@@ -4,10 +4,10 @@ from __future__ import annotations
 import streamlit as st
 
 # If you want the PFMA look & feel on CPv2 pages:
+from ui.cost_planner_template import apply_cost_planner_theme
 try:
     # These helpers exist in your project; if not, you can remove this block safely.
     from ui.pfma import apply_pfma_theme
-from ui.cost_planner_template import apply_cost_planner_theme
 except Exception:
     def apply_pfma_theme():
         pass

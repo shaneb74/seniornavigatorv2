@@ -1,9 +1,9 @@
 import streamlit as st
 
 # PFMA theme (fallback-safe)
+from ui.cost_planner_template import apply_cost_planner_theme
 try:
     from ui.pfma import apply_pfma_theme
-from ui.cost_planner_template import apply_cost_planner_theme
 except Exception:
     def apply_pfma_theme():
         pass
