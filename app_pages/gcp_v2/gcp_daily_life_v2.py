@@ -4,7 +4,6 @@ from ui.theme import inject_theme
 from gcp_v2.schema import questions_for_section
 from ui.gcp_form import render_section, nav_buttons
 
-st.set_page_config(layout="wide", page_title="GCP · Daily Life & Support")
 inject_theme()
 
 st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
