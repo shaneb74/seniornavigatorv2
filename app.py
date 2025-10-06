@@ -10,6 +10,31 @@ import streamlit as st
 
 
 # =========================
+# Streamlit runtime guard
+# =========================
+def _ensure_navigation_api() -> None:
+    """Fail fast with a helpful message when the nav API is unavailable."""
+
+    has_page = hasattr(st, "Page")
+    has_nav = hasattr(st, "navigation")
+    if has_page and has_nav:
+        return
+
+    version = getattr(st, "__version__", "unknown")
+    st.set_page_config(page_title="Senior Navigator", layout="wide")
+    st.error(
+        "Senior Navigator requires Streamlit 1.40 or newer so it can use the"
+        " built-in navigation API. The currently running Streamlit version"
+        f" is {version!r}. Please upgrade Streamlit (for example:"
+        " `pip install --upgrade streamlit>=1.40,<1.41`) and restart the app."
+    )
+    st.stop()
+
+
+_ensure_navigation_api()
+
+
+# =========================
 # Debug / guardrail toggles
 # =========================
 def _debug_enabled() -> bool:
