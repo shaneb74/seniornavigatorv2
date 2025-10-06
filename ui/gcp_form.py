@@ -28,9 +28,10 @@ def render_question(q):
     if not _meets_visibility(q, data):
         return
 
-    st.markdown(f"**{q['label']}**")
+    st.markdown('<div class="gcp-question card section">', unsafe_allow_html=True)
+    st.markdown(f"<p class='gcp-question__label'>{q['label']}</p>", unsafe_allow_html=True)
     if q.get("helper"):
-        st.caption(q["helper"])
+        st.markdown(f"<p class='gcp-question__helper'>{q['helper']}</p>", unsafe_allow_html=True)
 
     if q["type"] == "single":
         idx = None
@@ -38,7 +39,14 @@ def render_question(q):
         labels = [lbl for _, lbl in q["choices"]]
         if qid in answers and answers[qid] in choice_ids:
             idx = choice_ids.index(answers[qid])
-        picked = st.radio("", labels, index=idx if idx is not None else 0, horizontal=False, key=f"gcp_{qid}_radio")
+        picked = st.radio(
+            "",
+            labels,
+            index=idx if idx is not None else 0,
+            horizontal=False,
+            key=f"gcp_{qid}_radio",
+            label_visibility="collapsed",
+        )
         answers[qid] = choice_ids[labels.index(picked)]
 
     elif q["type"] == "multi":
@@ -47,11 +55,19 @@ def render_question(q):
         preselect = []
         if qid in answers:
             preselect = [_label_for(q["choices"], v) for v in answers[qid]]
-        picked = st.multiselect("", labels, default=preselect, key=f"gcp_{qid}_multi")
+        picked = st.multiselect(
+            "",
+            labels,
+            default=preselect,
+            key=f"gcp_{qid}_multi",
+            label_visibility="collapsed",
+        )
         answers[qid] = [choice_ids[labels.index(lbl)] for lbl in picked]
         # mutually exclusive "none"
         if "none" in answers[qid] and len(answers[qid]) > 1:
             answers[qid] = ["none"]
+
+    st.markdown('</div>', unsafe_allow_html=True)
 
     # side effects after specific answers
     if qid == "medicaid_status":
@@ -63,10 +79,10 @@ def render_question(q):
             data["route"] = None
 
 def render_section(section_name: str, questions):
-    with st.container():
-        for q in questions:
-            render_question(q)
-            st.divider()
+    st.markdown('<div class="gcp-section">', unsafe_allow_html=True)
+    for q in questions:
+        render_question(q)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 def nav_buttons(prev: str | None, nxt: str | None):
     cols = st.columns(2)
