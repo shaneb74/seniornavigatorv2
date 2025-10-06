@@ -2,8 +2,6 @@ import streamlit as st
 
 from ui.theme import inject_theme
 
-st.set_page_config(layout="wide")
-
 inject_theme()
 
 from ui.pfma import render_drawer as pfma_drawer, segmented_control as pfma_seg, ensure_pfma_state
