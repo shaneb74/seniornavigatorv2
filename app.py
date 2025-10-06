@@ -282,25 +282,9 @@ else:
     st.error("No pages available. Check file paths in app.py.")
 
 # ==========================================
-# Sidebar tools (Design mode + Auth)
+# Sidebar Auth Mock
 # ==========================================
-with st.sidebar:
-    st.markdown("---")
-    # Design mode toggle
-    st.checkbox(
-        "Design mode (keep nav visible; skip welcome redirect)",
-        key="dev_design_mode",
-        help="Enable with ?dev=1 in the URL or SN_DEV=1 in env.",
-    )
-    # Lightweight pages debug toggle
-    st.checkbox(
-        "Debug: log page imports (?debug=1)",
-        value=_debug_enabled(),
-        key="dbg_pages_enabled",
-        help="Prints a line in the terminal whenever a /pages/ module is imported.",
-        disabled=True,  # state is controlled by query param/env for reproducibility
-    )
-    st.markdown("---")
+
     # Prototype auth toggle
     st.caption("Authentication")
     if st.session_state.is_authenticated:
