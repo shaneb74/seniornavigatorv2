@@ -9,8 +9,6 @@ import streamlit as st
 
 from ui.theme import inject_theme
 
-st.set_page_config(layout="wide")
-
 inject_theme()
 
 from ui.pfma import (
