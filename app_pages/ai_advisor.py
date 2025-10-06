@@ -6,6 +6,7 @@ inject_theme()
 
 st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
+#Delete?
 # Debug: non-visual logger
 def _debug_log(msg: str):
     try:
