@@ -1,59 +1,95 @@
 # Cost Planner v2 · Landing
 from __future__ import annotations
-from ui.cost_planner_template import apply_cost_planner_theme
-
 import streamlit as st
 
-# If you want the PFMA look & feel on CPv2 pages:
+# ---------------- Theme helpers (match Income pattern) ----------------
 try:
-    # These helpers exist in your project; if not, you can remove this block safely.
-    from ui.pfma import apply_pfma_theme
+    from ui.cost_planner_template import (
+        apply_cost_planner_theme,
+        cost_planner_page_container,
+        render_app_header,
+        render_wizard_hero,
+        render_wizard_help,
+        render_nav_buttons,
+        Metric, NavButton,
+    )
 except Exception:
-    def apply_pfma_theme():
-        pass
+    # graceful fallbacks
+    def apply_cost_planner_theme():
+        st.markdown("""
+        <style>
+          :root{--brand:#0B5CD8;--surface:#f6f8fa;--ink:#111418}
+          .sn-card{
+            background:var(--surface);
+            border:1px solid rgba(0,0,0,.08);
+            border-radius:14px;
+            padding:clamp(1rem,2vw,1.5rem);
+          }
+        </style>
+        """, unsafe_allow_html=True)
+    from contextlib import contextmanager
+    @contextmanager
+    def cost_planner_page_container(): yield
+    def render_app_header(): st.markdown("### Cost Planner")
+    def render_wizard_hero(title: str, subtitle: str = ""):
+        st.markdown(f"## {title}")
+        if subtitle: st.caption(subtitle)
+    def render_wizard_help(text: str): st.info(text)
+    class Metric:
+        def __init__(self, title: str, value: str): self.title, self.value = title, value
+    class NavButton:
+        def __init__(self, label: str, key: str, type: str = "secondary", icon: str | None = None):
+            self.label, self.key, self.type, self.icon = label, key, type, icon
+    def render_nav_buttons(buttons=None, prev=None, next=None):
+        cols = st.columns(2)
+        if prev:
+            with cols[0]:
+                if st.button(prev.label, key=prev.key, type="secondary", use_container_width=True):
+                    st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
+        if next:
+            with cols[-1]:
+                if st.button(next.label, key=next.key, type="primary", use_container_width=True):
+                    st.switch_page("app_pages/cost_planner_v2/cost_planner_timeline_v2.py")
 
-
+# ---------------- Page content (functionality preserved) ----------------
 def render() -> None:
-    apply_pfma_theme()
+    # same bootstrapping as Income
+    apply_cost_planner_theme()
 
-    st.markdown(
-        """
-        <div class="pfma-card">
-          <h3>Cost Planner</h3>
-          <p class="pfma-note">
-            A simple, conversational way to estimate care costs or plan your budget in detail.
-            You can start light and add more later.
-          </p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    render_app_header()
+    with cost_planner_page_container():
+        render_wizard_hero(
+            "Cost Planner",
+            "A simple, conversational way to estimate care costs or plan your budget in detail."
+        )
+        render_wizard_help("You can start light and add more later.")
 
-    st.markdown(
-        """
-        <div class="pfma-card" style="margin-top:0.75rem">
-          <h4 style="margin:0 0 .25rem 0;">How do you want to start?</h4>
-          <ul style="margin:.25rem 0 0 1rem;">
-            <li><b>Estimate</b> — quick monthly care cost using a few inputs (pulls from Guided Care Plan if available).</li>
-            <li><b>Plan</b> — detailed modules (income, expenses, benefits, home, assets) to see your runway.</li>
-          </ul>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+        # First info card
+        with st.container(border=True):
+            st.subheader("Cost Planner")
+            st.caption(
+                "A simple, conversational way to estimate care costs or plan your budget in detail. "
+                "You can start light and add more later."
+            )
 
-    col1, col2 = st.columns([1, 1])
+        # How to start
+        with st.container(border=True):
+            st.subheader("How do you want to start?")
+            st.markdown(
+                "- **Estimate** — quick monthly care cost using a few inputs "
+                "(pulls from Guided Care Plan if available).\n"
+                "- **Plan** — detailed modules (income, expenses, benefits, home, assets) "
+                "to see your runway."
+            )
 
-    with col1:
-        # This is the one you asked about — it sends people to the CPv2 Modules Hub
-        if st.button("Start planning", type="primary", use_container_width=True):
-            st.switch_page("pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
+        # Actions
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            if st.button("Start planning", type="primary", use_container_width=True):
+                st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
+        with col2:
+            if st.button("Jump to Timeline (dev)", use_container_width=True):
+                st.switch_page("app_pages/cost_planner_v2/cost_planner_timeline_v2.py")
 
-    with col2:
-        # Optional: quick peek at the results page (useful during development)
-        if st.button("Jump to Timeline (dev)", use_container_width=True):
-            st.switch_page("pages/cost_planner_v2/cost_planner_timeline_v2.py")
-
-
-if __name__ == "__main__":
-    render()
+# ✅ Import-time execution under Streamlit
+render()
