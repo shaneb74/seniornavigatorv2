@@ -8,7 +8,7 @@ st.set_page_config(layout="wide")
 
 inject_theme()
 
-from pages.audiencing import *  # noqa: F401,F403
+from app_pages.audiencing import *  # noqa: F401,F403
 
 st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
