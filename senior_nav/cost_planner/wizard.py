@@ -1,4 +1,5 @@
-"""Wizard registry and loader for the cost planner."""
+"""Helpers for navigating the Cost Planner v2 flow inside Streamlit."""
+
 from __future__ import annotations
 
 import importlib.util
