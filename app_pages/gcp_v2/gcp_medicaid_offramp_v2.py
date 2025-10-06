@@ -9,7 +9,6 @@ except Exception:
         except Exception:
             st.query_params["next"]=path; st.rerun()
 
-st.set_page_config(layout="wide", page_title="GCP · Medicaid Off-Ramp")
 inject_theme()
 
 st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
