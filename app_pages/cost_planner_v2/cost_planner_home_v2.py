@@ -1,48 +1,60 @@
-"""Cost Planner v2 — PFMA-styled module stub."""
-
+# Cost Planner · Home Decisions (v2)
+from __future__ import annotations
 import streamlit as st
 
+# ---------------- Theme helpers (match working Income pattern) ----------------
 try:
-    from ui.pfma import apply_pfma_theme
+    from ui.cost_planner_template import (
+        apply_cost_planner_theme,
+        cost_planner_page_container,
+        render_app_header,
+        render_wizard_hero,
+        render_wizard_help,
+        Metric, NavButton,  # available if you add nav later
+    )
 except Exception:
-    def apply_pfma_theme():
-        st.markdown(
-            """
-from __future__ import annotations
-from ui.cost_planner_template import apply_cost_planner_theme
+    # graceful fallbacks (won’t crash if helpers are missing)
+    def apply_cost_planner_theme():
+        st.markdown("""
+        <style>
+          :root{--brand:#0B5CD8;--surface:#f6f8fa;--ink:#111418}
+          .sn-card{
+            background:var(--surface);
+            border:1px solid rgba(0,0,0,.08);
+            border-radius:14px;
+            padding:clamp(1rem,2vw,1.5rem);
+          }
+        </style>
+        """, unsafe_allow_html=True)
+    from contextlib import contextmanager
+    @contextmanager
+    def cost_planner_page_container(): yield
+    def render_app_header(): st.markdown("### Cost Planner")
+    def render_wizard_hero(title: str, subtitle: str = ""):
+        st.markdown(f"## {title}")
+        if subtitle: st.caption(subtitle)
+    def render_wizard_help(text: str): st.info(text)
 
-            <style>
-              :root{
-                --brand:#0B5CD8; --paper:#ffffff; --surface:#f6f8fa;
-                --ink:#111418; --ink-muted:#6b7280; --radius:14px;
-              }
-              .block-container{max-width:1160px;padding-top:8px;}
-              .pfma-card{
-                background: var(--surface);
-                border: 1px solid rgba(0,0,0,.08);
-                border-radius: var(--radius);
-                padding: clamp(1rem, 2vw, 1.5rem);
-              }
-              .pfma-note{font-size:.9rem;color:var(--ink-muted);margin:.25rem 0 0;}
-            </style>
-            """,
-            unsafe_allow_html=True,
+# ---------------- Page content (functionality preserved; styling fixed) ----------------
+def render() -> None:
+    # same bootstrapping as Income (no set_page_config here)
+    apply_cost_planner_theme()
+
+    render_app_header()
+    with cost_planner_page_container():
+        render_wizard_hero("Home Decisions", "What’s the plan for your home?")
+
+        # Keep your content, present in styled containers
+        with st.container(border=True):
+            st.subheader("What’s the plan for your home?")
+            st.caption(
+                "If moving to a facility and not maintaining the home, you can consider selling, "
+                "renting, or a reverse mortgage estimate."
+            )
+
+        st.info(
+            "TODO: add inputs for sale proceeds, rental income, or reverse mortgage $/month (no fees modeling)."
         )
 
-
-def render() -> None:
-    apply_pfma_theme()
-
-    st.title("Cost Planner · Home Decisions (v2)")
-    st.markdown(
-        """<div class='pfma-card'>
-  <h3>What’s the plan for your home?</h3>
-  <p class='pfma-note'>If moving to a facility and not maintaining the home, you can consider selling, renting, or a reverse mortgage estimate.</p>
-</div>""",
-        unsafe_allow_html=True,
-    )
-    st.info("TODO: add inputs for sale proceeds, rental income, or reverse mortgage $/month (no fees modeling).")
-
-
-if __name__ == "__main__":
-    render()
+# ✅ Import-time execution under Streamlit
+render()
