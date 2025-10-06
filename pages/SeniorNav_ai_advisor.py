@@ -9,7 +9,7 @@ top_nav()
 
 st.markdown("## AI Advisor")
 st.subheader("I'm Navi — your expert advisor.")
-st.write("I help you see the whole map: care paths, hidden costs, decisions no one talks about. For your loved one.")
+st.write("Pages I help you see the whole map: care paths, hidden costs, decisions no one talks about. For your loved one.")
 
 st.markdown("#### Top Questions")
 q1 = "How much does home care cost?"
