@@ -1,4 +1,3 @@
-from ui.cost_planner_template import apply_cost_planner_theme
 """Cost Planner · Your Money Timeline (v2)
 
 Final readout that combines monthly care costs, expenses, home mods, caregiver adders,
@@ -10,8 +9,9 @@ Rules:
 - effective_assets = assets_total_effective (preferred) else liquidity_total (fallback so users see impact even if they skipped Assets)
 - runway_months = effective_assets / gap if gap > 0, else "Unlimited"
 """
-
 from __future__ import annotations
+from ui.cost_planner_template import apply_cost_planner_theme
+
 import math
 import streamlit as st
 

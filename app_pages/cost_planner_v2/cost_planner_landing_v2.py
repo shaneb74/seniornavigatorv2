@@ -1,10 +1,10 @@
 # Cost Planner v2 · Landing
 from __future__ import annotations
+from ui.cost_planner_template import apply_cost_planner_theme
 
 import streamlit as st
 
 # If you want the PFMA look & feel on CPv2 pages:
-from ui.cost_planner_template import apply_cost_planner_theme
 try:
     # These helpers exist in your project; if not, you can remove this block safely.
     from ui.pfma import apply_pfma_theme

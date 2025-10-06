@@ -1,6 +1,4 @@
-from ui.cost_planner_template import apply_cost_planner_theme
 """Cost Planner v2 — PFMA-styled module stub."""
-from __future__ import annotations
 
 import streamlit as st
 
@@ -10,6 +8,9 @@ except Exception:
     def apply_pfma_theme():
         st.markdown(
             """
+from __future__ import annotations
+from ui.cost_planner_template import apply_cost_planner_theme
+
             <style>
               :root{
                 --brand:#0B5CD8; --paper:#ffffff; --surface:#f6f8fa;

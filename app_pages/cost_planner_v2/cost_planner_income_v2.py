@@ -1,9 +1,9 @@
 # Cost Planner · Income (v2)
 from __future__ import annotations
 import streamlit as st
+from ui.cost_planner_template import apply_cost_planner_theme
 
 # ---------------- Theme helpers ----------------
-from ui.cost_planner_template import apply_cost_planner_theme
 try:
     from ui.cost_planner_template import (
         apply_cost_planner_theme,

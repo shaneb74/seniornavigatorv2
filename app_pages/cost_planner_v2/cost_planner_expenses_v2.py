@@ -1,7 +1,7 @@
 import streamlit as st
+from ui.cost_planner_template import apply_cost_planner_theme
 
 # Try to use PFMA look & feel if available
-from ui.cost_planner_template import apply_cost_planner_theme
 try:
     from ui.pfma import apply_pfma_theme
 except Exception:
