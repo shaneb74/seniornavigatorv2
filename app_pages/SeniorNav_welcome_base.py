@@ -25,7 +25,7 @@ def _show_if_exists(path, **kwargs):
 
 from pathlib import Path
 from ui.theme import inject_theme
-from pages.seniornav_util import ensure_aud, safe_switch, top_nav
+from app_pages.seniornav_util import ensure_aud, safe_switch, top_nav
 inject_theme()
 top_nav()
 
