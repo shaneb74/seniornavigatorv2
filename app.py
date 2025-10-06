@@ -17,71 +17,6 @@ from pathlib import Path
 # (removed) legacy auto-registration of subfolder pages
 # =========================
 
-# Debug / guardrail toggles
-# =========================
-def _debug_enabled() -> bool:
-    # Enable via URL ?debug=1 or env SN_DEBUG_PAGES=1
-    try:
-        qp_flag = str(st.query_params.get("debug", "")).lower() in ("1", "true", "yes")
-    except Exception:
-        qp_flag = False
-    env_flag = os.environ.get("SN_DEBUG_PAGES", "") == "1"
-    return qp_flag or env_flag
-
-def _design_mode_enabled() -> bool:
-    try:
-        qp_flag = str(st.query_params.get("dev", "")).lower() in ("1", "true", "yes")
-    except Exception:
-        qp_flag = False
-    env_flag = os.environ.get("SN_DEV", "") == "1"
-    ss_flag = bool(st.session_state.get("dev_design_mode"))
-    return qp_flag or env_flag or ss_flag
-
-# ==========================================
-# Guard: exactly one active ./pages directory
-# ==========================================
-# in app.py, replace _enforce_single_pages_dir with this version:
-
-
-def _enforce_single_pages_dir() -> None:
-    from pathlib import Path
-
-    roots: list[Path] = []
-    seen: set[Path] = set()
-    for d in Path(".").glob("**/pages"):
-        resolved = d.resolve()
-        sd = str(resolved).replace("\\", "/").lower()
-        if not d.is_dir():
-            continue
-        if ("_graveyard" in sd) or ("/.venv/" in sd) or ("/.git/" in sd):
-            continue
-        if not any(d.rglob("*.py")):
-            continue
-        if resolved in seen:
-            continue
-        seen.add(resolved)
-        roots.append(d)
-
-    expected = (Path(__file__).resolve().parent / "pages").resolve()
-    resolved_roots = [r.resolve() for r in roots]
-
-    if expected not in resolved_roots:
-        raise RuntimeError(
-            "❌ Unable to locate active pages directory.\n"
-            f"Expected to find one at {expected}"
-        )
-
-    extras = [r for r in resolved_roots if r != expected]
-    if extras and _debug_enabled():
-        st.warning(
-            "Multiple candidate `/pages` directories detected. "
-            "Using the one next to `app.py` and ignoring the rest.",
-            icon="⚠️",
-        )
-        st.write("Ignored directories:")
-        for extra in extras:
-            st.code(str(extra))
-_enforce_single_pages_dir()
 
 
 # ==========================================
@@ -112,10 +47,7 @@ class _PageImportLogger:
                 print(f"📄 import: {origin}")
         return spec
 
-# Insert logger only once and only when debug is enabled
-if _debug_enabled():
-    # place before default PathFinder so it sees imports
-    sys.meta_path.insert(0, _PageImportLogger())
+
 
 # ===============================
 # Theme import with safe fallback
@@ -187,24 +119,7 @@ _syntax_preflight()
 if "is_authenticated" not in st.session_state:
     st.session_state.is_authenticated = False
 
-# ==========================================
-# Design mode helpers
-# ==========================================
-def _force_welcome_once() -> None:
-    """On first run of a session, bounce to Welcome unless in design mode."""
-    if _design_mode_enabled():
-        return
-    if st.session_state.get("_boot_forced_welcome"):
-        return
-    st.session_state["_boot_forced_welcome"] = True
-    try:
-        st.query_params.clear()  # Streamlit >= 1.33
-    except Exception:
-        try:
-            st.experimental_set_query_params()
-        except Exception:
-            pass
-    st.rerun()
+
 
 # ==========================================
 # Page registration helpers
@@ -287,8 +202,6 @@ for path, title, icon, default in INTENDED:
     if page:
         pages.append(page)
 
-# Kick the session back to Welcome on first load (disabled in design mode)
-_force_welcome_once()
 
 # Render navigation (always sidebar, expanded)
 if pages:
