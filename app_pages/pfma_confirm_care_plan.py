@@ -9,6 +9,9 @@ inject_theme()
 
 from ui.pfma import (
 
+#Production Page
+
+
 apply_pfma_theme,
     chip_multiselect,
     ensure_pfma_state,
@@ -57,7 +60,7 @@ def _drawer_body(pfma_state: dict[str, object]) -> dict[str, object]:
         )
 
     confirmation = segmented_control(
-        "TEST Does this plan feel advisor-ready?",
+        "Does this plan feel advisor-ready?",
         ("Yes", "Need to discuss", "Not sure"),
         key=f"{SECTION_KEY}_confirmation",
         default=section_data.get("confirmation"),
