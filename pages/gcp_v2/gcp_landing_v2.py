@@ -12,7 +12,29 @@ st.markdown("## Guided Care Plan · Start")
 st.caption("We’ll begin with financial eligibility, then daily life, health & safety, and preferences.")
 
 # render financial section (Q0/Q1 with conditional logic)
-render_section("financial", questions_for_section("financial"))
+financial_questions = questions_for_section("financial")
+for question in financial_questions:
+    if question["id"] == "medicaid_status":
+        question["label"] = "Are you currently on Medicaid or receiving state long-term care assistance?"
+        question["helper"] = (
+            "Medicare is federal health insurance. Medicaid is a need-based program that can pay for long-term care. "
+            "If you’re unsure, keep going—we’ll flag this to double-check later."
+        )
+        question["choices"] = [
+            ("yes", "Yes"),
+            ("no", "No"),
+            ("unsure", "I'm not sure"),
+        ]
+    elif question["id"] == "funding_confidence":
+        question["label"] = "How confident do you feel about paying for care?"
+        question["choices"] = [
+            ("no_worries", "No worries"),
+            ("confident", "Confident"),
+            ("unsure", "Unsure"),
+            ("not_confident", "Not confident"),
+        ]
+
+render_section("financial", financial_questions)
 
 data = _state()
 if data.get("route") == "medicaid_offramp":
