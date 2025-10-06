@@ -1,16 +1,60 @@
+# Cost Planner · Home Modifications (v2)
+from __future__ import annotations
 import streamlit as st
-from ui.cost_planner_template import apply_cost_planner_theme
 
-# PFMA theme (fallback-safe)
+# ---------------- Theme helpers (same pattern as Income) ----------------
 try:
-    from ui.pfma import apply_pfma_theme
+    from ui.cost_planner_template import (
+        apply_cost_planner_theme,
+        cost_planner_page_container,
+        render_app_header,
+        render_wizard_hero,
+        render_wizard_help,
+        render_nav_buttons,
+        Metric, NavButton,
+    )
 except Exception:
-    def apply_pfma_theme():
-        pass
+    # graceful fallbacks (won't crash if helpers aren't available)
+    def apply_cost_planner_theme():
+        st.markdown("""
+        <style>
+          :root{--brand:#0B5CD8;--surface:#f6f8fa;--ink:#111418}
+          .sn-card{
+            background:var(--surface);
+            border:1px solid rgba(0,0,0,.08);
+            border-radius:14px;
+            padding:clamp(1rem,2vw,1.5rem);
+          }
+        </style>
+        """, unsafe_allow_html=True)
+    from contextlib import contextmanager
+    @contextmanager
+    def cost_planner_page_container(): yield
+    def render_app_header(): st.markdown("### Cost Planner")
+    def render_wizard_hero(title: str, subtitle: str = ""):
+        st.markdown(f"## {title}")
+        if subtitle: st.caption(subtitle)
+    def render_wizard_help(text: str): st.info(text)
+    class Metric:
+        def __init__(self, title: str, value: str): self.title, self.value = title, value
+    class NavButton:
+        def __init__(self, label: str, key: str, type: str = "secondary", icon: str | None = None):
+            self.label, self.key, self.type, self.icon = label, key, type, icon
+    def render_nav_buttons(buttons=None, prev=None, next=None):
+        cols = st.columns(2)
+        if prev:
+            with cols[0]:
+                if st.button(prev.label, key=prev.key, type="secondary", use_container_width=True):
+                    st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
+        if next:
+            with cols[-1]:
+                if st.button(next.label, key=next.key, type="primary", use_container_width=True):
+                    st.switch_page("app_pages/cost_planner_v2/cost_planner_assets_v2.py")
 
-
+# ---------------- Page content (content preserved) ----------------
 def render() -> None:
-    apply_pfma_theme()
+    # same as Income: load global/CP theme (no set_page_config here)
+    apply_cost_planner_theme()
 
     cp = st.session_state.setdefault("cost_planner", {})
     qual = cp.setdefault("qualifiers", {})  # owns_home, care_setting, etc.
@@ -27,19 +71,19 @@ def render() -> None:
             "If you rent or you're moving to a facility, you can skip it."
         )
 
-    st.markdown(
-        """<div class='pfma-card'>
-  <h3>Here’s what home safety upgrades might cost</h3>
-  <p class='pfma-note'>Use this if you plan to stay at home and may need accessibility upgrades. You can optionally spread the cost over 5 years to see a monthly equivalent.</p>
-  <ul>
-    <li>Grab bars: $300–$800</li>
-    <li>Ramps: $1,000–$5,000</li>
-    <li>Walk-in shower: $3,000–$10,000</li>
-    <li>Stairs/lighting: $500–$1,200</li>
-  </ul>
-</div>""",
-        unsafe_allow_html=True,
-    )
+    # Keep your content, render it in a styled container (Income-style)
+    with st.container(border=True):
+        st.subheader("Here’s what home safety upgrades might cost")
+        st.caption(
+            "Use this if you plan to stay at home and may need accessibility upgrades. "
+            "You can optionally spread the cost over 5 years to see a monthly equivalent."
+        )
+        st.markdown(
+            "- **Grab bars:** $300–$800\n"
+            "- **Ramps:** $1,000–$5,000\n"
+            "- **Walk-in shower:** $3,000–$10,000\n"
+            "- **Stairs/lighting:** $500–$1,200"
+        )
 
     colA, colB = st.columns([1, 1], gap="large")
     with colA:
@@ -94,7 +138,7 @@ def render() -> None:
     c1, c2, c3 = st.columns([1, 1, 1])
     with c1:
         if st.button("◀︎ Back to Modules", key="hm_back"):
-            st.switch_page("pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
+            st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
 
     with c2:
         if st.button("Save", key="hm_save"):
@@ -104,8 +148,7 @@ def render() -> None:
     with c3:
         if st.button("Save & Continue → Assets", key="hm_next"):
             _save_to_state()
-            st.switch_page("pages/cost_planner_v2/cost_planner_assets_v2.py")
+            st.switch_page("app_pages/cost_planner_v2/cost_planner_assets_v2.py")
 
-
-if __name__ == "__main__":
-    render()
+# ✅ Import-time execution under Streamlit (no __main__ guard)
+render()
