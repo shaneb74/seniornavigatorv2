@@ -4,8 +4,6 @@ import streamlit as st
 
 from ui.theme import inject_theme
 
-st.set_page_config(layout="wide")
-
 inject_theme()
 
 from app_pages.audiencing import *  # noqa: F401,F403
