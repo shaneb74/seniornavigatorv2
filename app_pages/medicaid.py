@@ -5,8 +5,6 @@ import streamlit as st
 
 from ui.theme import inject_theme
 
-st.set_page_config(layout="wide")
-
 inject_theme()
 
 from ui.components import card_panel
@@ -19,7 +17,7 @@ with card_panel():
         """
         <div class="sn-hero-h1" style="margin-bottom:.4rem;">Medicaid Resources for Your Loved One</div>
         <p style="margin:0;color:var(--ink-muted);font-size:1.05rem;">
-          Because your loved one is on Medicaid, there are special programs and benefits you may qualify for.
+          With Medicaid, there are special programs and benefits you may qualify for.
           Medicaid has federally and state-supported options that can help with senior living, long-term care, and related services.
           While our direct resources are limited in this area, we've included information and links to trusted organizations that can guide you to the right support.
         </p>
