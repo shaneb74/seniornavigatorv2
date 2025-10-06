@@ -1,9 +1,8 @@
 from __future__ import annotations
 import streamlit as st
 from ui.theme import inject_theme
-from pages.seniornav_util import top_nav, safe_switch
+from app_pages.seniornav_util import top_nav, safe_switch
 
-st.set_page_config(layout="wide", page_title="Waiting Room")
 inject_theme()
 top_nav()
 
