@@ -9,6 +9,7 @@ import streamlit as st
 # PFMA theme (safe fallback if unavailable)
 try:
     from ui.pfma import apply_pfma_theme
+from ui.cost_planner_template import apply_cost_planner_theme
 except Exception:
     def apply_pfma_theme():
         st.markdown(
@@ -26,7 +27,7 @@ except Exception:
 
 # Simple nav helpers
 def goto(page: str) -> None:
-    st.switch_page(f"app_pages/cost_planner_v2/{page}")
+    st.switch_page(f"pages/cost_planner_v2/{page}")
 
 def back_to_hub() -> None:
     goto("cost_planner_modules_hub_v2.py")
@@ -164,6 +165,8 @@ def render() -> None:
                     "other_sale_value": other_sale if planning else 0,
                 }
             )
-            st.switch_page("app_pages/cost_planner_v2/cost_planner_home_mods_v2.py")
+            st.switch_page("pages/cost_planner_v2/cost_planner_home_mods_v2.py")
 
-render()
+
+if __name__ == "__main__":
+    render()

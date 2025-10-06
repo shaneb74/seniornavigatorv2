@@ -7,6 +7,7 @@ import streamlit as st
 try:
     # These helpers exist in your project; if not, you can remove this block safely.
     from ui.pfma import apply_pfma_theme
+from ui.cost_planner_template import apply_cost_planner_theme
 except Exception:
     def apply_pfma_theme():
         pass
@@ -46,11 +47,13 @@ def render() -> None:
     with col1:
         # This is the one you asked about — it sends people to the CPv2 Modules Hub
         if st.button("Start planning", type="primary", use_container_width=True):
-            st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
+            st.switch_page("pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
 
     with col2:
         # Optional: quick peek at the results page (useful during development)
         if st.button("Jump to Timeline (dev)", use_container_width=True):
-            st.switch_page("app_pages/cost_planner_v2/cost_planner_timeline_v2.py")
+            st.switch_page("pages/cost_planner_v2/cost_planner_timeline_v2.py")
 
-render()
+
+if __name__ == "__main__":
+    render()

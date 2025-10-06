@@ -5,6 +5,7 @@ import streamlit as st
 
 try:
     from ui.pfma import apply_pfma_theme
+from ui.cost_planner_template import apply_cost_planner_theme
 except Exception:
     def apply_pfma_theme():
         st.markdown(
@@ -41,4 +42,6 @@ def render() -> None:
     )
     st.info("TODO: add inputs for sale proceeds, rental income, or reverse mortgage $/month (no fees modeling).")
 
-render()
+
+if __name__ == "__main__":
+    render()

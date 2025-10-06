@@ -5,6 +5,7 @@ import streamlit as st
 
 try:
     from ui.pfma import apply_pfma_theme
+from ui.cost_planner_template import apply_cost_planner_theme
 except Exception:
     def apply_pfma_theme():
         st.markdown(
@@ -41,4 +42,6 @@ def render() -> None:
     )
     st.info("TODO: inputs for caregiver_type, include_caregiver_cost, caregiver_cost (default 3600 if included).")
 
-render()
+
+if __name__ == "__main__":
+    render()

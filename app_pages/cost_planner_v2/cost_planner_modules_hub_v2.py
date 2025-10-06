@@ -3,6 +3,7 @@ import streamlit as st
 from ui.pfma import apply_pfma_theme
 from cost_planner_v2.cp_state import ensure_cp
 from cost_planner_v2.cp_nav import goto
+from ui.cost_planner_template import apply_cost_planner_theme
 
 
 def render() -> None:
@@ -38,4 +39,6 @@ def render() -> None:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-render()
+
+if __name__ == "__main__":
+    render()

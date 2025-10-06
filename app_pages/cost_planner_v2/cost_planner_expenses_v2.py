@@ -3,6 +3,7 @@ import streamlit as st
 # Try to use PFMA look & feel if available
 try:
     from ui.pfma import apply_pfma_theme
+from ui.cost_planner_template import apply_cost_planner_theme
 except Exception:
     def apply_pfma_theme():
         pass
@@ -27,8 +28,10 @@ def render() -> None:
     col1, col2 = st.columns([1, 1])
     with col1:
         if st.button("◀︎ Back to Modules"):
-            st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
+            st.switch_page("pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
     with col2:
         st.button("Save & Continue", disabled=True, help="Coming soon")
 
-render()
+
+if __name__ == "__main__":
+    render()
