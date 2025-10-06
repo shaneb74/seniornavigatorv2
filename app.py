@@ -8,6 +8,21 @@ import inspect
 from pathlib import Path
 import streamlit as st
 
+
+# =========================
+# Debug / guardrail toggles
+# =========================
+def _debug_enabled() -> bool:
+    """Return True when lightweight debug logging should be enabled."""
+
+    try:
+        qp = str(st.query_params.get("debug", "")).lower()
+    except Exception:
+        qp = ""
+    env = os.environ.get("SN_DEBUG_PAGES", "").lower()
+    truthy = {"1", "true", "yes", "on"}
+    return qp in truthy or env in truthy
+
 def register_pages(*args, **kwargs):
     # disabled: we register pages solely via INTENDED + st.navigation
     return None
@@ -46,6 +61,14 @@ class _PageImportLogger:
             if "/pages/" in origin:
                 print(f"📄 import: {origin}")
         return spec
+
+
+
+# Install the logger only once when debug mode is active.
+if _debug_enabled():
+    already_registered = any(isinstance(hook, _PageImportLogger) for hook in sys.meta_path)
+    if not already_registered:
+        sys.meta_path.insert(0, _PageImportLogger())
 
 
 
