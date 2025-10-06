@@ -3,7 +3,6 @@ import streamlit as st
 from ui.theme import inject_theme
 from ui.gcp_form import _state, nav_buttons
 
-st.set_page_config(layout="wide", page_title="GCP · Recommendation")
 inject_theme()
 
 st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
