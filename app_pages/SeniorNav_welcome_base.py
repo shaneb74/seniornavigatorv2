@@ -3,7 +3,6 @@ import streamlit as st
 from pathlib import Path
 
 def _show_if_exists(path, **kwargs):
-    import streamlit as st
     if not path:
         return False
     q = Path(path)
@@ -127,17 +126,17 @@ def render(kind: str):
             if st.button("Let's Get Started", type="primary", use_container_width=True, disabled=disabled):
                 if not name:
                     aud["recipient_name"] = "You"
-                safe_switch("pages/guided_care_hub.py")
+                safe_switch("app_pages/guided_care_hub.py")
         elif kind == "proxy":
             if st.button("Let's Get Started", type="primary", use_container_width=True, disabled=disabled):
                 if not name:
                     aud["recipient_name"] = "Your Loved One"
-                safe_switch("pages/guided_care_hub.py")
+                safe_switch("app_pages/guided_care_hub.py")
         else:
             if st.button("Let's Get Started", type="primary", use_container_width=True, disabled=disabled):
                 if not name:
                     aud["recipient_name"] = "Your Client"
-                safe_switch("pages/SeniorNav_professional_hub.py")
+                safe_switch("app_pages/SeniorNav_professional_hub.py")
         st.markdown("</div>", unsafe_allow_html=True)
     with right:
         img = _existing_image(IMAGE_MAP.get(kind))

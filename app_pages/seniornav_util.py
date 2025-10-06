@@ -27,7 +27,7 @@ def top_nav():
     st.markdown(
         """
         <div style="display:flex;justify-content:flex-end;gap:.5rem;margin:-8px 0 8px 0">
-          <a href="?page=pages/SeniorNav_ai_advisor.py" style="text-decoration:none;padding:.4rem .75rem;border:1px solid rgba(0,0,0,.08);border-radius:999px;background:var(--surface);color:var(--ink);font-weight:600;">AI Advisor</a>
+          <a href="?page=app_pages/SeniorNav_ai_advisor.py" style="text-decoration:none;padding:.4rem .75rem;border:1px solid rgba(0,0,0,.08);border-radius:999px;background:var(--surface);color:var(--ink);font-weight:600;">AI Advisor</a>
         </div>
         """,
         unsafe_allow_html=True,
@@ -36,4 +36,3 @@ def top_nav():
 def pfma_card(title: str | None = None, subtitle: str = ""):
     inject_theme()
     return st.container(border=False)
-
