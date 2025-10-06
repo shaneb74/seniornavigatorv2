@@ -57,7 +57,7 @@ def _drawer_body(pfma_state: dict[str, object]) -> dict[str, object]:
         )
 
     confirmation = segmented_control(
-        "Does this plan feel advisor-ready?",
+        "TEST Does this plan feel advisor-ready?",
         ("Yes", "Need to discuss", "Not sure"),
         key=f"{SECTION_KEY}_confirmation",
         default=section_data.get("confirmation"),
