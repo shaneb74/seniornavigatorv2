@@ -93,7 +93,7 @@ def render() -> None:
     c1, c2, c3 = st.columns([1, 1, 1])
     with c1:
         if st.button("◀︎ Back to Modules", key="hm_back"):
-            st.switch_page("pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
+            st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
 
     with c2:
         if st.button("Save", key="hm_save"):
@@ -103,8 +103,6 @@ def render() -> None:
     with c3:
         if st.button("Save & Continue → Assets", key="hm_next"):
             _save_to_state()
-            st.switch_page("pages/cost_planner_v2/cost_planner_assets_v2.py")
+            st.switch_page("app_pages/cost_planner_v2/cost_planner_assets_v2.py")
 
-
-if __name__ == "__main__":
-    render()
+render()

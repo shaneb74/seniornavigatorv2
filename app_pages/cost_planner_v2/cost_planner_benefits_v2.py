@@ -41,6 +41,4 @@ def render() -> None:
     )
     st.info("TODO: build inputs for: va_estimate_(A/B), ltc_daily_benefit_(A/B), medicaid_status → benefits_total")
 
-
-if __name__ == "__main__":
-    render()
+render()

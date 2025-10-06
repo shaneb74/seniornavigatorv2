@@ -27,10 +27,8 @@ def render() -> None:
     col1, col2 = st.columns([1, 1])
     with col1:
         if st.button("◀︎ Back to Modules"):
-            st.switch_page("pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
+            st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
     with col2:
         st.button("Save & Continue", disabled=True, help="Coming soon")
 
-
-if __name__ == "__main__":
-    render()
+render()

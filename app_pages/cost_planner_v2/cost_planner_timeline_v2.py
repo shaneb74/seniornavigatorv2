@@ -78,7 +78,7 @@ def _fmt_money(v: float | int) -> str:
         return "$0"
 
 def goto(page: str) -> None:
-    st.switch_page(f"pages/cost_planner_v2/{page}")
+    st.switch_page(f"app_pages/cost_planner_v2/{page}")
 
 def render() -> None:
     apply_pfma_theme()
@@ -213,8 +213,6 @@ def render() -> None:
             goto("cost_planner_modules_hub_v2.py")
     with c2:
         if st.button("Continue → Expert Review", key="tm_next"):
-            st.switch_page("pages/expert_review.py")
+            st.switch_page("app_pages/expert_review.py")
 
-
-if __name__ == "__main__":
-    render()
+render()

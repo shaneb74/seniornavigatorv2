@@ -41,6 +41,4 @@ def render() -> None:
     )
     st.info("TODO: inputs for caregiver_type, include_caregiver_cost, caregiver_cost (default 3600 if included).")
 
-
-if __name__ == "__main__":
-    render()
+render()

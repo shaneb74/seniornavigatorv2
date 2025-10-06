@@ -43,6 +43,4 @@ def render() -> None:
         "TODO: inputs for cash_savings, brokerage_taxable, ira_total, home_equity (if owner), other_assets, liquidity_total → assets_total_effective"
     )
 
-
-if __name__ == "__main__":
-    render()
+render()

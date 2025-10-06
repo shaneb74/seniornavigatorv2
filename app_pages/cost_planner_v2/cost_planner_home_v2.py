@@ -41,6 +41,4 @@ def render() -> None:
     )
     st.info("TODO: add inputs for sale proceeds, rental income, or reverse mortgage $/month (no fees modeling).")
 
-
-if __name__ == "__main__":
-    render()
+render()
