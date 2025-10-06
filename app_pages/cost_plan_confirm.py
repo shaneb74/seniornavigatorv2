@@ -7,8 +7,6 @@ import streamlit as st
 
 from ui.theme import inject_theme
 
-st.set_page_config(layout="wide")
-
 inject_theme()
 
 from cost_planner_shared import ensure_core_state, format_currency, recompute_costs
