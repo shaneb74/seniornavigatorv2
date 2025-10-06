@@ -1,9 +1,8 @@
-
 # Cost Planner · Income (v2)
 from __future__ import annotations
 import streamlit as st
 
-# ---------------- Theme helpers (works with/without your PFMA CP template) ----------------
+# ---------------- Theme helpers ----------------
 try:
     from ui.cost_planner_template import (
         apply_cost_planner_theme,
@@ -32,7 +31,7 @@ except Exception:
         st.markdown(f"## {title}")
         if subtitle: st.caption(subtitle)
     def render_wizard_help(text: str): st.info(text)
-    class Metric: 
+    class Metric:
         def __init__(self, title: str, value: str): self.title, self.value = title, value
     class NavButton:
         def __init__(self, label: str, key: str, type: str = "secondary", icon: str | None = None):
@@ -42,11 +41,13 @@ except Exception:
         if prev:
             with cols[0]:
                 if st.button(prev.label, key=prev.key, type="secondary", use_container_width=True):
-                    st.switch_page("pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
+                    # 🔁 updated path for programmatic-nav setup
+                    st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
         if next:
             with cols[-1]:
                 if st.button(next.label, key=next.key, type="primary", use_container_width=True):
-                    st.switch_page("pages/cost_planner_v2/cost_planner_expenses_v2.py")
+                    # 🔁 updated path for programmatic-nav setup
+                    st.switch_page("app_pages/cost_planner_v2/cost_planner_expenses_v2.py")
 
 # ---------------- State helpers ----------------
 def _cp_get() -> dict:
@@ -54,7 +55,7 @@ def _cp_get() -> dict:
 
 def _qual_get() -> dict:
     cp = _cp_get()
-    return cp.setdefault("qualifiers", {})  # has_partner, owns_home, etc.
+    return cp.setdefault("qualifiers", {})
 
 def _income_get() -> dict:
     cp = _cp_get()
@@ -82,7 +83,6 @@ def _to_num(x) -> float:
         return 0.0
 
 def _partner_mode() -> str:
-    # "No partner", "Unified household", "Split finances"
     q = _qual_get()
     return str(q.get("has_partner", "No partner"))
 
@@ -99,7 +99,7 @@ def _render_person_inputs(label: str, prefix: str, inc: dict) -> tuple[float, fl
         return _to_num(a), _to_num(b), _to_num(c)
 
 def render() -> None:
-    st.set_page_config(page_title="Cost Planner · Income", layout="wide")
+    # ❌ DO NOT call st.set_page_config here (keep only in app.py)
     apply_cost_planner_theme()
 
     render_app_header()
@@ -108,7 +108,7 @@ def render() -> None:
         render_wizard_help("Ballpark your monthly income—rough numbers are fine. Include wages, rental, alimony, dividends—any steady cash.")
 
         inc = _income_get()
-        has_partner = _partner_mode()  # "No partner" | "Unified household" | "Split finances"
+        has_partner = _partner_mode()
 
         a_ss, a_pens, a_other = _render_person_inputs("Person A", "person_a", inc)
 
@@ -133,11 +133,10 @@ def render() -> None:
         st.markdown("### ")
         st.metric("Total Monthly Income", f"${total:,.0f}")
 
-        # nav
         render_nav_buttons(
             prev=NavButton("← Back to Modules", "income_back"),
             next=NavButton("Save & Continue → Expenses", "income_next", type="primary"),
         )
 
-if __name__ == "__main__":
-    render()
+# ✅ Import-time execution under Streamlit
+render()
