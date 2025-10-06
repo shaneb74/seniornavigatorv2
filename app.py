@@ -194,8 +194,7 @@ INTENDED = [    ("pages/welcome.py", "Welcome", "👋", True),
 # ==========================================
 # Home and Welcome Pages
 # ==========================================        
-    ("pages/hub.py", "Your Concierge Care Hub", "🏠", False),
-    ("pages/SeniorNav_welcome_self.py", "Welcome · For You", "🙂", False),
+     
     ("pages/SeniorNav_welcome_someone_else.py", "Welcome · Someone Else", "👥", False),
     ("pages/SeniorNav_welcome_professional.py", "Welcome · Professional", "🩺", False),
     ("pages/professional_mode.py", "Professional Mode", "🧑", False),
@@ -204,6 +203,7 @@ INTENDED = [    ("pages/welcome.py", "Welcome", "👋", True),
 # Concierge Care Hub
 # ==========================================  
 
+    ("pages/hub.py", "Your Concierge Care Hub", "🏠", False),
     ("pages/SeniorNav_professional_hub.py", "Professional Hub", "🧰", False),
 
 # ==========================================
