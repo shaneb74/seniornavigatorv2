@@ -5,8 +5,6 @@ import streamlit as st
 
 from ui.theme import inject_theme
 
-st.set_page_config(layout="wide")
-
 inject_theme()
 
 # --- Theme / CP template hooks (works with your shim) ---
