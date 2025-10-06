@@ -54,8 +54,6 @@ def register_pages(*args, **kwargs):
     # disabled: we register pages solely via INTENDED + st.navigation
     return None
 
-from pathlib import Path
-
 # (removed) legacy auto-registration of subfolder pages
 # =========================
 
@@ -180,10 +178,7 @@ def ensure_page(path: str, title: str, icon: str, default: bool = False):
     p = Path(path)
     if not p.exists():
         return None
-    return (
-        st.Page(path, title=title, icon=icon, default=True)
-        if default else st.Page(path, title=title, icon=icon)
-    )
+    return st.Page(path, title=title, icon=icon, default=default)
 
 # ==========================================
 # Pages to register (controls nav order)
@@ -236,6 +231,32 @@ INTENDED = [    ("pages/welcome.py", "Welcome", "👋", True),
     ("pages/cost_planner_v2/cost_planner_assets_v2.py", "Cost Planner v2 · Assets", "🏦", False),
     ("pages/cost_planner_v2/cost_planner_timeline_v2.py", "Cost Planner v2 · Timeline", "📈", False),
 ]
+# --- Cost Planner v2 diagnostics (non-blocking) ---
+_CP_V2_PREFIX = "pages/cost_planner_v2/"
+_cp_entries = [entry for entry in INTENDED if entry[0].startswith(_CP_V2_PREFIX)]
+_cp_missing: list[str] = []
+_cp_failed: list[tuple[str, str]] = []
+for path, title, icon, default in _cp_entries:
+    page_path = Path(path)
+    if not page_path.exists():
+        _cp_missing.append(path)
+        continue
+    try:
+        st.Page(path, title=title, icon=icon, default=default)
+    except Exception as exc:  # pragma: no cover - Streamlit runtime only
+        _cp_failed.append((path, f"{type(exc).__name__}: {exc}"))
+
+if _cp_missing or _cp_failed:
+    st.warning("Cost Planner v2 diagnostics detected issues. See details below.")
+    if _cp_missing:
+        st.write("**Missing on disk:**")
+        st.write("\n".join(f"• {p}" for p in sorted(_cp_missing)))
+    if _cp_failed:
+        st.write("**Failed to build:**")
+        for path, message in _cp_failed:
+            st.code(f"{path}\n{message}")
+else:
+    st.caption(f"Cost Planner v2 diagnostics: {len(_cp_entries)} page(s) ready.")
 # Build the Page objects (ignore missing silently)
 pages = []
 for path, title, icon, default in INTENDED:

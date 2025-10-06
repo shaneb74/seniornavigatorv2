@@ -1,14 +1,34 @@
 """Shared UI helpers for the simplified Senior Navigator experience."""
 from __future__ import annotations
 
+from typing import Any, Dict
+
 import streamlit as st
 import streamlit.components.v1 as components
 
 from . import navigation
 
 
+def configure_page(*, page_title: str | None = None, layout: str = "wide", **kwargs: Any) -> None:
+    """Apply Streamlit's page config but never crash if it's too late."""
+
+    config: Dict[str, Any] = {"layout": layout, **kwargs}
+    if page_title is not None:
+        config["page_title"] = page_title
+
+    try:
+        st.set_page_config(**config)
+    except Exception as exc:  # pragma: no cover - depends on Streamlit runtime
+        message = getattr(exc, "message", str(exc))
+        st.warning(
+            "We couldn't apply the custom page configuration. "
+            "The page will continue with Streamlit defaults.",
+        )
+        print(f"[page-config] {type(exc).__name__}: {message}")
+
+
 def set_page_config(*, title: str) -> None:
-    st.set_page_config(page_title=title, layout="wide")
+    configure_page(page_title=title)
 
 
 def header(title: str, subtitle: str | None = None) -> None:

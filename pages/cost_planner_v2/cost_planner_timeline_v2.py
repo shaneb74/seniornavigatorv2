@@ -4,7 +4,7 @@ from typing import Any, Dict, List
 
 import streamlit as st
 
-from pages.cost_planner_v2 import _shared as shared
+from cost_planner_v2 import _shared as shared
 from senior_nav.components import buttons
 from ui.theme import inject_theme
 

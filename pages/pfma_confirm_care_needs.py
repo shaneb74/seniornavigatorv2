@@ -3,9 +3,10 @@ from __future__ import annotations
 
 import streamlit as st
 
+from senior_nav.ui import configure_page
 from ui.theme import inject_theme
 
-st.set_page_config(layout="wide")
+configure_page(page_title="PFMA · Care Needs")
 
 inject_theme()
 
