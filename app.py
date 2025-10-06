@@ -45,20 +45,42 @@ def _design_mode_enabled() -> bool:
 
 def _enforce_single_pages_dir() -> None:
     from pathlib import Path
-    roots = []
+
+    roots: list[Path] = []
+    seen: set[Path] = set()
     for d in Path(".").glob("**/pages"):
-        sd = str(d.resolve()).replace("\\","/").lower()
-        if not d.is_dir(): 
+        resolved = d.resolve()
+        sd = str(resolved).replace("\\", "/").lower()
+        if not d.is_dir():
             continue
         if ("_graveyard" in sd) or ("/.venv/" in sd) or ("/.git/" in sd):
             continue
         if not any(d.rglob("*.py")):
             continue
+        if resolved in seen:
+            continue
+        seen.add(resolved)
         roots.append(d)
-    expected = (Path.cwd() / "pages").resolve()
-    if len(roots) != 1 or roots[0].resolve() != expected:
-        raise RuntimeError(f"❌ Invalid pages directories detected: {roots}\n"
-                           f"Expected exactly one at {expected}")
+
+    expected = (Path(__file__).resolve().parent / "pages").resolve()
+    resolved_roots = [r.resolve() for r in roots]
+
+    if expected not in resolved_roots:
+        raise RuntimeError(
+            "❌ Unable to locate active pages directory.\n"
+            f"Expected to find one at {expected}"
+        )
+
+    extras = [r for r in resolved_roots if r != expected]
+    if extras and _debug_enabled():
+        st.warning(
+            "Multiple candidate `/pages` directories detected. "
+            "Using the one next to `app.py` and ignoring the rest.",
+            icon="⚠️",
+        )
+        st.write("Ignored directories:")
+        for extra in extras:
+            st.code(str(extra))
 _enforce_single_pages_dir()
 
 
