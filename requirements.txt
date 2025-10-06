@@ -1,4 +1,4 @@
-streamlit>=1.36,<1.41
+streamlit>=1.40,<1.41
 pandas>=2.1
 numpy>=1.25
 requests>=2.31
