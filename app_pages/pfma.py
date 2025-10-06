@@ -110,7 +110,7 @@ with left:
         <div class="pfma-card" style="background:linear-gradient(145deg, rgba(0,87,184,0.08) 0%, rgba(0,87,184,0) 60%),
              linear-gradient(110deg, rgba(251,192,45,0.15) 0%, rgba(255,255,255,0) 70%);">
           <span class="pfma-badge">Concierge on deck</span>
-          <h3>Your personal advisor will call within 24 hours.</h3>
+          <h3>Your personal advisor will call within 24 hours!</h3>
           <p>Lock in a time that works best for you. If anything changes, you can update details right up until the call.</p>
           <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:.6rem;">
             <div style="display:flex;align-items:center;gap:.45rem;font-weight:600;color:#0b3e91;">
