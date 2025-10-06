@@ -29,3 +29,15 @@ build/
 # Local archives / graveyard
 _graveyard/
 archive/
+__pycache__/
+*.pyc
+.env
+.venv/
+venv/
+.env*
+.DS_Store
+data/
+*.sqlite
+*.db
+.streamlit/
+
