@@ -198,8 +198,13 @@ INTENDED = [    ("pages/welcome.py", "Welcome", "👋", True),
     ("pages/SeniorNav_welcome_self.py", "Welcome · For You", "🙂", False),
     ("pages/SeniorNav_welcome_someone_else.py", "Welcome · Someone Else", "👥", False),
     ("pages/SeniorNav_welcome_professional.py", "Welcome · Professional", "🩺", False),
-    ("pages/SeniorNav_professional_hub.py", "Professional Hub", "🧰", False),
     ("pages/professional_mode.py", "Professional Mode", "🧑", False),
+
+# ==========================================
+# Concierge Care Hub
+# ==========================================  
+
+    ("pages/SeniorNav_professional_hub.py", "Professional Hub", "🧰", False),
 
 # ==========================================
 # Guided Care Plan
@@ -242,17 +247,17 @@ INTENDED = [    ("pages/welcome.py", "Welcome", "👋", True),
     ("pages/pfma_confirm_personal_info.py", "PFMA * Personal Info", "👤", False),
 
 # ==========================================
-# AI Advisor
+# AI Advisor and Waiting Room
 # ==========================================    
             
     ("pages/SeniorNav_ai_advisor.py", "AI Advisor", "🤖", False),
+    ("pages/SeniorNav_waiting_room.py", "Waiting Room", "⏳", False),
 
 # ==========================================
 # App Utilities and Supprt
 # ==========================================    
             
     ("pages/SeniorNav_login.py", "Login", "🔐", False),
-    ("pages/SeniorNav_waiting_room.py", "Waiting Room", "⏳", False),
     ("pages/SeniorNav_trusted_partners.py", "Trusted Partners", "🤝", False),
     ("pages/SeniorNav_export_details.py", "Export Details", "📤", False),
     ("pages/SeniorNav_my_documents.py", "My Documents", "📁", False),
