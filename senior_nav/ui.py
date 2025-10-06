@@ -1,38 +1,14 @@
 """Shared UI helpers for the simplified Senior Navigator experience."""
 from __future__ import annotations
 
-from pathlib import Path
-
 import streamlit as st
 import streamlit.components.v1 as components
 
 from . import navigation
 
 
-def _inject_theme() -> None:
-    """Apply the shared theme and optional stylesheet for each page."""
-
-    try:
-        from ui.theme import inject_theme  # type: ignore import-not-found
-    except Exception:
-        inject_theme = None
-
-    css_path = Path("static/style.css")
-    if css_path.exists():
-        try:
-            extra = css_path.read_text(encoding="utf-8").strip()
-        except Exception:
-            extra = css_path.read_bytes().decode(errors="ignore").strip()
-        version = int(css_path.stat().st_mtime)
-        st.markdown(f"<style>{extra}</style><!-- v:{version} -->", unsafe_allow_html=True)
-
-    if inject_theme:
-        inject_theme()
-
-
 def set_page_config(*, title: str) -> None:
     st.set_page_config(page_title=title, layout="wide")
-    _inject_theme()
 
 
 def header(title: str, subtitle: str | None = None) -> None:
