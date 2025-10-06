@@ -99,8 +99,6 @@ def _syntax_preflight(paths=("pages",), stop_on_error=True):
             st.stop()
 _syntax_preflight()
 
-consume_pending_nav()
-
 # ==========================================
 # Session bootstrap (prototype auth flag)
 # ==========================================
