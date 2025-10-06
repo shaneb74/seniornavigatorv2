@@ -1,143 +1,196 @@
-
-# Cost Planner · Income (v2)
 from __future__ import annotations
+
+from typing import Any, Dict, List, Tuple
+
 import streamlit as st
 
-# ---------------- Theme helpers (works with/without your PFMA CP template) ----------------
-try:
-    from ui.cost_planner_template import (
-        apply_cost_planner_theme,
-        cost_planner_page_container,
-        render_app_header,
-        render_wizard_hero,
-        render_wizard_help,
-        render_nav_buttons,
-        Metric, NavButton,
-    )
-except Exception:
-    # graceful fallbacks
-    def apply_cost_planner_theme():
-        st.markdown("""
-        <style>
-          :root{--brand:#0B5CD8;--surface:#f6f8fa;--ink:#111418}
-          .sn-card{background:var(--surface);border:1px solid rgba(0,0,0,.08);
-                   border-radius:14px;padding:clamp(1rem,2vw,1.5rem);}
-        </style>
-        """, unsafe_allow_html=True)
-    from contextlib import contextmanager
-    @contextmanager
-    def cost_planner_page_container(): yield
-    def render_app_header(): st.markdown("### Cost Planner")
-    def render_wizard_hero(title: str, subtitle: str = ""):
-        st.markdown(f"## {title}")
-        if subtitle: st.caption(subtitle)
-    def render_wizard_help(text: str): st.info(text)
-    class Metric: 
-        def __init__(self, title: str, value: str): self.title, self.value = title, value
-    class NavButton:
-        def __init__(self, label: str, key: str, type: str = "secondary", icon: str | None = None):
-            self.label, self.key, self.type, self.icon = label, key, type, icon
-    def render_nav_buttons(buttons=None, prev=None, next=None):
-        cols = st.columns(2)
-        if prev:
-            with cols[0]:
-                if st.button(prev.label, key=prev.key, type="secondary", use_container_width=True):
-                    st.switch_page("pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
-        if next:
-            with cols[-1]:
-                if st.button(next.label, key=next.key, type="primary", use_container_width=True):
-                    st.switch_page("pages/cost_planner_v2/cost_planner_expenses_v2.py")
+from pages.cost_planner_v2 import _shared as shared
+from senior_nav.components import buttons
+from senior_nav.components.choice_chips import choice_single
+from ui.theme import inject_theme
 
-# ---------------- State helpers ----------------
-def _cp_get() -> dict:
-    return st.session_state.setdefault("cost_planner", {})
 
-def _qual_get() -> dict:
-    cp = _cp_get()
-    return cp.setdefault("qualifiers", {})  # has_partner, owns_home, etc.
+st.set_page_config(page_title="Cost Planner · Income", layout="wide")
 
-def _income_get() -> dict:
-    cp = _cp_get()
-    return cp.setdefault("income", {
-        "social_security_person_a": 0,
-        "pension_person_a": 0,
-        "other_income_monthly_person_a": 0,
-        "social_security_person_b": 0,
-        "pension_person_b": 0,
-        "other_income_monthly_person_b": 0,
-    })
 
-def _set_income_total(total: float):
-    cp = _cp_get()
-    derived = cp.setdefault("derived", {})
-    derived["income_total"] = float(total)
+SOURCE_OPTIONS = [
+    "",
+    "Social Security",
+    "Pension",
+    "Annuity",
+    "Employment",
+    "VA",
+    "Other",
+]
 
-def _to_num(x) -> float:
-    try:
-        if x is None: return 0.0
-        if isinstance(x, (int, float)): return float(x)
-        s = str(x).strip().replace(",", "").replace("$", "")
-        return float(s) if s else 0.0
-    except Exception:
-        return 0.0
+FREQUENCY_OPTIONS = [
+    {"value": "monthly", "label": "Monthly"},
+    {"value": "annually", "label": "Annually"},
+]
 
-def _partner_mode() -> str:
-    # "No partner", "Unified household", "Split finances"
-    q = _qual_get()
-    return str(q.get("has_partner", "No partner"))
 
-def _render_person_inputs(label: str, prefix: str, inc: dict) -> tuple[float, float, float]:
+def _ensure_rows(cp: Dict[str, Any]) -> List[Dict[str, Any]]:
+    rows = cp.setdefault("income_sources", [])
+    if not rows:
+        rows.append({
+            "type": "",
+            "amount": None,
+            "frequency": "monthly",
+            "notes": "",
+        })
+    return rows
+
+
+def _render_row(index: int, row: Dict[str, Any], *, can_remove: bool) -> Tuple[Dict[str, Any], bool]:
+    removed = False
     with st.container(border=True):
-        st.markdown(f"**{label}**")
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            a = st.text_input("Social Security ($/mo)", value=str(inc.get(f"social_security_{prefix}", 0)), key=f"ss_{prefix}")
-        with c2:
-            b = st.text_input("Pension ($/mo)", value=str(inc.get(f"pension_{prefix}", 0)), key=f"pension_{prefix}")
-        with c3:
-            c = st.text_input("Other income ($/mo)", value=str(inc.get(f"other_income_monthly_{prefix}", 0)), key=f"other_{prefix}")
-        return _to_num(a), _to_num(b), _to_num(c)
+        cols = st.columns([1.2, 0.9, 0.9])
+        with cols[0]:
+            selection = st.selectbox(
+                "Income source",
+                SOURCE_OPTIONS,
+                index=SOURCE_OPTIONS.index(row.get("type", "")) if row.get("type", "") in SOURCE_OPTIONS else 0,
+                key=f"income_type_{index}",
+            )
+            row["type"] = selection
+        with cols[1]:
+            amount = st.number_input(
+                "Amount",
+                min_value=0.0,
+                value=float(row.get("amount") or 0.0),
+                key=f"income_amount_{index}",
+                step=100.0,
+                help="Enter an estimated amount (before offsets).",
+            )
+            row["amount"] = amount
+        with cols[2]:
+            freq_value = row.get("frequency") or "monthly"
+            choice = choice_single(
+                "Frequency",
+                FREQUENCY_OPTIONS,
+                value=freq_value,
+                key=f"income_freq_{index}",
+            )
+            row["frequency"] = choice
 
-def render() -> None:
-    st.set_page_config(page_title="Cost Planner · Income", layout="wide")
-    apply_cost_planner_theme()
+        notes = st.text_input(
+            "Notes (optional)",
+            value=row.get("notes", ""),
+            key=f"income_notes_{index}",
+        )
+        row["notes"] = notes
 
-    render_app_header()
-    with cost_planner_page_container():
-        render_wizard_hero("Income", "What money comes in each month?")
-        render_wizard_help("Ballpark your monthly income—rough numbers are fine. Include wages, rental, alimony, dividends—any steady cash.")
+        if can_remove:
+            with st.container():
+                st.markdown(
+                    "<div style='display:flex;justify-content:flex-end'>",
+                    unsafe_allow_html=True,
+                )
+                if buttons.link("Remove", key=f"income_remove_{index}"):
+                    removed = True
+                st.markdown("</div>", unsafe_allow_html=True)
 
-        inc = _income_get()
-        has_partner = _partner_mode()  # "No partner" | "Unified household" | "Split finances"
+    return row, removed
 
-        a_ss, a_pens, a_other = _render_person_inputs("Person A", "person_a", inc)
 
-        b_ss = b_pens = b_other = 0.0
-        if has_partner == "Unified household":
-            st.caption("Since this is a unified household, include Person B as well.")
-            b_ss, b_pens, b_other = _render_person_inputs("Person B", "person_b", inc)
-        elif has_partner in ("Split finances", "No partner"):
-            st.caption("We’ll only count Person A here.")
+def main() -> None:
+    inject_theme()
+    cp = shared.cp_state()
+    shared.ensure_in_progress("income")
+    buttons.page_start()
 
-        total = a_ss + a_pens + a_other + b_ss + b_pens + b_other
+    rows = _ensure_rows(cp)
+    removal_index: int | None = None
 
-        # persist to session
-        inc["social_security_person_a"] = a_ss
-        inc["pension_person_a"] = a_pens
-        inc["other_income_monthly_person_a"] = a_other
-        inc["social_security_person_b"] = b_ss
-        inc["pension_person_b"] = b_pens
-        inc["other_income_monthly_person_b"] = b_other
-        _set_income_total(total)
-
-        st.markdown("### ")
-        st.metric("Total Monthly Income", f"${total:,.0f}")
-
-        # nav
-        render_nav_buttons(
-            prev=NavButton("← Back to Modules", "income_back"),
-            next=NavButton("Save & Continue → Expenses", "income_next", type="primary"),
+    with shared.page_container():
+        st.markdown(
+            """
+            <div style="margin:2rem 0 1.5rem;">
+              <h1 style="margin:0 0 .5rem 0;">Income</h1>
+              <p style="margin:0;color:var(--ink-muted);">Enter your recurring income. You can estimate.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
 
+        st.markdown("""<div style='display:flex;justify-content:flex-end;'>""", unsafe_allow_html=True)
+        shared.render_reset_link("income")
+        st.markdown("""</div>""", unsafe_allow_html=True)
+
+        st.markdown("""<div style='height:.5rem'></div>""", unsafe_allow_html=True)
+
+        errors: Dict[int, str] = {}
+        active_rows: List[Dict[str, Any]] = []
+
+        for idx, data in enumerate(list(rows)):
+            rows[idx], remove_clicked = _render_row(idx, data, can_remove=len(rows) > 1)
+            if remove_clicked:
+                removal_index = idx
+            row = rows[idx]
+
+            filled_any = any([
+                row.get("type"),
+                (row.get("amount") or 0) > 0,
+                bool(row.get("notes")),
+            ])
+
+            if filled_any:
+                active_rows.append(row)
+                if not row.get("type"):
+                    errors[idx] = "Choose a source type to continue."
+                elif row.get("amount") is None:
+                    errors[idx] = "Enter an amount to continue."
+                elif row.get("amount", 0) < 0:
+                    errors[idx] = "Enter an amount to continue."
+                elif not row.get("frequency"):
+                    errors[idx] = "Choose a frequency so we can estimate your monthly plan."
+
+            if idx in errors:
+                st.markdown(
+                    f"<div style='color:#B42318;font-size:.85rem;margin:-.25rem 0 .75rem 0;'>{errors[idx]}</div>",
+                    unsafe_allow_html=True,
+                )
+            else:
+                st.markdown("""<div style='height:.5rem'></div>""", unsafe_allow_html=True)
+
+        if removal_index is not None:
+            rows.pop(removal_index)
+
+        if buttons.link("Add another income source", key="income_add"):
+            rows.append({"type": "", "amount": None, "frequency": "monthly", "notes": ""})
+
+        monthly_total = sum(shared.monthly_from_amount(r.get("amount"), r.get("frequency")) for r in active_rows)
+        cp["income_total_monthly"] = float(monthly_total)
+
+        st.markdown(
+            f"<div class='sn-card' style='margin-top:1.5rem;'><strong>Your monthly income total:</strong> {shared.format_currency(monthly_total)}</div>",
+            unsafe_allow_html=True,
+        )
+
+        summary = ""
+        if active_rows:
+            summary = f"{len(active_rows)} source{'s' if len(active_rows) != 1 else ''} · {shared.format_currency(monthly_total)}/mo"
+        shared.set_summary("income", summary)
+
+        st.markdown("""<div style='height:1.5rem'></div>""", unsafe_allow_html=True)
+
+        next_disabled = bool(errors)
+
+        shared.render_nav(
+            "pages/cost_planner_v2/cost_planner_modules_hub_v2.py",
+            "pages/cost_planner_v2/cost_planner_expenses_v2.py",
+            next_disabled=next_disabled,
+            on_continue=lambda: (
+                shared.set_status("income", "done"),
+                shared.set_summary("income", summary),
+            ),
+        )
+
+        if next_disabled and shared.status_value("income") == "done":
+            shared.set_status("income", "in_progress")
+
+    buttons.page_end()
+
+
 if __name__ == "__main__":
-    render()
+    main()

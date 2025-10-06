@@ -1,171 +1,128 @@
-"""Cost Planner · Liquidity Nudge (v2)
-Collect simple one-time sale proceeds (car, furniture, other) and an optional 'keeping_car' toggle.
-Stores values under st.session_state.cost_planner['liquidity'].
-"""
-
 from __future__ import annotations
+
+from typing import Any, Dict
+
 import streamlit as st
 
-# PFMA theme (safe fallback if unavailable)
-try:
-    from ui.pfma import apply_pfma_theme
-except Exception:
-    def apply_pfma_theme():
+from pages.cost_planner_v2 import _shared as shared
+from senior_nav.components import buttons
+from ui.theme import inject_theme
+
+
+st.set_page_config(page_title="Cost Planner · Liquidity & Coverage", layout="wide")
+
+
+LIQUIDITY_FIELDS = [
+    ("cash_checking", "Cash & checking"),
+    ("savings", "Savings"),
+    ("hsa_fsa", "HSA / FSA balances"),
+    ("emergency_fund", "Emergency fund"),
+]
+
+COVERAGE_FIELDS = [
+    ("ltc_insurance_daily_max", "LTC insurance daily max ($)"),
+    ("ltc_insurance_days_covered", "Days covered per benefit period"),
+]
+
+
+def _ensure_defaults(cp: Dict[str, Any]) -> None:
+    cp.setdefault("liquidity", {})
+    cp.setdefault("coverage", {})
+
+
+def main() -> None:
+    inject_theme()
+    cp = shared.cp_state()
+    shared.ensure_in_progress("liquidity")
+    buttons.page_start()
+
+    _ensure_defaults(cp)
+    liquidity = cp["liquidity"]
+    coverage = cp["coverage"]
+
+    with shared.page_container():
         st.markdown(
             """
-            <style>
-              .pfma-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:16px;margin:0 0 12px;}
-              .pfma-note{color:#6b7280;font-size:0.92rem;}
-              .pfma-badge{display:inline-block;background:#eef2ff;color:#1f3bb3;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;}
-              .pfma-hstack{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
-              .pfma-actions{display:flex;gap:.5rem;justify-content:flex-end;margin-top:10px}
-            </style>
+            <div style="margin:2rem 0 1.5rem;">
+              <h1 style="margin:0 0 .5rem 0;">Liquidity & Coverage</h1>
+              <p style="margin:0;color:var(--ink-muted);">Capture available liquid resources and insurance that can buffer costs.</p>
+            </div>
             """,
             unsafe_allow_html=True,
         )
 
-# Simple nav helpers
-def goto(page: str) -> None:
-    st.switch_page(f"pages/cost_planner_v2/{page}")
+        st.markdown("""<div style='display:flex;justify-content:flex-end;'>""", unsafe_allow_html=True)
+        shared.render_reset_link("liquidity")
+        st.markdown("""</div>""", unsafe_allow_html=True)
 
-def back_to_hub() -> None:
-    goto("cost_planner_modules_hub_v2.py")
-
-def _cp() -> dict:
-    """Get or init cost_planner state bucket."""
-    return st.session_state.setdefault("cost_planner", {})
-
-def _ensure_bucket() -> dict:
-    cp = _cp()
-    return cp.setdefault("liquidity", {
-        "planning_to_sell": False,
-        "keeping_car": True,
-        "car_sale_value": 0,
-        "furniture_sale_value": 0,
-        "other_sale_value": 0,
-        "liquidity_total": 0,
-    })
-
-def _save_to_state(vals: dict) -> None:
-    cp = _cp()
-    liq = cp.setdefault("liquidity", {})
-    liq.update(vals)
-    # Derive total
-    liq["liquidity_total"] = max(0, int(liq.get("car_sale_value", 0))) \
-                           + max(0, int(liq.get("furniture_sale_value", 0))) \
-                           + max(0, int(liq.get("other_sale_value", 0)))
-    # Surface a convenience flag other modules can read
-    if "flags" not in cp:
-        cp["flags"] = {}
-    cp["flags"]["keeping_car"] = bool(liq.get("keeping_car", True))
-
-def render() -> None:
-    apply_pfma_theme()
-
-    st.title("Cost Planner · Liquidity (v2)")
-    st.markdown(
-        """<div class='pfma-card'>
-        <span class='pfma-badge'>Optional</span>
-        <h3 style="margin:.3rem 0 0;">Moving to care? Selling anything?</h3>
-        <p class='pfma-note' style="margin:.25rem 0 0;">
-          Quick way to add one-time cash from selling a car, furniture, or other items.
-          We’ll roll this into your <em>Total Assets Available</em>.
-        </p>
-      </div>""",
-        unsafe_allow_html=True,
-    )
-
-    bucket = _ensure_bucket()
-    planning = st.toggle(
-        "Planning to sell big things?",
-        value=bool(bucket.get("planning_to_sell", False)),
-        key="liq_planning",
-    )
-
-    keeping_car = st.toggle(
-        "Keeping the car?",
-        value=bool(bucket.get("keeping_car", True)),
-        key="liq_keep_car",
-        help="If you won’t keep the car, other modules can reduce auto + insurance costs.",
-    )
-
-    car_sale = 0
-    furn_sale = 0
-    other_sale = 0
-
-    if planning:
-        st.markdown("<div class='pfma-card'>", unsafe_allow_html=True)
-        st.subheader("Sale estimates")
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            car_sale = st.number_input(
-                "Car sale value ($ one-time)",
-                min_value=0,
-                step=500,
-                value=int(bucket.get("car_sale_value", 0)),
+        st.subheader("Liquidity", divider=True)
+        for field_key, label in LIQUIDITY_FIELDS:
+            liquidity[field_key] = st.number_input(
+                f"{label} ($)",
+                min_value=0.0,
+                value=float(liquidity.get(field_key) or 0.0),
+                key=f"liq_{field_key}",
+                step=500.0,
             )
-        with col2:
-            furn_sale = st.number_input(
-                "Furniture / personal items ($ one-time)",
-                min_value=0,
-                step=100,
-                value=int(bucket.get("furniture_sale_value", 0)),
-            )
-        with col3:
-            other_sale = st.number_input(
-                "Other (RV, boat, etc.) ($ one-time)",
-                min_value=0,
-                step=250,
-                value=int(bucket.get("other_sale_value", 0)),
-            )
-        st.caption("Tip: rough numbers are fine — we’ll treat these as one-time inflows.")
-        st.markdown("</div>", unsafe_allow_html=True)
 
-    # Preview total
-    preview_total = (car_sale if planning else 0) + (furn_sale if planning else 0) + (other_sale if planning else 0)
-    st.info(f"**Cash from Sales (preview):** ${preview_total:,}")
+        st.subheader("Coverage", divider=True)
+        coverage["ltc_insurance_daily_max"] = st.number_input(
+            "LTC insurance daily max ($)",
+            min_value=0.0,
+            value=float(coverage.get("ltc_insurance_daily_max") or 0.0),
+            key="coverage_daily",
+            step=50.0,
+        )
+        coverage["ltc_insurance_days_covered"] = st.number_input(
+            "Days covered per benefit period",
+            min_value=0,
+            value=int(coverage.get("ltc_insurance_days_covered") or 0),
+            key="coverage_days",
+            step=15,
+        )
 
-    # Actions
-    c1, c2, c3 = st.columns([1, 1, 1])
-    with c1:
-        if st.button("← Back to Modules", key="liq_back"):
-            _save_to_state(
-                {
-                    "planning_to_sell": planning,
-                    "keeping_car": keeping_car,
-                    "car_sale_value": car_sale if planning else 0,
-                    "furniture_sale_value": furn_sale if planning else 0,
-                    "other_sale_value": other_sale if planning else 0,
-                }
-            )
-            back_to_hub()
+        st.markdown("""<div style='height:1rem'></div>""", unsafe_allow_html=True)
 
-    with c2:
-        if st.button("Save", key="liq_save"):
-            _save_to_state(
-                {
-                    "planning_to_sell": planning,
-                    "keeping_car": keeping_car,
-                    "car_sale_value": car_sale if planning else 0,
-                    "furniture_sale_value": furn_sale if planning else 0,
-                    "other_sale_value": other_sale if planning else 0,
-                }
-            )
-            st.success("Liquidity saved.")
+        liquidity_total = sum(float(liquidity.get(key) or 0.0) for key, _ in LIQUIDITY_FIELDS)
+        cp["liquidity_total"] = float(liquidity_total)
 
-    with c3:
-        if st.button("Save & Continue → Home Mods", key="liq_next"):
-            _save_to_state(
-                {
-                    "planning_to_sell": planning,
-                    "keeping_car": keeping_car,
-                    "car_sale_value": car_sale if planning else 0,
-                    "furniture_sale_value": furn_sale if planning else 0,
-                    "other_sale_value": other_sale if planning else 0,
-                }
+        daily = float(coverage.get("ltc_insurance_daily_max") or 0.0)
+        days = int(coverage.get("ltc_insurance_days_covered") or 0)
+        coverage_monthly = 0.0
+        if daily > 0 and days > 0:
+            months = max(days / 30.0, 1)
+            coverage_monthly = (daily * days) / months
+        cp["ltc_coverage_monthly_equiv"] = float(coverage_monthly)
+
+        with st.container(border=True):
+            st.markdown(
+                f"<div style='display:flex;flex-direction:column;gap:.5rem;'>"
+                f"<div><strong>Total liquid resources:</strong> {shared.format_currency(liquidity_total)}</div>"
+                f"<div><strong>LTC coverage (monthly equivalent):</strong> {shared.format_currency_precision(coverage_monthly)}</div>"
+                "</div>",
+                unsafe_allow_html=True,
             )
-            st.switch_page("pages/cost_planner_v2/cost_planner_home_mods_v2.py")
+
+        summary_parts = []
+        if liquidity_total > 0:
+            summary_parts.append(f"Cash + Savings: {shared.format_currency(liquidity_total)}")
+        if coverage_monthly > 0:
+            summary_parts.append(f"LTC coverage ≈ {shared.format_currency_precision(coverage_monthly)}/mo")
+        summary = " · ".join(summary_parts)
+        shared.set_summary("liquidity", summary)
+
+        shared.render_nav(
+            "pages/cost_planner_v2/cost_planner_home_mods_v2.py",
+            "pages/cost_planner_v2/cost_planner_caregiver_v2.py",
+            next_disabled=False,
+            on_continue=lambda: (
+                shared.set_status("liquidity", "done"),
+                shared.set_summary("liquidity", summary),
+            ),
+        )
+
+    buttons.page_end()
 
 
 if __name__ == "__main__":
-    render()
+    main()
