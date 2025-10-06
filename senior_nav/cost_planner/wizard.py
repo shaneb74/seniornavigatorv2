@@ -19,21 +19,17 @@ class Step:
 
 
 STEPS: List[Step] = [
-    Step("mode", "Mode", "pages/cost_planner.py"),
-    Step("qualifiers", "Qualifiers", "pages/cost_planner.py"),
-    Step("housing", "Housing", "pages/cost_planner_housing.py", drawer_key="housing"),
-    Step("care", "Care", "pages/cost_planner_home_care.py", drawer_key="care"),
-    Step("medical", "Medical", "pages/cost_planner_daily_aids.py", drawer_key="medical"),
-    Step(
-        "insurance_benefits",
-        "Insurance & Benefits",
-        "pages/cost_planner_benefits.py",
-        drawer_key="insurance_benefits",
-    ),
-    Step("debts_other", "Debts & Other", "pages/cost_planner_modules.py", drawer_key="debts_other"),
-    Step("review", "Review", "pages/cost_planner_estimate_summary.py"),
-    Step("summary", "Summary", "pages/cost_planner_estimate_summary.py"),
-    Step("confirm", "Confirm", "pages/cost_planner_evaluation.py"),
+    Step("landing", "Landing", "pages/cost_planner_v2/cost_planner_landing_v2.py"),
+    Step("modules", "Modules", "pages/cost_planner_v2/cost_planner_modules_hub_v2.py"),
+    Step("income", "Income", "pages/cost_planner_v2/cost_planner_income_v2.py", drawer_key="income"),
+    Step("expenses", "Expenses", "pages/cost_planner_v2/cost_planner_expenses_v2.py", drawer_key="expenses"),
+    Step("caregiver", "Caregiver Support", "pages/cost_planner_v2/cost_planner_caregiver_v2.py", drawer_key="caregiver"),
+    Step("benefits", "Benefits", "pages/cost_planner_v2/cost_planner_benefits_v2.py", drawer_key="benefits"),
+    Step("home", "Home Decisions", "pages/cost_planner_v2/cost_planner_home_v2.py", drawer_key="home"),
+    Step("liquidity", "Liquidity", "pages/cost_planner_v2/cost_planner_liquidity_v2.py", drawer_key="liquidity"),
+    Step("home_mods", "Home Modifications", "pages/cost_planner_v2/cost_planner_home_mods_v2.py", drawer_key="home_mods"),
+    Step("assets", "Assets", "pages/cost_planner_v2/cost_planner_assets_v2.py", drawer_key="assets"),
+    Step("timeline", "Timeline", "pages/cost_planner_v2/cost_planner_timeline_v2.py"),
 ]
 
 
@@ -65,6 +61,10 @@ def load_step_module(step: Step):
         raise ImportError(f"Unable to load step module at {path}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
+    if not hasattr(module, "render"):
+        main = getattr(module, "main", None)
+        if callable(main):  # back-compat shim
+            setattr(module, "render", main)
     return module
 
 

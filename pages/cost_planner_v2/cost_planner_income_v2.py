@@ -4,9 +4,6 @@ from __future__ import annotations
 import streamlit as st
 
 # ---------------- Theme helpers (works with/without your PFMA CP template) ----------------
-
-st.set_page_config(page_title="Cost Planner · Income", layout="wide")
-
 try:
     from ui.cost_planner_template import (
         apply_cost_planner_theme,
@@ -101,7 +98,8 @@ def _render_person_inputs(label: str, prefix: str, inc: dict) -> tuple[float, fl
             c = st.text_input("Other income ($/mo)", value=str(inc.get(f"other_income_monthly_{prefix}", 0)), key=f"other_{prefix}")
         return _to_num(a), _to_num(b), _to_num(c)
 
-def main():
+def render() -> None:
+    st.set_page_config(page_title="Cost Planner · Income", layout="wide")
     apply_cost_planner_theme()
 
     render_app_header()
@@ -141,5 +139,5 @@ def main():
             next=NavButton("Save & Continue → Expenses", "income_next", type="primary"),
         )
 
-if __name__ == "__main__" or True:
-    main()
+if __name__ == "__main__":
+    render()
