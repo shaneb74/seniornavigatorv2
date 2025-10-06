@@ -1,220 +1,220 @@
-"""Cost Planner · Your Money Timeline (v2)
-
-Final readout that combines monthly care costs, expenses, home mods, caregiver adders,
-compares to income + benefits, and estimates runway using total assets.
-
-Rules:
-- monthly_all_in = monthly_cost + other_monthly_total + mods_monthly_total + caregiver_cost
-- gap = monthly_all_in - (income_total + benefits_total)
-- effective_assets = assets_total_effective (preferred) else liquidity_total (fallback so users see impact even if they skipped Assets)
-- runway_months = effective_assets / gap if gap > 0, else "Unlimited"
-"""
-
 from __future__ import annotations
-import math
+
+from typing import Any, Dict, List
+
 import streamlit as st
 
-def _to_num(x, default=0):
-    """Coerce x into a float: handles None, dicts, and '$1,234' strings."""
-    try:
-        if x is None:
-            return float(default)
-        if isinstance(x, (int, float)):
-            return float(x)
-        if isinstance(x, dict):
-            # common shapes like {'value': ...}, {'amount': ...}
-            for k in ('value', 'amount', 'monthly', 'total'):
-                if k in x:
-                    return _to_num(x[k], default)
-            return float(default)
-        if isinstance(x, str):
-            t = x.strip().replace(',', '').replace('$', '')
-            if t == '':
-                return float(default)
-            return float(t)
-        return float(x)
-    except Exception:
-        return float(default)
+from pages.cost_planner_v2 import _shared as shared
+from senior_nav.components import buttons
+from ui.theme import inject_theme
 
 
-# PFMA theme (safe fallback if unavailable)
-try:
-    from ui.pfma import apply_pfma_theme
-except Exception:
-    def apply_pfma_theme():
+st.set_page_config(page_title="Cost Planner · Timeline & Projection", layout="wide")
+
+
+def _home_mod_adjustments(cp: Dict[str, Any], include: bool) -> List[float]:
+    months = [0.0 for _ in range(12)]
+    if not include:
+        return months
+    for mod in cp.get("home_mods", []) or []:
+        cost = float(mod.get("cost") or 0.0)
+        if cost <= 0:
+            continue
+        when = (mod.get("when") or "one-time").lower()
+        if when in {"one-time", "this year"}:
+            months[0] += cost
+        elif when == "phase over 2+ years":
+            monthly = cost / 12.0
+            for idx in range(12):
+                months[idx] += monthly
+        elif when == "next year":
+            # Outside current window
+            continue
+        else:
+            months[0] += cost
+    return months
+
+
+def _projection_rows(
+    *,
+    cp: Dict[str, Any],
+    include_mods: bool,
+    include_ltc: bool,
+) -> tuple[List[Dict[str, float]], int | None, float]:
+    income = float(cp.get("income_total_monthly") or 0.0)
+    expenses = float(cp.get("expenses_total_monthly") or 0.0)
+    benefits = float(cp.get("benefits_total_monthly") or 0.0)
+    relief = float(cp.get("cg_relief_budget_monthly") or 0.0)
+    liquidity = float(cp.get("liquidity_total") or 0.0)
+    ltc = float(cp.get("ltc_coverage_monthly_equiv") or 0.0) if include_ltc else 0.0
+
+    base_net = income - expenses - relief + benefits + ltc
+    mod_adjustments = _home_mod_adjustments(cp, include_mods)
+
+    rows: List[Dict[str, float]] = []
+    depletion_month: int | None = None
+    liq_remaining = liquidity
+
+    for month_index in range(12):
+        mod_cost = mod_adjustments[month_index]
+        net = base_net - mod_cost
+        liq_remaining += net
+        if depletion_month is None and liq_remaining < 0:
+            depletion_month = month_index + 1
+        rows.append(
+            {
+                "month_index": month_index + 1,
+                "income": income,
+                "expenses": expenses,
+                "benefits": benefits + ltc,
+                "net": net,
+                "liq_remaining": liq_remaining,
+            }
+        )
+
+    return rows, depletion_month, base_net
+
+
+def _format_net(net: float) -> str:
+    sign = "−" if net < 0 else ""
+    return f"{sign}${abs(net):,.0f}"
+
+
+def main() -> None:
+    inject_theme()
+    cp = shared.cp_state()
+    shared.ensure_in_progress("timeline")
+    buttons.page_start()
+
+    include_mods = bool(cp.setdefault("timeline_include_mods", True))
+    include_ltc = bool(cp.setdefault("timeline_include_ltc_coverage", True))
+    show_detail = bool(cp.setdefault("timeline_show_detail", False))
+
+    required_modules = [
+        ("income", "Income"),
+        ("expenses", "Expenses"),
+        ("benefits", "Benefits"),
+        ("liquidity", "Liquidity"),
+    ]
+    missing = [label for key, label in required_modules if shared.status_value(key) != "done"]
+
+    with shared.page_container():
         st.markdown(
             """
-            <style>
-              .pfma-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:16px;margin:0 0 12px;}
-              .pfma-note{color:#6b7280;font-size:0.92rem;}
-              .pfma-badge{display:inline-block;background:#eef2ff;color:#1f3bb3;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600;}
-              .pfma-summary dd{margin:0 0 6px 0}
-              .pfma-summary dt{color:#6b7280;font-size:.9rem;margin-top:4px}
-              .pfma-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-              @media (max-width: 900px){.pfma-grid{grid-template-columns:1fr}}
-            </style>
+            <div style="margin:2rem 0 1.5rem;">
+              <h1 style="margin:0 0 .5rem 0;">Timeline & Projection</h1>
+              <p style="margin:0;color:var(--ink-muted);">See a simple 12-month view based on your inputs. Adjust the toggles to explore scenarios.</p>
+            </div>
             """,
             unsafe_allow_html=True,
         )
 
-def _cp() -> dict:
-    return st.session_state.setdefault("cost_planner", {})
+        st.markdown("""<div style='display:flex;justify-content:flex-end;'>""", unsafe_allow_html=True)
+        shared.render_reset_link("timeline")
+        st.markdown("""</div>""", unsafe_allow_html=True)
 
-def _get(path: str, default=0):
-    """
-    Small helper to fetch nested cp keys like 'income.income_total'.
-    """
-    d = _cp()
-    for part in path.split("."):
-        if not isinstance(d, dict):
-            return default
-        d = d.get(part, {})
-    return d if isinstance(d, (int, float)) else (default if d in (None, "", False) else d)
-
-def _fmt_money(v: float | int) -> str:
-    try:
-        return f"${int(v):,}"
-    except Exception:
-        return "$0"
-
-def goto(page: str) -> None:
-    st.switch_page(f"pages/cost_planner_v2/{page}")
-
-def render() -> None:
-    apply_pfma_theme()
-
-    st.title("Cost Planner · Your Money Timeline")
-
-    st.markdown(
-        """<div class='pfma-card'>
-        <h3 style="margin:.3rem 0 0;">Here’s how long your money lasts</h3>
-        <p class='pfma-note' style="margin:.25rem 0 0;">
-          We total your monthly costs and compare them to your monthly income & benefits.
-          Then we estimate how long your assets could cover the gap.
-        </p>
-      </div>""",
-        unsafe_allow_html=True,
-    )
-
-    # --- Pull inputs (robust defaults) ---
-    monthly_cost = int(round(_to_num(_get("setting_cost.monthly_cost", 0))))  # from Setting & Cost
-    other_monthly_total = int(round(_to_num(_get("expenses.other_monthly_total", 0))))  # from Other Monthly Costs
-    mods_monthly_total = int(round(_to_num(_get("home_mods.mods_monthly_total", 0))))  # from Home Mods
-    income_total = int(round(_to_num(_get("income.income_total", 0))))  # from Income
-    benefits_total = int(round(_to_num(_get("benefits.benefits_total", 0))))  # from Benefits
-    assets_total_effective = int(round(_to_num(_get("assets.assets_total_effective", 0))))  # from Assets
-
-    # Caregiver Support (include if user added it)
-    caregiver_cost = 0
-    caregiver_type = _get("caregiver.caregiver_type", "")
-    include_caregiver = bool(_get("caregiver.include_caregiver_cost", False))
-    if str(caregiver_type).lower() == "hired aide" and include_caregiver:
-        caregiver_cost = int(round(_to_num(_get("caregiver.caregiver_cost", 3600))))
-
-    # Liquidity (one-time) for display + fallback assets if assets not entered
-    liquidity_total = int(round(_to_num(_get("liquidity.liquidity_total", 0))))
-    keeping_car = bool(_get("flags.keeping_car", True))
-
-    # --- Calculations ---
-    monthly_all_in = monthly_cost + other_monthly_total + mods_monthly_total + caregiver_cost
-    inflows = income_total + benefits_total
-    gap = monthly_all_in - inflows
-
-    # Prefer assets_total_effective (assets page already absorbs liquidity). If assets missing, fall back to liquidity.
-    effective_assets = assets_total_effective if assets_total_effective > 0 else liquidity_total
-
-    if gap <= 0:
-        runway_label = "Unlimited"
-        runway_detail = "Monthly income + benefits cover your monthly costs."
-    else:
-        months = math.floor(effective_assets / gap) if effective_assets > 0 else 0
-        runway_label = f"{months} months"
-        runway_detail = "Based on current assets divided by your monthly shortfall (gap)."
-
-    # --- Summary cards ---
-    left, right = st.columns([1.05, 0.95], gap="large")
-
-    with left:
-        st.markdown("<div class='pfma-card'>", unsafe_allow_html=True)
-        st.subheader("Monthly snapshot")
-        st.markdown(
-            f"""
-        <div class='pfma-grid pfma-summary'>
-          <div>
-            <dt>Total monthly care cost</dt><dd><strong>{_fmt_money(monthly_cost)}</strong></dd>
-            <dt>Other monthly expenses</dt><dd><strong>{_fmt_money(other_monthly_total)}</strong></dd>
-            <dt>Home mods (monthly)</dt><dd><strong>{_fmt_money(mods_monthly_total)}</strong></dd>
-            <dt>Caregiver add-on</dt><dd><strong>{_fmt_money(caregiver_cost)}</strong></dd>
-          </div>
-          <div>
-            <dt>Monthly income</dt><dd><strong>{_fmt_money(income_total)}</strong></dd>
-            <dt>Monthly benefits</dt><dd><strong>{_fmt_money(benefits_total)}</strong></dd>
-            <dt><span class='pfma-badge'>All-in monthly</span></dt><dd><strong>{_fmt_money(monthly_all_in)}</strong></dd>
-            <dt>Monthly gap</dt><dd><strong>{_fmt_money(gap)}</strong></dd>
-          </div>
-        </div>
-        """,
-            unsafe_allow_html=True,
-        )
-        st.markdown("</div>", unsafe_allow_html=True)
-
-        st.markdown("<div class='pfma-card'>", unsafe_allow_html=True)
-        st.subheader("One-time funds (assets)")
-        assets_line = f"<strong>{_fmt_money(assets_total_effective)}</strong> <span class='pfma-note'>(from Assets)</span>"
-        liq_line = f"<strong>{_fmt_money(liquidity_total)}</strong> <span class='pfma-note'>(Liquidity Nudge)</span>"
-        # Clarify which value is driving the runway calc
-        if assets_total_effective > 0:
-            driving = "Assets entered are used for runway; Liquidity is already included if you added it on the Assets page."
-        elif liquidity_total > 0:
-            driving = "No Assets entered—using Liquidity Nudge amount for runway."
+        if missing:
+            st.warning(
+                "Complete the modules to see projections: " + ", ".join(missing),
+                icon="ℹ️",
+            )
         else:
-            driving = "Add Assets or Liquidity to see your runway."
-        st.markdown(
-            f"""
-        <div class='pfma-grid pfma-summary'>
-          <div>
-            <dt>Assets total</dt><dd>{assets_line}</dd>
-            <dt>Liquidity (one-time)</dt><dd>{liq_line}</dd>
-          </div>
-          <div>
-            <dt><span class='pfma-badge'>Assets used in calc</span></dt>
-            <dd><strong>{_fmt_money(effective_assets)}</strong></dd>
-            <dt>Car kept?</dt><dd><strong>{'Yes' if keeping_car else 'No'}</strong></dd>
-          </div>
-        </div>
-        <p class='pfma-note' style='margin:.5rem 0 0;'>{driving}</p>
-        """,
-            unsafe_allow_html=True,
-        )
-        st.markdown("</div>", unsafe_allow_html=True)
+            income = float(cp.get("income_total_monthly") or 0.0)
+            expenses = float(cp.get("expenses_total_monthly") or 0.0)
+            benefits = float(cp.get("benefits_total_monthly") or 0.0)
+            relief = float(cp.get("cg_relief_budget_monthly") or 0.0)
+            liquidity = float(cp.get("liquidity_total") or 0.0)
 
-    with right:
-        st.markdown("<div class='pfma-card'>", unsafe_allow_html=True)
-        st.subheader("Runway estimate")
-        st.markdown(
-            f"""
-        <p style="font-size:1.1rem;margin:.4rem 0;">
-          <strong>{runway_label}</strong>
-        </p>
-        <p class='pfma-note' style="margin:.2rem 0 0;">{runway_detail}</p>
-        """,
-            unsafe_allow_html=True,
-        )
+            st.markdown("""<div style='height:.5rem'></div>""", unsafe_allow_html=True)
 
-        if gap > 0 and (effective_assets <= 0 or effective_assets / gap < 24):
-            st.warning("Tight runway — consider talking to an advisor.")
+            cols = st.columns(2)
+            with cols[0]:
+                include_mods = st.checkbox(
+                    "Include home modification costs",
+                    value=include_mods,
+                    key="timeline_mods",
+                )
+                cp["timeline_include_mods"] = include_mods
+            with cols[1]:
+                include_ltc = st.checkbox(
+                    "Include LTC coverage",
+                    value=include_ltc,
+                    key="timeline_ltc",
+                )
+                cp["timeline_include_ltc_coverage"] = include_ltc
 
-        st.markdown("</div>", unsafe_allow_html=True)
+            rows, depletion_month, base_net = _projection_rows(
+                cp=cp,
+                include_mods=include_mods,
+                include_ltc=include_ltc,
+            )
+            cp["timeline_projection"] = rows
+            cp["timeline_flag_depletion_month"] = depletion_month
 
-    # Actions
-    c1, c2 = st.columns([1, 1])
-    with c1:
-        if st.button("← Back to Modules", key="tm_back"):
-            goto("cost_planner_modules_hub_v2.py")
-    with c2:
-        if st.button("Continue → Expert Review", key="tm_next"):
-            st.switch_page("pages/expert_review.py")
+            net_summary = _format_net(base_net)
+            offsets_value = benefits + (float(cp.get("ltc_coverage_monthly_equiv") or 0.0) if include_ltc else 0.0)
+
+            st.markdown(
+                f"""
+                <div class='sn-card' style='display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;'>
+                  <div><div style='font-size:.75rem;color:var(--ink-muted);text-transform:uppercase;'>Monthly Income</div><div style='font-size:1.2rem;font-weight:600;'>{shared.format_currency(income)}</div></div>
+                  <div><div style='font-size:.75rem;color:var(--ink-muted);text-transform:uppercase;'>Monthly Expenses</div><div style='font-size:1.2rem;font-weight:600;'>-{shared.format_currency(expenses)}</div></div>
+                  <div><div style='font-size:.75rem;color:var(--ink-muted);text-transform:uppercase;'>Offsets / Benefits</div><div style='font-size:1.2rem;font-weight:600;'>-{shared.format_currency(offsets_value)}</div></div>
+                  <div><div style='font-size:.75rem;color:var(--ink-muted);text-transform:uppercase;'>Estimated Net Monthly</div><div style='font-size:1.2rem;font-weight:600;'>{net_summary}</div></div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+            st.markdown("""<div style='height:1rem'></div>""", unsafe_allow_html=True)
+
+            liq_start = shared.format_currency(liquidity)
+            if depletion_month:
+                st.info(f"Starting liquidity {liq_start}. Estimated depletion in month {depletion_month}.")
+            else:
+                st.info(f"Starting liquidity {liq_start}. No depletion within 12 months.")
+
+            show_detail = st.checkbox(
+                "Show monthly detail",
+                value=show_detail,
+                key="timeline_detail",
+            )
+            cp["timeline_show_detail"] = show_detail
+
+            if show_detail:
+                table = {
+                    "Month": [row["month_index"] for row in rows],
+                    "Net": [row["net"] for row in rows],
+                    "Liquidity remaining": [row["liq_remaining"] for row in rows],
+                }
+                st.dataframe(table, hide_index=True)
+
+            summary = net_summary
+            if depletion_month:
+                summary += f" · Depletion in {depletion_month} mo"
+            else:
+                summary += " · 12+ mo runway"
+            shared.set_summary("timeline", summary)
+
+            shared.render_nav(
+                "pages/cost_planner_v2/cost_planner_assets_v2.py",
+                "pages/cost_planner_v2/cost_planner_modules_hub_v2.py",
+                next_disabled=False,
+                on_continue=lambda: (
+                    shared.set_status("timeline", "done"),
+                    shared.set_summary("timeline", summary),
+                ),
+            )
+
+        if missing:
+            shared.render_nav(
+                "pages/cost_planner_v2/cost_planner_assets_v2.py",
+                None,
+                next_disabled=True,
+            )
+
+    buttons.page_end()
 
 
 if __name__ == "__main__":
-    render()
+    main()

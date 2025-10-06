@@ -19,22 +19,55 @@ def page_end():
         st.session_state[_SCOPE_KEY] = stack - 1
 
 
-def primary(label: str, key: str | None = None) -> bool:
+def primary(
+    label: str,
+    key: str | None = None,
+    *,
+    disabled: bool = False,
+    use_container_width: bool = False,
+) -> bool:
     st.markdown('<div data-variant="primary">', unsafe_allow_html=True)
-    clicked = st.button(label, key=key)
+    clicked = st.button(
+        label,
+        key=key,
+        disabled=disabled,
+        use_container_width=use_container_width,
+    )
     st.markdown('</div>', unsafe_allow_html=True)
     return clicked
 
 
-def secondary(label: str, key: str | None = None) -> bool:
+def secondary(
+    label: str,
+    key: str | None = None,
+    *,
+    disabled: bool = False,
+    use_container_width: bool = False,
+) -> bool:
     st.markdown('<div data-variant="secondary">', unsafe_allow_html=True)
-    clicked = st.button(label, key=key)
+    clicked = st.button(
+        label,
+        key=key,
+        disabled=disabled,
+        use_container_width=use_container_width,
+    )
     st.markdown('</div>', unsafe_allow_html=True)
     return clicked
 
 
-def link(label: str, key: str | None = None) -> bool:
+def link(
+    label: str,
+    key: str | None = None,
+    *,
+    disabled: bool = False,
+    use_container_width: bool = False,
+) -> bool:
     st.markdown('<div data-variant="link">', unsafe_allow_html=True)
-    clicked = st.button(label, key=key)
+    clicked = st.button(
+        label,
+        key=key,
+        disabled=disabled,
+        use_container_width=use_container_width,
+    )
     st.markdown('</div>', unsafe_allow_html=True)
     return clicked
