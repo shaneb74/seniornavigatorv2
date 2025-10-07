@@ -40,12 +40,12 @@ except Exception:
         cols = st.columns(2)
         if prev:
             with cols[0]:
-                if st.button(prev.label, key=prev.key, type="secondary", use_container_width=True):
+                if st.button(prev.label, key=prev.key, type="secondary", width="stretch"):
                     # 🔁 updated path for programmatic-nav setup
                     st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
         if next:
             with cols[-1]:
-                if st.button(next.label, key=next.key, type="primary", use_container_width=True):
+                if st.button(next.label, key=next.key, type="primary", width="stretch"):
                     # 🔁 updated path for programmatic-nav setup
                     st.switch_page("app_pages/cost_planner_v2/cost_planner_expenses_v2.py")
 

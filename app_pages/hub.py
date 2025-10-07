@@ -2,22 +2,16 @@
 from __future__ import annotations
 import streamlit as st
 
+from gcp_core.state import ensure_session, resume_target
 
-#Production Page
-try:
-    from ui.theme import inject_theme as _pfma_theme
-except Exception:
-    def _pfma_theme():
-        st.markdown("<style>.block-container{max-width:1160px}</style>", unsafe_allow_html=True)
-
-def _goto(path: str) -> None:
+def _goto(path: str, fail_msg: str | None = None) -> None:
     try:
         st.switch_page(path)  # type: ignore[attr-defined]
     except Exception:
-        st.query_params["next"] = path
+        st.warning(fail_msg or f"Navigation failed. Verify {path} is registered in app.py.")
         st.rerun()
 
-def _tile(*, icon: str, status: str, title: str, desc: str, cta: str, dest: str, key: str) -> None:
+def _tile(*, icon: str, status: str, title: str, desc: str, cta: str, dest: str, key: str, btn_type: str = "secondary", fail_msg: str | None = None) -> None:
     with st.container(border=True):
         st.markdown(
             f"""
@@ -31,11 +25,12 @@ def _tile(*, icon: str, status: str, title: str, desc: str, cta: str, dest: str,
             </div>
             """, unsafe_allow_html=True
         )
-        if st.button(cta, type="secondary", use_container_width=True, key=key):
-            _goto(dest)
+        if st.button(cta, type=btn_type, width="stretch", key=key):
+            _goto(dest, fail_msg=fail_msg)
 
 def render_hub() -> None:
-    _pfma_theme()
+    ensure_session()
+    gcp_path = resume_target()
 
     st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
@@ -57,9 +52,11 @@ def render_hub() -> None:
             status="Start here",
             title="Guided Care Plan",
             desc="Answer step-by-step to understand needs, safety, and the right care setting.",
-            cta="Begin plan",
-            dest="pages/gcp.py",
-            key="hub_gcp"
+            cta="Begin Guided Care Plan",
+            dest=gcp_path,
+            key="hub_gcp_begin",
+            btn_type="primary",
+            fail_msg="Navigation failed. Verify app.py registers app_pages/gcp_v2/gcp_landing_v2.py.",
         )
     with c2:
         _tile(
@@ -68,7 +65,7 @@ def render_hub() -> None:
             title="Cost Planner",
             desc="Estimate monthly care costs and see how income, benefits, and savings fit.",
             cta="Explore costs",
-            dest="pages/cost_planner_v2/cost_planner_landing_v2.py",
+            dest="app_pages/cost_planner_v2/cost_planner_landing_v2.py",
             key="hub_cp"
         )
     with c3:
@@ -78,7 +75,7 @@ def render_hub() -> None:
             title="Plan for My Advisor",
             desc="Share your context so a concierge advisor can help map next moves.",
             cta="Connect now",
-            dest="pages/pfma.py",
+            dest="app_pages/pfma.py",
             key="hub_pfma"
         )
 

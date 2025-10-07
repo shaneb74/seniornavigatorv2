@@ -98,7 +98,7 @@ def render(which: str) -> None:
 
             disabled = len(errors) > 0
             if st.button(
-                "Continue", type="primary", use_container_width=True, disabled=disabled
+                "Continue", type="primary", width="stretch", disabled=disabled
             ):
                 for key in ("name", "preferred_name"):
                     people["care_recipient"][key] = people["care_recipient"][key].strip()

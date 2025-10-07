@@ -1,11 +1,6 @@
 import streamlit as st
 
-from ui.theme import inject_theme
-
 st.set_page_config(layout="wide")
-
-inject_theme()
-
 st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
 # Debug: non-visual logger
@@ -57,8 +52,8 @@ for doc in documents:
     st.markdown(f"<h3>{doc['title']}</h3>", unsafe_allow_html=True)
     st.markdown(f"<p class='documents-card__body max-ch'>{doc['copy']}</p>", unsafe_allow_html=True)
     st.markdown('<div class="documents-card__actions">', unsafe_allow_html=True)
-    st.button("View", key=doc["view_key"], type="primary", use_container_width=True)
-    st.button("Download", key=doc["download_key"], type="secondary", use_container_width=True)
+    st.button("View", key=doc["view_key"], type="primary", width="stretch")
+    st.button("Download", key=doc["download_key"], type="secondary", width="stretch")
     st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
@@ -68,9 +63,9 @@ st.markdown('</div>', unsafe_allow_html=True)
 st.markdown('<div class="documents-card card section documents-upload">', unsafe_allow_html=True)
 st.markdown("<h3>Upload Your Documents</h3>", unsafe_allow_html=True)
 st.markdown("<p>Add insurance forms, med lists, or notes for your loved one.</p>", unsafe_allow_html=True)
-st.button("Upload File", key="upload_doc", type="primary", use_container_width=True)
+st.button("Upload File", key="upload_doc", type="primary", width="stretch")
 st.markdown('<div class="documents-divider"></div>', unsafe_allow_html=True)
-st.button("Back to Hub", key="back_docs", type="secondary", use_container_width=True)
+st.button("Back to Hub", key="back_docs", type="secondary", width="stretch")
 st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)

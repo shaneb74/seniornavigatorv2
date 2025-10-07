@@ -22,10 +22,10 @@ def card():
 def nav_buttons(prev: str | None, nxt: str | None):
     cols = st.columns(2)
     with cols[0]:
-        if prev and st.button("← Back", use_container_width=True, type="secondary", key=f"gcp_prev_{prev}"):
+        if prev and st.button("← Back", width="stretch", type="secondary", key=f"gcp_prev_{prev}"):
             from gcp_v2.nav import goto
             goto(prev)
     with cols[1]:
-        if nxt and st.button("Continue →", use_container_width=True, type="primary", key=f"gcp_next_{nxt}"):
+        if nxt and st.button("Continue →", width="stretch", type="primary", key=f"gcp_next_{nxt}"):
             from gcp_v2.nav import goto
             goto(nxt)

@@ -1,9 +1,6 @@
 from __future__ import annotations
 import streamlit as st
-from ui.theme import inject_theme
 from app_pages.seniornav_util import top_nav, safe_switch
-
-inject_theme()
 top_nav()
 
 st.markdown("## AI Advisor")
@@ -16,13 +13,13 @@ q2 = "Can VA help with costs?"
 q3 = "What's next after planning?"
 
 col = st.columns(3)
-if col[0].button(q1, use_container_width=True):
+if col[0].button(q1, width="stretch"):
     st.session_state["ai_input"] = q1
     st.session_state.setdefault("ai_thread", []).append(("user", q1))
-if col[1].button(q2, use_container_width=True):
+if col[1].button(q2, width="stretch"):
     st.session_state["ai_input"] = q2
     st.session_state.setdefault("ai_thread", []).append(("user", q2))
-if col[2].button(q3, use_container_width=True):
+if col[2].button(q3, width="stretch"):
     st.session_state["ai_input"] = q3
     st.session_state.setdefault("ai_thread", []).append(("user", q3))
 
@@ -66,5 +63,5 @@ if thread:
     st.markdown(f"[📧 Send via SMS](sms:&body={last})")
 
 st.divider()
-if st.button("Back to Hub", key="back_ai", use_container_width=True):
+if st.button("Back to Hub", key="back_ai", width="stretch"):
     safe_switch("pages/guided_care_hub.py")

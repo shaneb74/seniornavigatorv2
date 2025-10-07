@@ -47,10 +47,10 @@ except Exception:
         cols = st.columns(2)
         if prev:
             with cols[0]:
-                st.button(prev.label, key=prev.key, type="secondary", use_container_width=True)
+                st.button(prev.label, key=prev.key, type="secondary", width="stretch")
         if next:
             with cols[-1]:
-                st.button(next.label, key=next.key, type="primary", use_container_width=True)
+                st.button(next.label, key=next.key, type="primary", width="stretch")
 
 # ---------------- Page content (functionality preserved) ----------------
 def render() -> None:
@@ -83,12 +83,12 @@ def render() -> None:
                 with cols[0]:
                     st.write(f"**{label}**")
                 with cols[1]:
-                    if st.button("Open", key=f"open_{label}", use_container_width=True):
+                    if st.button("Open", key=f"open_{label}", width="stretch"):
                         goto(page)
 
         # Primary CTA
         st.markdown("---")
-        if st.button("View Money Timeline", type="primary", use_container_width=True):
+        if st.button("View Money Timeline", type="primary", width="stretch"):
             goto("cost_planner_timeline_v2.py")
 
 # ✅ Import-time execution under Streamlit

@@ -2,11 +2,6 @@
 from __future__ import annotations
 
 import streamlit as st
-
-from ui.theme import inject_theme
-
-inject_theme()
-
 from ui.pfma import (
 
 apply_pfma_theme,
