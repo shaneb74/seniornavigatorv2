@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import streamlit as st
-from ui.state import mark_complete, set_completion
 
 from ui.cost_planner_data import MODULE_FIELD_MAP
 from ui.cost_planner_forms import render_fields
@@ -105,12 +104,10 @@ def render() -> None:
         # --- Actions (same functionality) ---
         c1, c2 = st.columns([1, 1])
         with c1:
-            if st.button("← Back to Modules", key="tm_back", width="stretch"):
-                set_completion("cp_timeline", "in_progress")
+            if st.button("← Back to Modules", key="tm_back", use_container_width=True):
                 goto("cost_planner_modules_hub_v2.py")
         with c2:
-            if st.button("Continue → Expert Review", key="tm_next", width="stretch"):
-                mark_complete("cp_timeline")
+            if st.button("Continue → Expert Review", key="tm_next", use_container_width=True):
                 st.switch_page("app_pages/expert_review.py")
 
 # ✅ Import-time execution under Streamlit

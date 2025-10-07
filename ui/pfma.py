@@ -3,6 +3,7 @@ from types import SimpleNamespace
 from typing import Any, Dict, Iterable, Optional, Callable
 
 import streamlit as st
+from ui.theme import inject_theme as _inject_base
 
 
 # -----------------------------

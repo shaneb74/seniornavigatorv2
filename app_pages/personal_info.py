@@ -1,6 +1,11 @@
 import streamlit as st
 
+from ui.theme import inject_theme
+
 st.set_page_config(layout="wide")
+
+inject_theme()
+
 st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 
 # Debug: non-visual logger

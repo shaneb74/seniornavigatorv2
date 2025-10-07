@@ -2,6 +2,11 @@
 from __future__ import annotations
 
 import streamlit as st
+
+from ui.theme import inject_theme
+
+inject_theme()
+
 # --- Theme / CP template hooks (works with your shim) ---
 try:
     from ui.cost_planner_template import (

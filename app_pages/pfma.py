@@ -6,6 +6,11 @@ from datetime import date, datetime, timedelta
 from types import SimpleNamespace
 
 import streamlit as st
+
+from ui.theme import inject_theme
+
+inject_theme()
+
 from ui.pfma import (
 
 #Production Page

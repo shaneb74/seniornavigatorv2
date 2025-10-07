@@ -1,9 +1,9 @@
 # Cost Planner · Income (v2)
 from __future__ import annotations
-import streamlit as st
-from cost_planner_v2.cp_nav import goto
-from ui.state import mark_complete
 
+import streamlit as st
+
+<<<<<<< Updated upstream
 # ---------------- Theme helpers ----------------
 try:
     from ui.cost_planner_template import (
@@ -40,109 +40,37 @@ except Exception:
             self.label, self.key, self.type, self.icon = label, key, type, icon
     def render_nav_buttons(buttons=None, prev=None, next=None):
         cols = st.columns(2)
-        result = {"prev": False, "next": False}
         if prev:
             with cols[0]:
-                result["prev"] = st.button(prev.label, key=prev.key, type="secondary", width="stretch")
+                if st.button(prev.label, key=prev.key, type="secondary", use_container_width=True):
+                    # 🔁 updated path for programmatic-nav setup
+                    st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
         if next:
             with cols[-1]:
-                result["next"] = st.button(next.label, key=next.key, type="primary", width="stretch")
-        return result
+                if st.button(next.label, key=next.key, type="primary", use_container_width=True):
+                    # 🔁 updated path for programmatic-nav setup
+                    st.switch_page("app_pages/cost_planner_v2/cost_planner_expenses_v2.py")
+=======
+from ui.cost_planner_data import MODULE_FIELD_MAP
+from ui.cost_planner_forms import compute_gap, cp_state, render_fields
+>>>>>>> Stashed changes
 
-# ---------------- State helpers ----------------
-def _cp_get() -> dict:
-    return st.session_state.setdefault("cost_planner", {})
-
-def _qual_get() -> dict:
-    cp = _cp_get()
-    return cp.setdefault("qualifiers", {})
-
-def _income_get() -> dict:
-    cp = _cp_get()
-    return cp.setdefault("income", {
-        "social_security_person_a": 0,
-        "pension_person_a": 0,
-        "other_income_monthly_person_a": 0,
-        "social_security_person_b": 0,
-        "pension_person_b": 0,
-        "other_income_monthly_person_b": 0,
-    })
-
-def _set_income_total(total: float):
-    cp = _cp_get()
-    derived = cp.setdefault("derived", {})
-    derived["income_total"] = float(total)
-
-def _to_num(x) -> float:
-    try:
-        if x is None: return 0.0
-        if isinstance(x, (int, float)): return float(x)
-        s = str(x).strip().replace(",", "").replace("$", "")
-        return float(s) if s else 0.0
-    except Exception:
-        return 0.0
-
-def _partner_mode() -> str:
-    q = _qual_get()
-    return str(q.get("has_partner", "No partner"))
-
-def _render_person_inputs(label: str, prefix: str, inc: dict) -> tuple[float, float, float]:
-    with st.container(border=True):
-        st.markdown(f"**{label}**")
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            a = st.text_input("Social Security ($/mo)", value=str(inc.get(f"social_security_{prefix}", 0)), key=f"ss_{prefix}")
-        with c2:
-            b = st.text_input("Pension ($/mo)", value=str(inc.get(f"pension_{prefix}", 0)), key=f"pension_{prefix}")
-        with c3:
-            c = st.text_input("Other income ($/mo)", value=str(inc.get(f"other_income_monthly_{prefix}", 0)), key=f"other_{prefix}")
-        return _to_num(a), _to_num(b), _to_num(c)
 
 def render() -> None:
-    # ❌ DO NOT call st.set_page_config here (keep only in app.py)
-    apply_cost_planner_theme()
+    st.header("Income")
+    st.caption("List monthly income sources. We’ll total these for your plan.")
 
-    render_app_header()
-    with cost_planner_page_container():
-        render_wizard_hero("Income", "What money comes in each month?")
-        render_wizard_help("Ballpark your monthly income—rough numbers are fine. Include wages, rental, alimony, dividends—any steady cash.")
+    fields = MODULE_FIELD_MAP["income"]
+    valid, _ = render_fields(fields)
 
-        inc = _income_get()
-        has_partner = _partner_mode()
+    st.markdown("---")
+    if st.button("Save & back to Modules", type="primary", disabled=not valid):
+        compute_gap(cp_state())
+        try:
+            st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
+        except Exception:
+            st.session_state["nav_target"] = "app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py"
+            st.rerun()
 
-        a_ss, a_pens, a_other = _render_person_inputs("Person A", "person_a", inc)
 
-        b_ss = b_pens = b_other = 0.0
-        if has_partner == "Unified household":
-            st.caption("Since this is a unified household, include Person B as well.")
-            b_ss, b_pens, b_other = _render_person_inputs("Person B", "person_b", inc)
-        elif has_partner in ("Split finances", "No partner"):
-            st.caption("We’ll only count Person A here.")
-
-        total = a_ss + a_pens + a_other + b_ss + b_pens + b_other
-
-        # persist to session
-        inc["social_security_person_a"] = a_ss
-        inc["pension_person_a"] = a_pens
-        inc["other_income_monthly_person_a"] = a_other
-        inc["social_security_person_b"] = b_ss
-        inc["pension_person_b"] = b_pens
-        inc["other_income_monthly_person_b"] = b_other
-        _set_income_total(total)
-
-        st.markdown("### ")
-        st.metric("Total Monthly Income", f"${total:,.0f}")
-
-        nav_clicks = render_nav_buttons(
-            prev=NavButton("← Back to Modules", "income_back"),
-            next=NavButton("Save & Continue → Expenses", "income_next", type="primary"),
-        )
-        if isinstance(nav_clicks, dict):
-            if nav_clicks.get("prev"):
-                goto("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
-            if nav_clicks.get("next"):
-                mark_complete("cp_income")
-                goto("app_pages/cost_planner_v2/cost_planner_expenses_v2.py")
-
-# ✅ Import-time execution under Streamlit
 render()

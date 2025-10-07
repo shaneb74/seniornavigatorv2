@@ -2,6 +2,11 @@
 from __future__ import annotations
 
 import streamlit as st
+
+from ui.theme import inject_theme
+
+inject_theme()
+
 from ui.components import card_panel
 
 # (moved to app.py) st.set_page_config(...)
@@ -42,6 +47,6 @@ with card_panel():
 
     st.markdown("<div class='sn-hr'></div>", unsafe_allow_html=True)
 
-    st.link_button("Explore Resources", "#", width="stretch")
+    st.link_button("Explore Resources", "#", use_container_width=True)
 
 st.markdown("</div>", unsafe_allow_html=True)

@@ -12,8 +12,9 @@ import streamlit as st
 # ------------------------------------------------------------
 try:
     from ui.theme import inject_theme as _inject_base
-except Exception:  # pragma: no cover - fallback for legacy contexts
+except Exception:
     def _inject_base() -> None:
+        # no-op fallback if base theme isn't available
         pass
 
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+from collections.abc import MutableMapping
 from typing import List
 
 import streamlit as st
@@ -16,6 +18,19 @@ BEHAVIOR_RISKS_QID = "behavior_risks"
 _BEHAVIOR_RISK_ORDER = [token for token, _ in BEHAVIOR_RISKS_OPTIONS]
 _BEHAVIOR_RISK_TOKENS = set(_BEHAVIOR_RISK_ORDER)
 _BEHAVIOR_RISK_INDEX = {token: index for index, token in enumerate(_BEHAVIOR_RISK_ORDER)}
+
+_MISSING = object()
+
+
+def norm_token(value: str | None) -> str:
+    """Normalize a freeform value into a safe, lowercase token."""
+    if not value:
+        return ""
+    text = str(value).strip().lower()
+    text = re.sub(r"\s+", "_", text)
+    text = re.sub(r"[^\w]+", "_", text)
+    text = re.sub(r"_+", "_", text).strip("_")
+    return text
 
 
 SECTION_PATHS = {
@@ -45,52 +60,112 @@ def ensure_session() -> None:
         gcp["answers"] = answers
 
 
+def _answers_dict() -> dict:
+    ensure_session()
+    return st.session_state.gcp["answers"]
+
+
 def get_state() -> dict:
     ensure_session()
     return st.session_state.gcp
 
 
-def get_answers() -> dict:
-    """Return the live answers dictionary stored in session state."""
-    return get_state()["answers"]
-
-
-def get_answer(key: str, default=None):
-    answers = get_answers()
-    if key == BEHAVIOR_RISKS_QID:
-        normalized = _normalize_behavior_risks(answers.get(key))
-        if normalized:
-            answers[key] = normalized
-            return list(normalized)
-        answers.pop(key, None)
-        return []
-    return answers.get(key, default)
-
-
-def set_answer(key: str, value) -> None:
-    answers = get_answers()
+def _normalize_for_store(key: str, value):
     if key == BEHAVIOR_RISKS_QID:
         normalized = _normalize_behavior_risks(value)
         if not normalized:
-            answers.pop(key, None)
-            _bundle_set_answer(key, None)
-            return
-        _bundle_set_answer(key, normalized)
-        answers[key] = list(normalized)
-        return
+            return False, None
+        return True, list(normalized)
 
-    if value is None or (isinstance(value, str) and not value.strip()):
-        answers.pop(key, None)
-        _bundle_set_answer(key, None)
-        return
+    if value is None:
+        return False, None
+
+    if isinstance(value, str):
+        trimmed = value.strip()
+        if not trimmed:
+            return False, None
+        return True, trimmed
+
+    if isinstance(value, (set, tuple)):
+        value = list(value)
+
     if isinstance(value, list):
-        value = _normalize_multi(value)
-        _bundle_set_answer(key, value)
-        answers[key] = value
-    if key == "medicaid_status" and value == "no":
-        # Clearing any lingering acknowledgement flag keeps the landing notice honest.
-        answers.pop("medicaid_ack", None)
-        st.session_state.pop("gcp_ack_medicaid_notice", None)
+        normalized_list = _normalize_multi(value)
+        if not normalized_list:
+            return False, None
+        return True, normalized_list
+
+    return True, value
+
+
+def _resolve_get_args(target, maybe_qid, default):
+    if isinstance(target, MutableMapping):
+        if maybe_qid is _MISSING:
+            raise TypeError("qid is required when providing an answers mapping")
+        return target, maybe_qid, default
+
+    key = target
+    default_value = default
+    if maybe_qid is not _MISSING:
+        default_value = maybe_qid
+    answers = _answers_dict()
+    return answers, key, default_value
+
+
+def get_answer(target, maybe_qid=_MISSING, default=None):
+    answers, key, default_value = _resolve_get_args(target, maybe_qid, default)
+
+    if key == BEHAVIOR_RISKS_QID:
+        normalized = _normalize_behavior_risks(answers.get(key))
+        if normalized:
+            answers[key] = list(normalized)
+            return list(normalized)
+        answers.pop(key, None)
+        return default_value if default_value is not None else []
+
+    value = answers.get(key, _MISSING)
+    if value is _MISSING:
+        return default_value
+
+    if isinstance(value, str):
+        trimmed = value.strip()
+        if not trimmed:
+            answers.pop(key, None)
+            return default_value
+        return trimmed
+
+    return value
+
+
+def _resolve_set_args(target, maybe_qid, maybe_value):
+    if isinstance(target, MutableMapping):
+        if maybe_qid is _MISSING or maybe_value is _MISSING:
+            raise TypeError("qid and value are required when providing an answers mapping")
+        return target, maybe_qid, maybe_value, False
+
+    if maybe_qid is _MISSING:
+        raise TypeError("value is required")
+
+    answers = _answers_dict()
+    return answers, target, maybe_qid, True
+
+
+def set_answer(target, maybe_qid=_MISSING, value=_MISSING) -> None:
+    answers, key, raw_value, write_bundle = _resolve_set_args(target, maybe_qid, value)
+
+    should_store, normalized_value = _normalize_for_store(key, raw_value)
+
+    if should_store:
+        answers[key] = normalized_value
+    else:
+        answers.pop(key, None)
+
+    if write_bundle:
+        _bundle_set_answer(key, normalized_value if should_store else None)
+        if key == "medicaid_status" and normalized_value == "no":
+            # Clearing any lingering acknowledgement flag keeps the landing notice honest.
+            answers.pop("medicaid_ack", None)
+            st.session_state.pop("gcp_ack_medicaid_notice", None)
 
 
 def set_section_complete(name: str) -> None:
@@ -143,17 +218,12 @@ def medicaid_status(answers: dict) -> str:
     return norm(answers.get("medicaid_status"))
 
 
-def get_medicaid_status() -> str:
-    """Return the normalized Medicaid status from the active answers."""
-    return medicaid_status(get_answers())
-
-
-def set_medicaid_ack(flag: bool) -> None:
+def set_ack_medicaid(flag: bool) -> None:
     import streamlit as st
     st.session_state["gcp_ack_medicaid_notice"] = bool(flag)
 
 
-def get_medicaid_ack() -> bool:
+def get_ack_medicaid() -> bool:
     import streamlit as st
     return bool(st.session_state.get("gcp_ack_medicaid_notice"))
 
@@ -189,13 +259,3 @@ def _normalize_behavior_risks(value: object) -> List[str]:
 def behavior_risks() -> List[str]:
     """Return the normalized behavior risk selections."""
     return get_answer(BEHAVIOR_RISKS_QID, [])
-
-
-def clear_answer(key: str) -> None:
-    """Remove a stored answer both locally and in the bundle."""
-    set_answer(key, None)
-
-
-# Backwards compatibility exports for older imports
-set_ack_medicaid = set_medicaid_ack
-get_ack_medicaid = get_medicaid_ack
