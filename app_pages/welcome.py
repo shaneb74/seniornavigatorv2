@@ -20,6 +20,28 @@ from pathlib import Path
 import streamlit as st
 from PIL import Image, UnidentifiedImageError
 
+# --- Safe image utilities (local-only, silent fallback) ---
+def _resolve_local(path_str: str) -> Path:
+    p = Path(path_str)
+    if p.is_absolute():
+        return p
+    here = Path(__file__).resolve().parent
+    cand = (here / path_str).resolve()
+    if cand.exists():
+        return cand
+    root = here.parents[1] if len(here.parents) > 1 else here.parent
+    return (root / path_str).resolve()
+
+
+def safe_image(path_str: str) -> Image.Image | None:
+    try:
+        p = _resolve_local(path_str)
+        if not p.exists():
+            return None
+        return Image.open(p)
+    except Exception:
+        return None
+
 # ------------------ Page / session ------------------
 # (moved to app.py) st.set_page_config(...)
 # Minimal, safe session scaffolding so this page never dies
@@ -100,12 +122,57 @@ st.markdown(
         margin: .35rem auto .8rem;
       }
 
-      /* Helper note */
+      /* Helper note (more prominent and aligned to CTA cards) */
       .sn-helper-note{
-        margin-top: .5rem;
-        color: #475569;
-        font-size: .95rem;
+        margin-top: 1.2rem;
+        text-align: center;
+        font-size: 1.05rem;
+        font-weight: 500;
+        color: #0B5CD8; /* brand blue to link visually with buttons */
+        background: rgba(11,92,216,0.06);
+        padding: 0.75rem 1rem;
+        border-radius: 10px;
+        display: inline-block;
+        max-width: 560px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
       }
+
+      /* ===== Review Card (pairs visually with .sn-bbb) ===== */
+      .sn-row-badges {
+        display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin: 4px 0 22px 0;
+      }
+      .sn-bbb{
+        display:flex; flex-direction:column; align-items:center; justify-content:center;
+        background:#fff;
+        border:1px solid rgba(2,6,23,.06);
+        border-radius:14px; padding:12px 14px;
+        box-shadow:0 8px 24px rgba(0,0,0,.04);
+        min-width:140px;
+      }
+      .sn-bbb img{max-width:120px; height:auto;}
+      .sn-bbb .meta{margin-top:6px; font-size:.85rem; color:#334155; font-weight:600;}
+      .sn-review {
+        display:flex; gap:12px; align-items:flex-start;
+        background:#fff;
+        border:1px solid rgba(2,6,23,.06);
+        border-radius:14px; padding:12px 14px;
+        box-shadow:0 8px 24px rgba(0,0,0,.06);
+        max-width:780px;
+      }
+      .sn-review .avatar {
+        flex:0 0 auto; width:40px; height:40px; border-radius:999px; overflow:hidden;
+        background:#EEF2FF; display:flex; align-items:center; justify-content:center;
+        font-weight:700; color:#0B5CD8; border:1px solid rgba(2,6,23,.06);
+      }
+      .sn-review .body { flex:1 1 auto; }
+      .sn-review .meta {
+        display:flex; align-items:center; gap:8px; margin-bottom:4px;
+        font-size:.92rem; color:#334155; font-weight:600;
+      }
+      .sn-review .stars { display:inline-flex; gap:2px; line-height:0; color:#F59E0B; }
+      .sn-review .source { font-size:.82rem; color:#64748B; font-weight:500; }
+      .sn-review .quote { font-size:.95rem; color:#1F2937; }
+      .sn-review .quote em { color:#0B5CD8; font-style:normal; font-weight:700; }
 
       /* Safety: hide truly empty markdown containers */
       div[data-testid="stMarkdownContainer"]:empty{ display:none !important; }
@@ -196,10 +263,32 @@ left, right = st.columns([7, 5], gap="large")
 with left:
     st.markdown(
         """
-        <div class="hero-h1">YOUR COMPASSIONATE<br>GUIDE TO SENIOR<br>CARE DECISIONS</div>
+        <div class="hero-h1">Concierge Care · Senior Navigator</div>
         <div class="hero-h2">
-          Every care decision matters. We're here to guide you - at no cost -
-          whether planning for yourself or a loved one.
+          Expert Advisors. No cost ever. Highest customer service in the industry.
+          Concierge service with face-to-face planning from a real person.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        """
+        <div style="
+          display:flex; gap:10px; flex-wrap:wrap; margin: 4px 0 18px 0;
+          font-weight:600; font-size:14px;
+        ">
+          <span style="background:#eef4ff;border:1px solid #cfe0ff;border-radius:999px;padding:6px 10px;">
+            Expert advice, personalized to you
+          </span>
+          <span style="background:#eef4ff;border:1px solid #cfe0ff;border-radius:999px;padding:6px 10px;">
+            No cost, ever
+          </span>
+          <span style="background:#eef4ff;border:1px solid #cfe0ff;border-radius:999px;padding:6px 10px;">
+            Concierge, white-glove support
+          </span>
+          <span style="background:#eef4ff;border:1px solid #cfe0ff;border-radius:999px;padding:6px 10px;">
+            Real human guidance
+          </span>
         </div>
         """,
         unsafe_allow_html=True,
@@ -231,6 +320,17 @@ with right:
         st.markdown("</div>", unsafe_allow_html=True)
 
 st.markdown('<hr class="divider">', unsafe_allow_html=True)
+st.markdown(
+    """
+    <div role="note" aria-label="Track record"
+         style="margin: 6px 0 18px 0; padding: 12px 14px;
+                background:#f7fafc; border:1px solid #e6edf7; border-radius:12px;">
+      <strong>Best in the industry:</strong> Over <strong>20,000</strong> families served ·
+      <strong>15 years</strong> of excellence
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 st.markdown('<div class="section-kicker">How we can help you</div>', unsafe_allow_html=True)
 
 # =====================================================================
@@ -282,10 +382,81 @@ with col2:
         "pages/SeniorNav_welcome_self.py",
     )
 
-helper_note = "If you want to assess several people, don't worry - you can easily move on to the next step!"
+helper_note = (
+    "Supporting more than one person? No problem — "
+    "you can easily add another loved one later in your Cost Planner or Care Hub."
+)
 st.markdown(f'<div class="sn-helper-note">{helper_note}</div>', unsafe_allow_html=True)
 
-pro_clicked = st.button("I'm a professional", key="welcome_professional", type="secondary")
+bbb = img_html(
+    "static/images/better-business-bureau-logo.png",
+    cls="",
+    style="max-width:120px;height:auto;",
+    alt="Better Business Bureau A+ Rating badge",
+)
+fallback_bbb = (
+    '<div role="img" aria-label="Better Business Bureau: A+ Rating" '
+    'style="display:flex;flex-direction:column;align-items:center;gap:4px;">'
+    '<div style="font-weight:800;font-size:18px;letter-spacing:.2px;">BBB</div>'
+    '<div style="font-size:14px;color:#334155;">A+ Rating</div>'
+    "</div>"
+)
+
+avatar_img = img_html(
+    "static/images/reviewer-teresa.png",
+    cls="",
+    style="width:100%;height:100%;object-fit:cover;",
+    alt="Reviewer Teresa smiling",
+)
+avatar_html = (
+    f'<div class="avatar">{avatar_img}</div>'
+    if avatar_img
+    else '<div class="avatar" aria-hidden="true">T</div>'
+)
+
+STAR = (
+    '<svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor" '
+    'xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
+    '<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.802 2.036a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.802-2.036a1 1 0 00-1.175 0l-2.802 2.036c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.88 8.72c-.783-.57-.38-1.81.588-1.81H6.93a1 1 0 00.95-.69l1.169-3.292z"/>'
+    "</svg>"
+)
+stars_html = f'<span class="stars" aria-label="5 out of 5 stars">{STAR * 5}</span>'
+
+st.markdown(
+    f"""
+    <div class="sn-row-badges">
+      <div class="sn-bbb">
+        {bbb or fallback_bbb}
+        <div class="meta">A+ Rating</div>
+      </div>
+
+      <div class="sn-review" role="figure" aria-label="Customer review">
+        {avatar_html}
+        <div class="body">
+          <div class="meta">
+            {stars_html}
+            <span>5.0</span>
+            <span class="source">Google review (example)</span>
+          </div>
+          <div class="quote">
+            “Working with <em>Mary</em>, our Expert Advisor at Concierge Care Advisors,
+            was wonderful. She helped me (<em>Teresa</em>) find the best personalized care
+            options for my mom, guiding us every step with patience and expertise.”
+          </div>
+        </div>
+      </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+st.markdown(
+    "<div style='margin:1.5rem 0 0; display:flex; justify-content:center;'>",
+    unsafe_allow_html=True,
+)
+pro_clicked = st.button("For Professionals", key="welcome_professional", type="primary")
+st.markdown("</div>", unsafe_allow_html=True)
+
 
 # =====================================================================
 # Actions - safe wiring that never NameErrors if other modules are absent
@@ -308,6 +479,10 @@ if pro_clicked:
     aud["entry"] = "pro"
     aud["qualifiers"] = {k: False for k in aud.get("qualifiers", {}).keys()}
     care_context["person_name"] = "Your Loved One"
+<<<<<<< Updated upstream
     # Route to professional intake if available; otherwise keep UX alive
     target = "pages/professional_mode.py"
+=======
+    target = "app_pages/SeniorNav_professional_hub.py"
+>>>>>>> Stashed changes
     safe_switch_page(target, "flow", "pro")

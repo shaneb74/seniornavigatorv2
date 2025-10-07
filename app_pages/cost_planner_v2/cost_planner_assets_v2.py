@@ -1,7 +1,9 @@
-# Cost Planner · Assets (v2)
+# Cost Planner · Assets & Savings (v2)
 from __future__ import annotations
+
 import streamlit as st
 
+<<<<<<< Updated upstream
 # ---------------- Theme helpers ----------------
 try:
     from ui.cost_planner_template import (
@@ -46,35 +48,27 @@ except Exception:
             with cols[-1]:
                 if st.button(next.label, key=next.key, type="primary", use_container_width=True):
                     st.switch_page("app_pages/cost_planner_v2/cost_planner_timeline_v2.py")
+=======
+from ui.cost_planner_data import MODULE_FIELD_MAP
+from ui.cost_planner_forms import assets_total, cp_state, render_fields
 
-# ---------------- Page content ----------------
+>>>>>>> Stashed changes
+
 def render() -> None:
-    # ❌ no st.set_page_config here; it's in app.py
-    apply_cost_planner_theme()
+    st.header("Assets & Savings")
+    st.caption("List accounts and property that could help fund future costs.")
 
-    render_app_header()
-    with cost_planner_page_container():
-        render_wizard_hero("Assets", "What savings or assets can you tap?")
-        render_wizard_help(
-            "Keep it simple: cash, brokerage, IRA/401k combined, home equity, other assets, "
-            "plus any one-time liquidity nudge."
-        )
+    fields = MODULE_FIELD_MAP["assets"]
+    valid, _ = render_fields(fields)
 
-        with st.container(border=True):
-            st.subheader("Cost Planner · Assets (v2)")
-            st.caption(
-                "TODO: inputs for cash_savings, brokerage_taxable, ira_total, home_equity "
-                "(if owner), other_assets, liquidity_total → assets_total_effective"
-            )
+    st.markdown("---")
+    if st.button("Save & back to Modules", type="primary", disabled=not valid):
+        assets_total(cp_state())
+        try:
+            st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
+        except Exception:
+            st.session_state["nav_target"] = "app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py"
+            st.rerun()
 
-        # Example total metric placeholder (wire-up when you store values)
-        # st.metric("Total Effective Assets", f"${total:,.0f}")
 
-        # Nav (adjust targets if your flow differs)
-        render_nav_buttons(
-            prev=NavButton("← Back to Modules", "assets_back"),
-            next=NavButton("Save & Continue → Timeline", "assets_next", type="primary"),
-        )
-
-# ✅ Import-time execution under Streamlit
 render()

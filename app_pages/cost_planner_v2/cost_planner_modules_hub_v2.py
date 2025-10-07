@@ -3,6 +3,7 @@ from __future__ import annotations
 import streamlit as st
 from cost_planner_v2.cp_state import ensure_cp
 from cost_planner_v2.cp_nav import goto
+from ui.cost_planner import MODULES, _answers, _gcp
 
 # ---------------- Theme helpers (match Income/Home Mods pattern) ----------------
 try:
@@ -60,22 +61,15 @@ def render() -> None:
 
     render_app_header()
     with cost_planner_page_container():
-        # Header + helper text
         with st.container(border=True):
-            st.subheader("Your Plan Modules (v2)")
-            st.caption("Work through modules in any order. Then view Your Money Timeline.")
+            st.header("Cost Planner · Modules")
+            st.caption("Choose a section to review or update. Only the most relevant modules are shown.")
 
-        modules = [
-            ("Income", "cost_planner_income_v2.py"),
-            ("Other Monthly Costs", "cost_planner_expenses_v2.py"),
-            ("Caregiver Support", "cost_planner_caregiver_v2.py"),
-            ("Benefits", "cost_planner_benefits_v2.py"),
-            ("Home Decisions", "cost_planner_home_v2.py"),
-            ("Liquidity Nudge", "cost_planner_liquidity_v2.py"),
-            ("Home Modifications", "cost_planner_home_mods_v2.py"),
-            ("Assets", "cost_planner_assets_v2.py"),
-        ]
+        data = {}
+        data.update(_gcp(st.session_state))
+        data.update(_answers(st.session_state))
 
+<<<<<<< Updated upstream
         # List modules exactly like before, just using Streamlit containers for styling
         for label, page in modules:
             with st.container(border=True):
@@ -90,6 +84,35 @@ def render() -> None:
         st.markdown("---")
         if st.button("View Money Timeline", type="primary", use_container_width=True):
             goto("cost_planner_timeline_v2.py")
+=======
+        visible_modules = []
+        for module in MODULES:
+            predicate = module.visible_if or (lambda _: True)
+            try:
+                if predicate(data):
+                    visible_modules.append(module)
+            except Exception:
+                # If the predicate fails, default to showing the module for safety.
+                visible_modules.append(module)
+
+        if visible_modules:
+            cols = st.columns(2, gap="large")
+            col_count = len(cols) or 1
+            for index, module in enumerate(visible_modules):
+                column = cols[index % col_count]
+                with column:
+                    with st.container(border=True):
+                        st.markdown(f"### {module.icon} {module.title}")
+                        st.caption(module.blurb)
+                        if module.note:
+                            st.caption(f"_{module.note}_")
+                        if st.button("Open", key=f"open_{module.key}", type="primary"):
+                            goto(module.route)
+        else:
+            st.info(
+                "No modules match right now. Update your home, caregiver, or assets details to unlock more modules."
+            )
+>>>>>>> Stashed changes
 
 # ✅ Import-time execution under Streamlit
 render()

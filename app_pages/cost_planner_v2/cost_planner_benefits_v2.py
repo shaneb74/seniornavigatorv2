@@ -1,7 +1,9 @@
 # Cost Planner · Benefits (v2)
 from __future__ import annotations
+
 import streamlit as st
 
+<<<<<<< Updated upstream
 # ---------------- Theme helpers ----------------
 try:
     from ui.cost_planner_template import (
@@ -46,31 +48,41 @@ except Exception:
             with cols[-1]:
                 if st.button(next.label, key=next.key, type="primary", use_container_width=True):
                     st.switch_page("app_pages/cost_planner_v2/cost_planner_home_v2.py")
+=======
+from ui.cost_planner_data import MODULE_FIELD_MAP
+from ui.cost_planner_forms import compute_gap, cp_state, render_fields
+from ui import va_drawer
 
-# ---------------- Page content ----------------
+>>>>>>> Stashed changes
+
 def render() -> None:
-    # ❌ no st.set_page_config here; it's in app.py
-    apply_cost_planner_theme()
+    st.header("Benefits & Coverage")
+    st.caption("Record Medicare/Medicaid/VA programs and other supportive coverage.")
 
-    render_app_header()
-    with cost_planner_page_container():
-        render_wizard_hero("Benefits", "Any benefits to lower your costs?")
-        render_wizard_help("VA, Medicaid status, and long-term care insurance are summarized here.")
+    fields = MODULE_FIELD_MAP["benefits"]
+    valid, _ = render_fields(fields)
 
-        with st.container(border=True):
-            st.subheader("Cost Planner · Benefits (v2)")
-            st.caption(
-                "TODO: build inputs for: va_estimate_(A/B), ltc_daily_benefit_(A/B), "
-                "medicaid_status → benefits_total"
-            )
+    st.markdown("---")
+    left, right = st.columns([1, 1])
+    with left:
+        if st.button("Check Veterans benefits", type="primary"):
+            va_drawer.open_drawer()
 
-        # Example metric placeholder if you compute a total later:
-        # st.metric("Estimated Monthly Benefit Offset", f"${benefits_total:,.0f}")
+    saved, estimate = va_drawer.render_in_sidebar()
+    with right:
+        va_amount = float(cp_state().get("inc_va_monthly", 0) or 0)
+        st.metric("VA benefit (monthly, planned)", f"${va_amount:,.0f}")
 
-        render_nav_buttons(
-            prev=NavButton("← Back to Expenses", "benefits_back"),
-            next=NavButton("Save & Continue → Home", "benefits_next", type="primary"),
-        )
+    st.markdown("---")
+    if st.button("Save & back to Modules", type="primary", disabled=not valid):
+        if cp_state().get("ben_va_status") == "No" and cp_state().get("ben_va_auto_estimate", True):
+            cp_state()["inc_va_monthly"] = 0.0
+        compute_gap(cp_state())
+        try:
+            st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
+        except Exception:
+            st.session_state["nav_target"] = "app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py"
+            st.rerun()
 
-# ✅ Import-time execution under Streamlit
+
 render()

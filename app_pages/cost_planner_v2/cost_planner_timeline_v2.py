@@ -1,111 +1,29 @@
-# Cost Planner · Your Money Timeline (v2)
+# Cost Planner · Timeline & Scenarios (v2)
 from __future__ import annotations
-import math
+
 import streamlit as st
 
-# ---------------- Theme helpers (match working Income pattern) ----------------
-try:
-    from ui.cost_planner_template import (
-        apply_cost_planner_theme,
-        cost_planner_page_container,
-        render_app_header,
-        render_wizard_hero,
-        render_wizard_help,
-    )
-except Exception:
-    # graceful fallbacks (won’t crash if helpers are missing)
-    def apply_cost_planner_theme():
-        st.markdown("""
-        <style>
-          :root{--brand:#0B5CD8;--surface:#f6f8fa;--ink:#111418}
-          .sn-card{
-            background:var(--surface);
-            border:1px solid rgba(0,0,0,.08);
-            border-radius:14px;
-            padding:clamp(1rem,2vw,1.5rem);
-          }
-        </style>
-        """, unsafe_allow_html=True)
-    from contextlib import contextmanager
-    @contextmanager
-    def cost_planner_page_container(): yield
-    def render_app_header(): st.markdown("### Cost Planner")
-    def render_wizard_hero(title: str, subtitle: str = ""):
-        st.markdown(f"## {title}")
-        if subtitle: st.caption(subtitle)
-    def render_wizard_help(text: str): st.info(text)
+from ui.cost_planner_data import MODULE_FIELD_MAP
+from ui.cost_planner_forms import render_fields
 
-# ---------------- Local helpers (functionality preserved) ----------------
-def _to_num(x, default=0):
-    """Coerce x into a float: handles None, dicts, and '$1,234' strings."""
-    try:
-        if x is None:
-            return float(default)
-        if isinstance(x, (int, float)):
-            return float(x)
-        if isinstance(x, dict):
-            for k in ('value', 'amount', 'monthly', 'total'):
-                if k in x:
-                    return _to_num(x[k], default)
-            return float(default)
-        if isinstance(x, str):
-            t = x.strip().replace(',', '').replace('$', '')
-            if t == '':
-                return float(default)
-            return float(t)
-        return float(x)
-    except Exception:
-        return float(default)
 
-def _cp() -> dict:
-    return st.session_state.setdefault("cost_planner", {})
-
-def _get(path: str, default=0):
-    """Fetch nested cp keys like 'income.income_total'."""
-    d = _cp()
-    for part in path.split("."):
-        if not isinstance(d, dict):
-            return default
-        d = d.get(part, {})
-    return d if isinstance(d, (int, float)) else (default if d in (None, "", False) else d)
-
-def _fmt_money(v: float | int) -> str:
-    try:
-        return f"${int(v):,}"
-    except Exception:
-        return "$0"
-
-def goto(page: str) -> None:
-    st.switch_page(f"app_pages/cost_planner_v2/{page}")
-
-# ---------------- Page content (style fixed, functionality unchanged) ----------------
 def render() -> None:
-    # same bootstrapping as Income (no set_page_config here)
-    apply_cost_planner_theme()
+    st.header("Timeline & Scenarios")
+    st.caption("Lay out key events over the next 12–24 months that could change costs.")
 
-    render_app_header()
-    with cost_planner_page_container():
-        render_wizard_hero("Your Money Timeline", "Here’s how long your money lasts")
-        render_wizard_help(
-            "We total your monthly costs and compare them to your monthly income & benefits. "
-            "Then we estimate how long your assets could cover the gap."
-        )
+    fields = MODULE_FIELD_MAP["timeline"]
+    valid, _ = render_fields(fields)
 
-        # --- Pull inputs (robust defaults) ---
-        monthly_cost = int(round(_to_num(_get("setting_cost.monthly_cost", 0))))          # from Setting & Cost
-        other_monthly_total = int(round(_to_num(_get("expenses.other_monthly_total", 0))))# from Other Monthly Costs
-        mods_monthly_total = int(round(_to_num(_get("home_mods.mods_monthly_total", 0)))) # from Home Mods
-        income_total = int(round(_to_num(_get("income.income_total", 0))))                # from Income
-        benefits_total = int(round(_to_num(_get("benefits.benefits_total", 0))))          # from Benefits
-        assets_total_effective = int(round(_to_num(_get("assets.assets_total_effective", 0))))  # from Assets
+    st.markdown("---")
+    if st.button("Save & back to Modules", type="primary", disabled=not valid):
+        try:
+            st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
+        except Exception:
+            st.session_state["nav_target"] = "app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py"
+            st.rerun()
 
-        # Caregiver Support (include if user added it)
-        caregiver_cost = 0
-        caregiver_type = _get("caregiver.caregiver_type", "")
-        include_caregiver = bool(_get("caregiver.include_caregiver_cost", False))
-        if str(caregiver_type).lower() == "hired aide" and include_caregiver:
-            caregiver_cost = int(round(_to_num(_get("caregiver.caregiver_cost", 3600))))
 
+<<<<<<< Updated upstream
         # Liquidity (one-time) for display + fallback assets if assets not entered
         liquidity_total = int(round(_to_num(_get("liquidity.liquidity_total", 0))))
         keeping_car = bool(_get("flags.keeping_car", True))
@@ -193,4 +111,6 @@ def render() -> None:
                 st.switch_page("app_pages/expert_review.py")
 
 # ✅ Import-time execution under Streamlit
+=======
+>>>>>>> Stashed changes
 render()
