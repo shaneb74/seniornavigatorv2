@@ -1,22 +1,19 @@
 from __future__ import annotations
+
+import re
+from typing import Dict, List
+
 import streamlit as st
 
-<<<<<<< Updated upstream
-def _state():
-    if "gcp" not in st.session_state:
-        st.session_state.gcp = {"answers": {}, "flags": {}, "route": None, "payment_context": "private"}
-    return st.session_state.gcp
-
-def _meets_visibility(q, data):
-    cond = q.get("visible_if")
-    if not cond:
-=======
-from gcp_core.questions import (
-    BEHAVIOR_RISKS_LABEL,
-    COGNITION_SEVERE_TOKENS,
-    load_questions,
+from gcp_core.questions import BEHAVIOR_RISKS_LABEL, load_questions
+from gcp_core.state import (
+    ensure_session,
+    get_answers,
+    get_answer,
+    set_answer,
+    set_medicaid_ack,
+    clear_answer,
 )
-from gcp_core.state import ensure_session, get_state, get_answer, norm_token, set_ack_medicaid, set_answer
 
 try:
     from streamlit import segmented_control as _has_segmented_control  # type: ignore[attr-defined]
@@ -51,99 +48,66 @@ def _question_index() -> Dict[str, Dict]:
 
 _QUESTION_INDEX = _question_index()
 
-COGNITION_QID = "cognition"  # bundle id; update if the source uses a different key
+COGNITION_QID = "cognition"
 BEHAVIOR_QID = "behavior_risks"
 BEHAVIOR_MULTI_LABEL = BEHAVIOR_RISKS_LABEL
-
-SEVERE_TOKENS = {
+_RAW_SEVERE_COG_CHOICES = {
     "severe",
-    "severe_decline",
-    "significant_decline",
-    "diagnosed_dementia",
-    "alzheimers_dementia",
-    "alzheimers",
-    "dementia",
-    "advanced_impairment",
-}
-SEVERE_TOKENS.update(COGNITION_SEVERE_TOKENS)
-
-SEVERE_SUBSTRINGS = (
-    "serious",
-    "severe",
-    "diagnosed",
-    "dementia",
-    "alzheimer",
-    "alzheimers",
-    "major",
+    "severe memory issues",
     "advanced",
-)
+    "advanced dementia",
+    "advanced_dementia",
+    "advanced alzheimers",
+    "advanced alzheimer's",
+    "needs constant supervision",
+    "needs_constant_supervision",
+    "significant memory loss",
+    "significant_memory_loss",
+    "late-stage dementia",
+    "late_stage_dementia",
+    "late stage dementia",
+    "late stage alzheimers",
+    "late stage alzheimer's",
+    "alzheimers advanced",
+    "alzheimers_advanced",
+    "serious_confusion",
+    "serious confusion",
+    "frequent_memory_issues",
+    "frequent memory issues",
+}
 
 
-def _debug_enabled() -> bool:
-    try:
-        params = getattr(st, "query_params", {})
-        if callable(params):
-            params = params()
-        getter = getattr(params, "get", None)
-        value = getter("dbg", "") if callable(getter) else params.get("dbg", "")
-        if isinstance(value, (list, tuple, set)):
-            return any(str(v) == "1" for v in value)
-        return str(value) == "1"
-    except Exception:
-        return False
+def _normalize_literal(value: object) -> str:
+    text = "" if value is None else str(value)
+    lowered = text.lower()
+    stripped = lowered.replace("_", " ").replace("-", " ")
+    cleaned = re.sub(r"[^0-9a-z\s]", " ", stripped)
+    return " ".join(cleaned.split())
 
 
-def _current_cognition_token(answers: Dict) -> str:
-    raw = get_answer(answers, COGNITION_QID)
-    if isinstance(raw, dict):
-        token_candidate = raw.get("token") or raw.get("value") or raw.get("id") or raw.get("label")
-        label_candidate = raw.get("label") or token_candidate
-    else:
-        token_candidate = raw
-        label_candidate = raw
-
-    token_normalized = norm_token(token_candidate)
-    label_normalized = norm_token(label_candidate)
-    candidate = token_normalized or label_normalized
-
-    label_text = label_candidate if isinstance(label_candidate, str) else ""
-    if label_text and any(sub in label_text.lower() for sub in SEVERE_SUBSTRINGS):
-        candidate = "severe"
-    return candidate
-
-
-def _is_severe_cognition(answers: Dict) -> bool:
-    token = _current_cognition_token(answers)
-    if not token:
-        return False
-    if token in SEVERE_TOKENS:
-        return True
-    return any(sub in token for sub in SEVERE_SUBSTRINGS)
+_SEVERE_COG_MATCHES = {_normalize_literal(choice) for choice in _RAW_SEVERE_COG_CHOICES}
 
 
 def _bundle_visible(question: Dict, answers: Dict) -> bool:
     expr = (question.get("conditional_show") or "").strip()
     if not expr:
->>>>>>> Stashed changes
         return True
-    # support medicaid_status__ne == "yes"
-    key, val = next(iter(cond.items()))
-    if key.endswith("__ne"):
-        field = key[:-4]
-        return data["answers"].get(field) != val
+    lowered = expr.lower()
+    if not lowered.startswith("show when"):
+        return True
+    clause = expr[len("SHOW when") :].strip()
+    for op in ("!=", "=="):
+        if op in clause:
+            left, right = clause.split(op, 1)
+            key = left.strip()
+            value = right.strip().strip("'\"")
+            current = answers.get(key)
+            if isinstance(current, list):
+                current = ",".join(current)
+            return (current != value) if op == "!=" else (current == value)
     return True
 
-def _label_for(choices, value):
-    d = dict(choices)
-    return d.get(value, value)
 
-<<<<<<< Updated upstream
-def render_question(q):
-    data = _state()
-    answers = data["answers"]
-    qid = q["id"]
-    if not _meets_visibility(q, data):
-=======
 def _normalize_choices(question: Dict) -> List[Dict]:
     choices = question.get("choices") or _QUESTION_INDEX.get(question["id"], {}).get("choices") or []
     return choices
@@ -187,116 +151,139 @@ def render_pill_choice(
     return token_by_label.get(picked_label)
 
 
+def _is_severe_cognition(value: object | None) -> bool:
+    normalized = _normalize_literal(value)
+    if not normalized:
+        return False
+    if normalized in _SEVERE_COG_MATCHES:
+        return True
+    if "severe" in normalized and ("memory" in normalized or "dementia" in normalized):
+        return True
+    if "advanced" in normalized and ("dementia" in normalized or "alzheim" in normalized):
+        return True
+    if "needs" in normalized and "supervision" in normalized:
+        return True
+    return False
+
+
 def _should_render(question: Dict, answers: Dict) -> bool:
+    qid = question.get("id", "")
+    if qid == BEHAVIOR_QID:
+        cognition_value = answers.get(COGNITION_QID)
+        if not _is_severe_cognition(cognition_value):
+            return False
     return _bundle_visible(question, answers)
 
 
 def render_question(question: Dict) -> None:
     ensure_session()
-    state = get_state()
-    answers = state["answers"]
+    answers = get_answers()
     qid = question["id"]
     question = {
         **(_QUESTION_INDEX.get(qid, {})),
         **question,
     }
 
-    debug_caption = ""
-
-    if qid == BEHAVIOR_QID:
-        cognition_token = _current_cognition_token(answers)
-        severe = _is_severe_cognition(answers)
-        if not severe:
-            set_answer(answers, BEHAVIOR_QID, None)
-            if _debug_enabled():
-                st.caption(f"[debug] Behavior gating: hidden (cognition={cognition_token or '∅'})")
-            return
-        if _debug_enabled():
-            debug_caption = f"[debug] Behavior gating: VISIBLE (cognition={cognition_token or '∅'})"
-
     if not _should_render(question, answers):
-        if answers.get(qid) is not None:
-            set_answer(answers, qid, None)
->>>>>>> Stashed changes
+        if qid in answers:
+            clear_answer(qid)
         return
 
+    label = question.get("label") or "Question"
+    helper = (question.get("helper") or question.get("help") or "").strip()
+    qtype = question.get("type", "single")
+    choices = _normalize_choices(question)
+
     st.markdown('<div class="gcp-question card section">', unsafe_allow_html=True)
-<<<<<<< Updated upstream
-    st.markdown(f"<p class='gcp-question__label'>{q['label']}</p>", unsafe_allow_html=True)
-    if q.get("helper"):
-        st.markdown(f"<p class='gcp-question__helper'>{q['helper']}</p>", unsafe_allow_html=True)
-=======
     st.markdown(f"**{label}**")
     if helper:
         st.caption(helper)
-    if debug_caption:
-        st.caption(debug_caption)
->>>>>>> Stashed changes
 
-    if q["type"] == "single":
-        idx = None
-        choice_ids = [cid for cid, _ in q["choices"]]
-        labels = [lbl for _, lbl in q["choices"]]
-        if qid in answers and answers[qid] in choice_ids:
-            idx = choice_ids.index(answers[qid])
-        picked = st.radio(
-            "",
-            labels,
-            index=idx if idx is not None else 0,
-            horizontal=False,
-            key=f"gcp_{qid}_radio",
-            label_visibility="collapsed",
+    if qtype in {"single", "multi"} and not choices:
+        st.warning(f"No choices configured for: {qid}")
+        st.markdown("</div>", unsafe_allow_html=True)
+        return
+
+    if qtype == "single":
+        option_labels = [choice["label"] for choice in choices]
+        token_by_label = {choice["label"]: choice["id"] for choice in choices}
+        label_by_token = {choice["id"]: choice["label"] for choice in choices}
+        normalizer = {}
+        for token, lbl in label_by_token.items():
+            normalizer[_normalize_literal(token)] = token
+            normalizer[_normalize_literal(lbl)] = token
+
+        stored_value = get_answer(qid)
+        current_token = None
+        if isinstance(stored_value, str):
+            current_token = normalizer.get(_normalize_literal(stored_value))
+            if current_token is None and stored_value in label_by_token:
+                current_token = stored_value
+
+        picked_token = render_pill_choice(
+            qid=qid,
+            label=label,
+            options=option_labels,
+            current_token=current_token,
+            token_by_label=token_by_label,
+            label_by_token=label_by_token,
+            key=f"gcp_{qid}_pill",
         )
-        answers[qid] = choice_ids[labels.index(picked)]
 
-    elif q["type"] == "multi":
-        choice_ids = [cid for cid, _ in q["choices"]]
-        labels = [lbl for _, lbl in q["choices"]]
-        preselect = []
-        if qid in answers:
-            preselect = [_label_for(q["choices"], v) for v in answers[qid]]
-        picked = st.multiselect(
-            "",
-            labels,
-            default=preselect,
-            key=f"gcp_{qid}_multi",
-            label_visibility="collapsed",
-        )
-        answers[qid] = [choice_ids[labels.index(lbl)] for lbl in picked]
-        # mutually exclusive "none"
-        if "none" in answers[qid] and len(answers[qid]) > 1:
-            answers[qid] = ["none"]
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    # side effects after specific answers
-    if qid == "medicaid_status":
-        if answers.get("medicaid_status") == "yes":
-            data["payment_context"] = "medicaid"
-            data["route"] = "medicaid_offramp"
+        if picked_token is None:
+            clear_answer(qid)
+            if qid == "medicaid_status":
+                set_medicaid_ack(False)
         else:
-            data["payment_context"] = "private"
-            data["route"] = None
+            set_answer(qid, picked_token)
+            if qid == "medicaid_status" and picked_token == "no":
+                set_medicaid_ack(False)
 
-def render_section(section_name: str, questions):
+    elif qtype == "multi":
+        if qid == BEHAVIOR_QID:
+            label = BEHAVIOR_MULTI_LABEL
+        token_label = {choice["id"]: choice["label"] for choice in choices}
+        option_tokens = [choice["id"] for choice in choices]
+        current_ids = get_answer(qid, [])
+        default_tokens = [token for token in option_tokens if token in (current_ids or [])]
+
+        if qid == BEHAVIOR_QID:
+            st.markdown('<div class="gcp-pill-multi">', unsafe_allow_html=True)
+
+        picked_tokens = st.multiselect(
+            label,
+            option_tokens,
+            default=default_tokens,
+            key=f"gcp_{qid}_multi",
+            format_func=lambda token: token_label.get(token, token.replace("_", " ").title()),
+            placeholder="Select all that apply",
+            label_visibility="visible",
+        )
+
+        if qid == BEHAVIOR_QID:
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        if picked_tokens:
+            set_answer(qid, picked_tokens)
+        else:
+            clear_answer(qid)
+
+    elif qtype == "text":
+        current_value = get_answer(qid, "")
+        value = st.text_input(
+            label,
+            value=current_value,
+            key=qid,
+            label_visibility="visible",
+        )
+        set_answer(qid, value)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
+def render_section(section_name: str, questions: List[Dict]) -> None:
+    ensure_session()
     st.markdown('<div class="gcp-section">', unsafe_allow_html=True)
-    for q in questions:
-        render_question(q)
-    st.markdown('</div>', unsafe_allow_html=True)
-
-def nav_buttons(prev: str | None, nxt: str | None):
-    cols = st.columns(2)
-    with cols[0]:
-        if prev and st.button("◀ Back", use_container_width=True):
-            try:
-                st.switch_page(prev)
-            except Exception:
-                st.query_params["next"] = prev
-                st.rerun()
-    with cols[1]:
-        if nxt and st.button("Next ▶", use_container_width=True):
-            try:
-                st.switch_page(nxt)
-            except Exception:
-                st.query_params["next"] = nxt
-                st.rerun()
+    for question in questions:
+        render_question(question)
+    st.markdown("</div>", unsafe_allow_html=True)

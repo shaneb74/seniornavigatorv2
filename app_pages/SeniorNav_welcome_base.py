@@ -3,7 +3,6 @@ import streamlit as st
 from pathlib import Path
 
 def _show_if_exists(path, **kwargs):
-    import streamlit as st
     if not path:
         return False
     q = Path(path)
@@ -23,10 +22,7 @@ def _show_if_exists(path, **kwargs):
         return True
     return False
 
-from ui.theme import inject_theme
 from app_pages.seniornav_util import ensure_aud, safe_switch, top_nav
-
-inject_theme()
 top_nav()
 
 IMAGE_MAP = {
@@ -63,7 +59,6 @@ def _existing_image(path: str | None) -> str | None:
     return None
 
 def render(kind: str):
-    inject_theme()
     aud = ensure_aud()
     left, right = st.columns([1, 1])
     with left:
@@ -124,22 +119,22 @@ def render(kind: str):
         else:
             disabled = not (name and pro_type)
         if kind == "self":
-            if st.button("Let's Get Started", type="primary", use_container_width=True, disabled=disabled):
+            if st.button("Let's Get Started", type="primary", width="stretch", disabled=disabled):
                 if not name:
                     aud["recipient_name"] = "You"
-                safe_switch("pages/guided_care_hub.py")
+                safe_switch("app_pages/guided_care_hub.py")
         elif kind == "proxy":
-            if st.button("Let's Get Started", type="primary", use_container_width=True, disabled=disabled):
+            if st.button("Let's Get Started", type="primary", width="stretch", disabled=disabled):
                 if not name:
                     aud["recipient_name"] = "Your Loved One"
-                safe_switch("pages/guided_care_hub.py")
+                safe_switch("app_pages/guided_care_hub.py")
         else:
-            if st.button("Let's Get Started", type="primary", use_container_width=True, disabled=disabled):
+            if st.button("Let's Get Started", type="primary", width="stretch", disabled=disabled):
                 if not name:
                     aud["recipient_name"] = "Your Client"
-                safe_switch("pages/SeniorNav_professional_hub.py")
+                safe_switch("app_pages/SeniorNav_professional_hub.py")
         st.markdown("</div>", unsafe_allow_html=True)
     with right:
         img = _existing_image(IMAGE_MAP.get(kind))
         if img:
-            _show_if_exists(img, use_container_width=True)
+            _show_if_exists(img, width="stretch")

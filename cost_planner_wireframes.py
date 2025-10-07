@@ -14,10 +14,6 @@ from typing import Callable, Dict, List
 import streamlit as st
 
 from cost_planner_shared import format_currency
-from ui.theme import inject_theme
-
-
-inject_theme()
 
 
 def apply_global_styles() -> None:
@@ -290,7 +286,7 @@ def render_cost_planner_mode_selector() -> None:
             "Explore Costs",
             key="wireframe_explore_mode",
             type="primary",
-            use_container_width=True,
+            width="stretch",
         )
         st.caption("Quick estimate, no login needed.")
     with col2:
@@ -298,7 +294,7 @@ def render_cost_planner_mode_selector() -> None:
             "Plan Costs",
             key="wireframe_plan_mode",
             type="primary",
-            use_container_width=True,
+            width="stretch",
         )
         st.caption("Detailed plan, requires login.")
 

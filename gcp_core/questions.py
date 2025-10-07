@@ -22,17 +22,6 @@ BEHAVIOR_RISKS_OPTIONS: Sequence[Tuple[str, str]] = (
 BEHAVIOR_RISKS_LABEL_BY_TOKEN: Dict[str, str] = {token: label for token, label in BEHAVIOR_RISKS_OPTIONS}
 _BEHAVIOR_RISKS_CONDITIONAL = "SHOW when cognition in {'severe'}"
 
-COGNITION_SEVERE_TOKENS = {
-    "severe",
-    "severe_decline",
-    "significant_decline",
-    "diagnosed_dementia",
-    "alzheimers_dementia",
-    "alzheimers",
-    "dementia",
-    "advanced_impairment",
-}
-
 
 def _behavior_rows(template: Dict[str, str]) -> Iterable[Dict[str, str]]:
     base = {

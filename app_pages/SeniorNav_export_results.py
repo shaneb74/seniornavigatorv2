@@ -1,9 +1,6 @@
 from __future__ import annotations
 import streamlit as st
-from ui.theme import inject_theme
 from app_pages.seniornav_util import top_nav, safe_switch
-
-inject_theme()
 top_nav()
 
 st.markdown("## Export Results")
@@ -23,12 +20,12 @@ c1, c2 = st.columns(2)
 with c1:
     st.markdown("#### Export Care Plan")
     st.caption("Your guided care plan: Home care + VA benefits + hearing aids.")
-    st.button("Export Care Plan", type="primary", disabled=not authed, help=None if authed else "Login required", use_container_width=True)
+    st.button("Export Care Plan", type="primary", disabled=not authed, help=None if authed else "Login required", width="stretch")
 with c2:
     st.markdown("#### Export Cost Summary")
     st.caption("Your budget breakdown: $1,500/month for your loved one's care.")
-    st.button("Export Cost Summary", type="primary", disabled=not authed, help=None if authed else "Login required", use_container_width=True)
+    st.button("Export Cost Summary", type="primary", disabled=not authed, help=None if authed else "Login required", width="stretch")
 
 st.divider()
-if st.button("Back to Hub", use_container_width=True):
+if st.button("Back to Hub", width="stretch"):
     safe_switch("pages/guided_care_hub.py")

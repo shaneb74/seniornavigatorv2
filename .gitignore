@@ -41,3 +41,4 @@ data/
 *.db
 .streamlit/
 
+.DS_Store

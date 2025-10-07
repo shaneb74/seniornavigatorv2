@@ -1,0 +1,181 @@
+{
+  "meta": {
+    "version": "gcp-context-blurbs-v1.0",
+    "date": "2025-10-06",
+    "selection": "variant_index = hash((first_name or '') + '|' + factor + '|' + value) % len(variants)",
+    "max_reasons": 4
+  },
+  "cognition": {
+    "severe": [
+      "{first_name} is experiencing significant memory loss and needs close supervision to remain safe.",
+      "{first_name} shows frequent confusion, and a secure, structured setting is important.",
+      "{first_name} requires hands-on help and watchful support for daily wellbeing.",
+      "{first_name} has advanced memory changes that call for round-the-clock oversight.",
+      "{first_name} needs consistent, attentive care to reduce risk and ease anxiety."
+    ],
+    "moderate": [
+      "{first_name} is facing moderate memory changes, making consistent supervision more helpful.",
+      "{first_name} benefits from structured days and regular check-ins to stay safe and calm.",
+      "{first_name} needs guidance with planning and follow-through for daily activities.",
+      "{first_name} does best with familiar routines and steady support throughout the day.",
+      "{first_name} is safer when plans are simple and a trusted person is nearby."
+    ],
+    "mild": [
+      "{first_name} has mild memory changes, and gentle reminders help days run smoothly.",
+      "{first_name} experiences occasional forgetfulness, eased by simple structure and cues.",
+      "{first_name} benefits from light check-ins that keep routines comfortable and familiar.",
+      "{first_name} manages most tasks, and small prompts reduce stress around details.",
+      "{first_name} does well with predictable routines and a few supportive reminders."
+    ],
+    "normal": [
+      "{first_name} shows clear memory and thinking, which supports everyday independence."
+    ]
+  },
+  "adl_help": {
+    "6+": [
+      "{first_name} depends on others for most daily needs and personal care."
+    ],
+    "4-5": [
+      "{first_name} relies on frequent help for several daily activities."
+    ],
+    "2-3": [
+      "{first_name} needs some help with daily activities such as bathing, dressing, or meals."
+    ],
+    "0-1": [
+      "{first_name} manages nearly all daily activities independently."
+    ]
+  },
+  "med_mgmt": {
+    "complex": [
+      "{first_name} has a complex medication schedule that increases risk without oversight."
+    ],
+    "several": [
+      "{first_name} takes several medications and benefits from organized reminders."
+    ],
+    "simple": [
+      "{first_name} follows a simple medication routine without special complexity."
+    ]
+  },
+  "falls": {
+    "recurrent": [
+      "{first_name} has had repeated falls, indicating a higher ongoing risk."
+    ],
+    "one": [
+      "{first_name} experienced a recent fall, signaling a need for added precautions."
+    ],
+    "none": [
+      "{first_name} has had no recent falls, which is reassuring for safety."
+    ]
+  },
+  "home_safety": {
+    "unsafe": [
+      "{first_name} faces unsafe home conditions that limit independence."
+    ],
+    "some_risks": [
+      "{first_name} has some home safety risks that would benefit from simple changes."
+    ],
+    "safe": [
+      "{first_name} lives in a home that appears safe and easy to navigate."
+    ]
+  },
+  "mobility": {
+    "wheelchair": [
+      "{first_name} uses a wheelchair and needs accessible, supportive spaces."
+    ],
+    "cane_or_walker": [
+      "{first_name} uses a cane or walker for added stability."
+    ],
+    "no_issues": [
+      "{first_name} moves independently without mobility concerns."
+    ]
+  },
+  "supervision": {
+    "never": [
+      "{first_name} has no supervision available, creating significant safety risk."
+    ],
+    "rarely": [
+      "{first_name} rarely has supervision, which increases safety risks."
+    ],
+    "sometimes": [
+      "{first_name} has intermittent supervision that helps but leaves some gaps."
+    ],
+    "always": [
+      "{first_name} has reliable supervision in place when needed."
+    ]
+  },
+  "social_isolation": {
+    "almost_never": [
+      "{first_name} is often alone and faces significant social isolation."
+    ],
+    "rarely": [
+      "{first_name} rarely sees others and may feel disconnected or lonely."
+    ],
+    "weekly": [
+      "{first_name} sees others weekly, which offers moderate connection."
+    ],
+    "daily_or_often": [
+      "{first_name} has regular company and meaningful social contact."
+    ]
+  },
+  "geographic_access": {
+    "very_difficult": [
+      "{first_name} faces serious barriers getting to basic services and care."
+    ],
+    "difficult": [
+      "{first_name} has difficulty reaching stores or healthcare reliably."
+    ],
+    "moderate": [
+      "{first_name} manages to reach essentials with some planning."
+    ],
+    "easy": [
+      "{first_name} has easy access to stores, pharmacies, and appointments."
+    ]
+  },
+  "caregiver_support": {
+    "none": [
+      "{first_name} has no regular caregiver support available."
+    ],
+    "few_days_week": [
+      "{first_name} has help a few days each week, leaving some gaps."
+    ],
+    "most_days": [
+      "{first_name} has caregiver support available most days."
+    ],
+    "24_7": [
+      "{first_name} has 24/7 caregiver support that covers daily needs."
+    ]
+  },
+  "behavior_risks": {
+    "exit_seeking": [
+      "{first_name} attempts to leave unsafely and needs protective supervision."
+    ],
+    "wandering": [
+      "{first_name} has wandering behavior that raises safety concerns."
+    ],
+    "agitation": [
+      "{first_name} experiences agitation that is eased by calm, structured support."
+    ],
+    "none": [
+      "{first_name} shows no unsafe behaviors at this time."
+    ]
+  },
+  "funding_confidence": {
+    "not_confident": [
+      "{first_name} does not feel confident about paying for care right now."
+    ],
+    "unsure": [
+      "{first_name} is unsure about paying for care and may need guidance."
+    ],
+    "confident": [
+      "{first_name} is generally confident about paying for care."
+    ],
+    "no_worries": [
+      "{first_name} feels confident about paying for care without concern."
+    ]
+  },
+  "medicaid_note": {
+    "offramp": [
+      "{first_name} may have different coverage rules under Medicaid; we will guide next steps."
+    ]
+  }
+}

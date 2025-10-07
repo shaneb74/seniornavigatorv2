@@ -4,6 +4,7 @@ import os
 import sys
 from pathlib import Path
 import streamlit as st
+from ui.theme import inject_theme
 
 # ✅ Always set page config first
 st.set_page_config(page_title="Senior Navigator", layout="wide")
@@ -24,6 +25,8 @@ def _ensure_navigation_api() -> None:
     st.stop()
 
 _ensure_navigation_api()
+
+inject_theme()
 
 # OPTIONAL: your CSS/theme injector can stay as-is, but run it later on each page.
 
@@ -77,6 +80,7 @@ INTENDED = [
     ("app_pages/SeniorNav_welcome_self.py", "Welcome · For You", "🙂", False),
     ("app_pages/SeniorNav_welcome_someone_else.py", "Welcome · Someone Else", "👥", False),
     ("app_pages/SeniorNav_welcome_professional.py", "Welcome · Professional", "🩺", False),
+    ("app_pages/about_us.py", "More About Us", "📘", False),
     ("app_pages/professional_mode.py", "Professional Mode", "🧑", False),
 
     # Concierge Care Hub
