@@ -1,4 +1,7 @@
 from __future__ import annotations
+
+from typing import List
+
 import streamlit as st
 from gcp_pr_tool_bundle.guided_care_plan.state import *  # noqa: F401,F403
 from gcp_pr_tool_bundle.guided_care_plan.state import (
@@ -6,6 +9,14 @@ from gcp_pr_tool_bundle.guided_care_plan.state import (
     set_answer as _bundle_set_answer,
     normalize_multi as _normalize_multi,
 )  # noqa: F401
+
+from .questions import BEHAVIOR_RISKS_OPTIONS
+
+BEHAVIOR_RISKS_QID = "behavior_risks"
+_BEHAVIOR_RISK_ORDER = [token for token, _ in BEHAVIOR_RISKS_OPTIONS]
+_BEHAVIOR_RISK_TOKENS = set(_BEHAVIOR_RISK_ORDER)
+_BEHAVIOR_RISK_INDEX = {token: index for index, token in enumerate(_BEHAVIOR_RISK_ORDER)}
+
 
 SECTION_PATHS = {
     "landing": "app_pages/gcp_v2/gcp_landing_v2.py",
@@ -41,14 +52,33 @@ def get_state() -> dict:
 
 def get_answer(key: str, default=None):
     ensure_session()
-    return st.session_state.gcp["answers"].get(key, default)
+    answers = st.session_state.gcp["answers"]
+    if key == BEHAVIOR_RISKS_QID:
+        normalized = _normalize_behavior_risks(answers.get(key))
+        if normalized:
+            answers[key] = normalized
+            return list(normalized)
+        answers.pop(key, None)
+        return []
+    return answers.get(key, default)
 
 
 def set_answer(key: str, value) -> None:
     ensure_session()
     answers = st.session_state.gcp["answers"]
+    if key == BEHAVIOR_RISKS_QID:
+        normalized = _normalize_behavior_risks(value)
+        if not normalized:
+            answers.pop(key, None)
+            _bundle_set_answer(key, None)
+            return
+        _bundle_set_answer(key, normalized)
+        answers[key] = list(normalized)
+        return
+
     if value is None or (isinstance(value, str) and not value.strip()):
         answers.pop(key, None)
+        _bundle_set_answer(key, None)
         return
     if isinstance(value, list):
         value = _normalize_multi(value)
@@ -118,3 +148,36 @@ def set_ack_medicaid(flag: bool) -> None:
 def get_ack_medicaid() -> bool:
     import streamlit as st
     return bool(st.session_state.get("gcp_ack_medicaid_notice"))
+
+
+def _normalize_behavior_risks(value: object) -> List[str]:
+    if value is None:
+        return []
+    if isinstance(value, str):
+        value = [value]
+    elif isinstance(value, set):
+        value = list(value)
+    elif isinstance(value, tuple):
+        value = list(value)
+
+    if not isinstance(value, list):
+        return []
+
+    seen = set()
+    cleaned = []
+    for token in value:
+        if not isinstance(token, str):
+            continue
+        token = token.strip()
+        if not token or token not in _BEHAVIOR_RISK_TOKENS or token in seen:
+            continue
+        seen.add(token)
+        cleaned.append(token)
+
+    cleaned.sort(key=lambda token: _BEHAVIOR_RISK_INDEX.get(token, len(_BEHAVIOR_RISK_ORDER)))
+    return cleaned
+
+
+def behavior_risks() -> List[str]:
+    """Return the normalized behavior risk selections."""
+    return get_answer(BEHAVIOR_RISKS_QID, [])

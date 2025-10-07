@@ -11,6 +11,9 @@ from gcp_core.state import (
     save_snapshot,
     set_section_complete,
 )
+from gcp_core.questions import BEHAVIOR_RISKS_OPTIONS
+
+BEHAVIOR_RISK_LABELS = {token: label for token, label in BEHAVIOR_RISKS_OPTIONS}
 
 
 def _render_medicaid_notice_for_reco(answers: dict) -> None:
@@ -83,6 +86,23 @@ st.write(f"We recommend **{setting_label}** because {primary_reason}")
 st.markdown("### What we heard")
 for bullet in summary_bullets:
     st.markdown(f"- {bullet}")
+
+behavior_insights = scoring.get("behavior_risks", {})
+behavior_tier = behavior_insights.get("tier")
+if behavior_tier and behavior_tier != "none":
+    st.markdown("### Safety signals we noticed")
+    tokens = behavior_insights.get("flags", [])
+    labels = [BEHAVIOR_RISK_LABELS.get(token, token.replace("_", " ").title()) for token in tokens]
+    if labels:
+        st.markdown(f"- {', '.join(labels)}")
+    guidance_map = {
+        "high": "Consider supervised routines, secure exits, and a safety check of the home.",
+        "moderate": "Consider a daily check-in plan and environment safety adjustments.",
+        "low": "Monitor for changes; note times of day (e.g., evenings) when issues increase.",
+    }
+    guidance = guidance_map.get(behavior_tier)
+    if guidance:
+        st.write(guidance)
 
 active_flags = [flag for flag, value in scoring["risk_flags"].items() if value]
 if active_flags:

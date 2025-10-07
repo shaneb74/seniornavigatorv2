@@ -4,7 +4,7 @@ from typing import Dict, List
 import streamlit as st
 
 import gcp_core.state as gcp_state
-from gcp_core.questions import load_questions
+from gcp_core.questions import BEHAVIOR_RISKS_LABEL, load_questions
 from gcp_core.state import ensure_session, get_state, get_answer, set_answer, set_ack_medicaid
 
 try:
@@ -42,6 +42,7 @@ _QUESTION_INDEX = _question_index()
 
 COGNITION_QID = "cognition"
 BEHAVIOR_QID = "behavior_risks"
+BEHAVIOR_MULTI_LABEL = BEHAVIOR_RISKS_LABEL
 
 SEVERE_COG_VALUES = {
     "serious_confusion",
@@ -203,18 +204,30 @@ def render_question(question: Dict) -> None:
                 set_ack_medicaid(False)
 
     elif qtype == "multi":
-        option_labels = [choice["label"] for choice in choices]
+        if qid == BEHAVIOR_QID:
+            label = BEHAVIOR_MULTI_LABEL
+        token_label = {choice["id"]: choice["label"] for choice in choices}
+        option_tokens = [choice["id"] for choice in choices]
         current_ids = get_answer(qid, [])
-        default_labels = [choice["label"] for choice in choices if choice["id"] in (current_ids or [])]
-        picked = st.multiselect(
+        default_tokens = [token for token in option_tokens if token in (current_ids or [])]
+
+        if qid == BEHAVIOR_QID:
+            st.markdown('<div class="gcp-pill-multi">', unsafe_allow_html=True)
+
+        picked_tokens = st.multiselect(
             label,
-            option_labels,
-            default=default_labels,
-            key=qid,
+            option_tokens,
+            default=default_tokens,
+            key=f"gcp_{qid}_multi",
+            format_func=lambda token: token_label.get(token, token.replace("_", " ").title()),
+            placeholder="Select all that apply",
             label_visibility="visible",
         )
-        selected_ids = [choice["id"] for choice in choices if choice["label"] in picked]
-        set_answer(qid, selected_ids)
+
+        if qid == BEHAVIOR_QID:
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        set_answer(qid, picked_tokens if picked_tokens else None)
 
     elif qtype == "text":
         current_value = get_answer(qid, "")
