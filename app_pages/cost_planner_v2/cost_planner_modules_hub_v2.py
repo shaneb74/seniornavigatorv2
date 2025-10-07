@@ -69,7 +69,6 @@ def render() -> None:
         data.update(_gcp(st.session_state))
         data.update(_answers(st.session_state))
 
-<<<<<<< Updated upstream
         # List modules exactly like before, just using Streamlit containers for styling
         for label, page in modules:
             with st.container(border=True):
@@ -84,35 +83,6 @@ def render() -> None:
         st.markdown("---")
         if st.button("View Money Timeline", type="primary", use_container_width=True):
             goto("cost_planner_timeline_v2.py")
-=======
-        visible_modules = []
-        for module in MODULES:
-            predicate = module.visible_if or (lambda _: True)
-            try:
-                if predicate(data):
-                    visible_modules.append(module)
-            except Exception:
-                # If the predicate fails, default to showing the module for safety.
-                visible_modules.append(module)
-
-        if visible_modules:
-            cols = st.columns(2, gap="large")
-            col_count = len(cols) or 1
-            for index, module in enumerate(visible_modules):
-                column = cols[index % col_count]
-                with column:
-                    with st.container(border=True):
-                        st.markdown(f"### {module.icon} {module.title}")
-                        st.caption(module.blurb)
-                        if module.note:
-                            st.caption(f"_{module.note}_")
-                        if st.button("Open", key=f"open_{module.key}", type="primary"):
-                            goto(module.route)
-        else:
-            st.info(
-                "No modules match right now. Update your home, caregiver, or assets details to unlock more modules."
-            )
->>>>>>> Stashed changes
 
 # ✅ Import-time execution under Streamlit
 render()

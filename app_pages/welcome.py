@@ -479,10 +479,6 @@ if pro_clicked:
     aud["entry"] = "pro"
     aud["qualifiers"] = {k: False for k in aud.get("qualifiers", {}).keys()}
     care_context["person_name"] = "Your Loved One"
-<<<<<<< Updated upstream
     # Route to professional intake if available; otherwise keep UX alive
     target = "pages/professional_mode.py"
-=======
-    target = "app_pages/SeniorNav_professional_hub.py"
->>>>>>> Stashed changes
     safe_switch_page(target, "flow", "pro")

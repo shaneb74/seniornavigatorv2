@@ -1,16 +1,8 @@
 from __future__ import annotations
 import streamlit as st
-<<<<<<< Updated upstream
 from ui.theme import inject_theme
 from gcp_v2.schema import questions_for_section
 from ui.gcp_form import render_section, nav_buttons
-=======
-from gcp_core.engine import questions_for_section
-import gcp_core.state as gcp_state
-from gcp_core.state import ensure_session, set_section_complete
-import ui.gcp_form as gcp_form
-from ui.gcp_form import render_section
->>>>>>> Stashed changes
 
 inject_theme()
 

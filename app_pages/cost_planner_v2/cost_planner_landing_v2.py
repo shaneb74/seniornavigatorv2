@@ -41,7 +41,6 @@ except Exception:
 
     def render_wizard_hero(title: str, subtitle: str = ""):
         st.markdown(f"## {title}")
-<<<<<<< Updated upstream
         if subtitle: st.caption(subtitle)
     def render_wizard_help(text: str): st.info(text)
     class Metric:
@@ -59,10 +58,6 @@ except Exception:
             with cols[-1]:
                 if st.button(next.label, key=next.key, type="primary", use_container_width=True):
                     st.switch_page("app_pages/cost_planner_v2/cost_planner_timeline_v2.py")
-=======
-        if subtitle:
-            st.caption(subtitle)
->>>>>>> Stashed changes
 
     def render_wizard_help(text: str):
         st.info(text)
@@ -253,7 +248,6 @@ def render() -> None:
         if show_explorer:
             _render_cost_explorer(recommendation)
 
-<<<<<<< Updated upstream
         # Actions
         col1, col2 = st.columns([1, 1])
         with col1:
@@ -262,8 +256,6 @@ def render() -> None:
         with col2:
             if st.button("Jump to Timeline (dev)", use_container_width=True):
                 st.switch_page("app_pages/cost_planner_v2/cost_planner_timeline_v2.py")
-=======
->>>>>>> Stashed changes
 
 # ✅ Import-time execution under Streamlit
 render()

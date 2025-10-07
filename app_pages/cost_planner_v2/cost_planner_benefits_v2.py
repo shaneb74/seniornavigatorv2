@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import streamlit as st
 
-<<<<<<< Updated upstream
 # ---------------- Theme helpers ----------------
 try:
     from ui.cost_planner_template import (
@@ -48,12 +47,6 @@ except Exception:
             with cols[-1]:
                 if st.button(next.label, key=next.key, type="primary", use_container_width=True):
                     st.switch_page("app_pages/cost_planner_v2/cost_planner_home_v2.py")
-=======
-from ui.cost_planner_data import MODULE_FIELD_MAP
-from ui.cost_planner_forms import compute_gap, cp_state, render_fields
-from ui import va_drawer
-
->>>>>>> Stashed changes
 
 def render() -> None:
     st.header("Benefits & Coverage")

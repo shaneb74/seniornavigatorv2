@@ -23,7 +23,6 @@ def render() -> None:
             st.rerun()
 
 
-<<<<<<< Updated upstream
         # Liquidity (one-time) for display + fallback assets if assets not entered
         liquidity_total = int(round(_to_num(_get("liquidity.liquidity_total", 0))))
         keeping_car = bool(_get("flags.keeping_car", True))
@@ -111,6 +110,4 @@ def render() -> None:
                 st.switch_page("app_pages/expert_review.py")
 
 # ✅ Import-time execution under Streamlit
-=======
->>>>>>> Stashed changes
 render()

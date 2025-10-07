@@ -23,7 +23,6 @@ def render() -> None:
             st.session_state["nav_target"] = "app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py"
             st.rerun()
 
-<<<<<<< Updated upstream
         # Same two-button layout/behavior you had before
         col1, col2 = st.columns([1, 1])
         with col1:
@@ -31,7 +30,5 @@ def render() -> None:
                 st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
         with col2:
             st.button("Save & Continue", disabled=True, help="Coming soon", use_container_width=True)
-=======
->>>>>>> Stashed changes
 
 render()
