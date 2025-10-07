@@ -3,16 +3,15 @@ from __future__ import annotations
 import random
 
 import streamlit as st
-<<<<<<< Updated upstream
+
 from ui.theme import inject_theme
 from app_pages.seniornav_util import top_nav, safe_switch
 
 inject_theme()
-=======
+
 
 from app_pages.seniornav_util import safe_switch, top_nav
 
->>>>>>> Stashed changes
 top_nav()
 
 st.markdown("## Waiting Room Hub")
@@ -34,7 +33,7 @@ TRIVIA_TIPS = [
     "Balance break: Stand up, hold a countertop, and rise on your toes ten times for circulation.",
 ]
 
-<<<<<<< Updated upstream
+
 with c1:
     st.markdown("#### Trivia Time")
     st.caption("Fun fact: Did you know 1 in 5 seniors miss a med dose? Click for a tip!")
@@ -50,7 +49,6 @@ with c3:
     st.markdown("#### Second Opinion")
     st.caption("Get a quick geriatrics review before your call — no cost.")
     st.button("Chat Now", use_container_width=True)
-=======
 
 def _set_message(message: str) -> None:
     st.session_state[MESSAGE_KEY] = message
@@ -120,7 +118,6 @@ for index, module in enumerate(MODULES):
 message = st.session_state.get(MESSAGE_KEY)
 if message:
     st.info(message)
->>>>>>> Stashed changes
 
 st.divider()
 if st.button("Back to Hub", use_container_width=True):
