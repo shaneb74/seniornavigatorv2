@@ -4,11 +4,6 @@ from __future__ import annotations
 import json
 
 import streamlit as st
-
-from ui.theme import inject_theme
-
-inject_theme()
-
 from cost_planner_shared import ensure_core_state, format_currency, recompute_costs
 from ui.cost_planner_template import (
 

@@ -1,0 +1,55 @@
+id,label,type,choice_id,choice_label,conditional_show
+medicaid_status,Are you currently on Medicaid or receiving state long-term care assistance?,single,yes,Yes,
+medicaid_status,Are you currently on Medicaid or receiving state long-term care assistance?,single,no,No,
+medicaid_status,Are you currently on Medicaid or receiving state long-term care assistance?,single,unsure,Unsure,
+funding_confidence,How confident do you feel about paying for care?,single,no_worries,No worries,SHOW when medicaid_status != 'yes'
+funding_confidence,How confident do you feel about paying for care?,single,confident,Confident,SHOW when medicaid_status != 'yes'
+funding_confidence,How confident do you feel about paying for care?,single,unsure,Unsure,SHOW when medicaid_status != 'yes'
+funding_confidence,How confident do you feel about paying for care?,single,not_confident,Not confident,SHOW when medicaid_status != 'yes'
+adl_help,"How many daily activities need help? (bathing, dressing, meals)",single,0-1,0–1,
+adl_help,"How many daily activities need help? (bathing, dressing, meals)",single,2-3,2–3,
+adl_help,"How many daily activities need help? (bathing, dressing, meals)",single,4-5,4–5,
+adl_help,"How many daily activities need help? (bathing, dressing, meals)",single,6+,6+,
+caregiver_support,How much caregiver support is available?,single,24_7,Support most/all of the time,
+caregiver_support,How much caregiver support is available?,single,most_days,Most days,
+caregiver_support,How much caregiver support is available?,single,few_days_week,A few days a week,
+caregiver_support,How much caregiver support is available?,single,none,No regular support,
+cognition,How is memory and thinking?,single,normal,Normal,
+cognition,How is memory and thinking?,single,mild,Sometimes forgetful,
+cognition,How is memory and thinking?,single,moderate,Frequent memory issues,
+cognition,How is memory and thinking?,single,severe,Serious confusion,
+behavior_risks,Any wandering or unsafe behaviors?,multi,none,None,"SHOW when cognition in {'mild','moderate','severe'}"
+behavior_risks,Any wandering or unsafe behaviors?,multi,wandering,Wandering,"SHOW when cognition in {'mild','moderate','severe'}"
+behavior_risks,Any wandering or unsafe behaviors?,multi,agitation,Agitation,"SHOW when cognition in {'mild','moderate','severe'}"
+behavior_risks,Any wandering or unsafe behaviors?,multi,exit_seeking,Exit seeking,"SHOW when cognition in {'mild','moderate','severe'}"
+falls,Falls in the last 12 months?,single,none,None,
+falls,Falls in the last 12 months?,single,one,One,
+falls,Falls in the last 12 months?,single,recurrent,Recurrent,
+med_mgmt,How complex are medications to manage?,single,simple,Simple,
+med_mgmt,How complex are medications to manage?,single,several,Several,
+med_mgmt,How complex are medications to manage?,single,complex,Complex,
+mobility,How would you describe mobility?,single,no_issues,No mobility issues,
+mobility,How would you describe mobility?,single,cane_or_walker,Cane or walker,
+mobility,How would you describe mobility?,single,wheelchair,Wheelchair,
+supervision,Is reliable supervision available when needed at home?,single,always,Consistent and reliable,"SHOW when any of { cognition in {'mild','moderate','severe'} OR mobility in {'cane_or_walker','wheelchair'} OR falls != 'none' OR home_safety != 'safe' }"
+supervision,Is reliable supervision available when needed at home?,single,sometimes,Mostly covered,"SHOW when any of { cognition in {'mild','moderate','severe'} OR mobility in {'cane_or_walker','wheelchair'} OR falls != 'none' OR home_safety != 'safe' }"
+supervision,Is reliable supervision available when needed at home?,single,rarely,Occasional / patchy,"SHOW when any of { cognition in {'mild','moderate','severe'} OR mobility in {'cane_or_walker','wheelchair'} OR falls != 'none' OR home_safety != 'safe' }"
+supervision,Is reliable supervision available when needed at home?,single,never,Not covered / uncertain,"SHOW when any of { cognition in {'mild','moderate','severe'} OR mobility in {'cane_or_walker','wheelchair'} OR falls != 'none' OR home_safety != 'safe' }"
+home_safety,Is the home setup safe (stairs/bath/etc.)?,single,safe,Safe,
+home_safety,Is the home setup safe (stairs/bath/etc.)?,single,some_risks,Some risks,
+home_safety,Is the home setup safe (stairs/bath/etc.)?,single,unsafe,Not suitable / unsafe,
+social_isolation,How often does {first_name} see or talk with people in person?,single,daily_or_often,Daily or often,
+social_isolation,How often does {first_name} see or talk with people in person?,single,weekly,Weekly,
+social_isolation,How often does {first_name} see or talk with people in person?,single,rarely,Rarely,
+social_isolation,How often does {first_name} see or talk with people in person?,single,almost_never,Almost never,
+geographic_access,"How easy is it to reach groceries, pharmacy, and appointments from home?",single,easy,Easy,
+geographic_access,"How easy is it to reach groceries, pharmacy, and appointments from home?",single,moderate,Moderate,
+geographic_access,"How easy is it to reach groceries, pharmacy, and appointments from home?",single,difficult,Difficult,
+geographic_access,"How easy is it to reach groceries, pharmacy, and appointments from home?",single,very_difficult,Very difficult,
+chronic,Any chronic conditions?,multi,diabetes,Diabetes,
+chronic,Any chronic conditions?,multi,parkinson,Parkinson’s,
+chronic,Any chronic conditions?,multi,stroke,Stroke,
+chronic,Any chronic conditions?,multi,copd,COPD,
+chronic,Any chronic conditions?,multi,chf,Heart failure/CHF,
+chronic,Any chronic conditions?,multi,other,Other,
+chronic,Any chronic conditions?,multi,none,None,

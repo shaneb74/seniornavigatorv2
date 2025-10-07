@@ -186,10 +186,10 @@ def render() -> None:
         # --- Actions (same functionality) ---
         c1, c2 = st.columns([1, 1])
         with c1:
-            if st.button("← Back to Modules", key="tm_back", use_container_width=True):
+            if st.button("← Back to Modules", key="tm_back", width="stretch"):
                 goto("cost_planner_modules_hub_v2.py")
         with c2:
-            if st.button("Continue → Expert Review", key="tm_next", use_container_width=True):
+            if st.button("Continue → Expert Review", key="tm_next", width="stretch"):
                 st.switch_page("app_pages/expert_review.py")
 
 # ✅ Import-time execution under Streamlit

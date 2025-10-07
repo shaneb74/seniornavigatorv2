@@ -1,7 +1,5 @@
 from __future__ import annotations
 import streamlit as st
-from ui.theme import inject_theme
-
 def ensure_aud():
     if "aud" not in st.session_state or not isinstance(st.session_state.aud, dict):
         st.session_state.aud = {
@@ -34,5 +32,4 @@ def top_nav():
     )
 
 def pfma_card(title: str | None = None, subtitle: str = ""):
-    inject_theme()
     return st.container(border=False)

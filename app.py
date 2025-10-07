@@ -4,6 +4,7 @@ import os
 import sys
 from pathlib import Path
 import streamlit as st
+from ui.theme import inject_theme
 
 # ✅ Always set page config first
 st.set_page_config(page_title="Senior Navigator", layout="wide")
@@ -24,6 +25,8 @@ def _ensure_navigation_api() -> None:
     st.stop()
 
 _ensure_navigation_api()
+
+inject_theme()
 
 # OPTIONAL: your CSS/theme injector can stay as-is, but run it later on each page.
 

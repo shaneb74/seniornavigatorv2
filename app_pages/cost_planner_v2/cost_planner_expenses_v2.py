@@ -56,10 +56,10 @@ def render() -> None:
         # Same two-button layout/behavior you had before
         col1, col2 = st.columns([1, 1])
         with col1:
-            if st.button("◀︎ Back to Modules", use_container_width=True):
+            if st.button("◀︎ Back to Modules", width="stretch"):
                 st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
         with col2:
-            st.button("Save & Continue", disabled=True, help="Coming soon", use_container_width=True)
+            st.button("Save & Continue", disabled=True, help="Coming soon", width="stretch")
 
 # ✅ Import-time execution under Streamlit
 render()

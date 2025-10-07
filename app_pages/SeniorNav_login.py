@@ -1,6 +1,5 @@
 from __future__ import annotations
 import streamlit as st
-from ui.theme import inject_theme
 from app_pages.seniornav_util import top_nav
 
 
@@ -11,8 +10,6 @@ def safe_switch_page(target: str, query_key: str | None = None, query_value: str
         if query_key and query_value:
             st.query_params[query_key] = query_value
         st.rerun()
-
-inject_theme()
 top_nav()
 
 st.markdown("## Sign in")
@@ -23,17 +20,17 @@ st.session_state.is_authenticated = auth
 
 col1, col2, col3 = st.columns(3)
 with col1:
-    if st.button("  Sign in with Apple", use_container_width=True):
+    if st.button("  Sign in with Apple", width="stretch"):
         st.session_state.is_authenticated = True
         st.success("Signed in.")
         safe_switch_page("app_pages/hub.py")
 with col2:
-    if st.button("G  Sign in with Google", use_container_width=True):
+    if st.button("G  Sign in with Google", width="stretch"):
         st.session_state.is_authenticated = True
         st.success("Signed in.")
         safe_switch_page("app_pages/hub.py")
 with col3:
-    if st.button("f  Continue with Facebook", use_container_width=True):
+    if st.button("f  Continue with Facebook", width="stretch"):
         st.session_state.is_authenticated = True
         st.success("Signed in.")
         safe_switch_page("app_pages/hub.py")
@@ -52,7 +49,7 @@ if st.session_state.get("login_mode", "social") == "email":
         pw = st.text_input("Password", type="password", placeholder="********")
         consent = st.checkbox("I consent and have proper authorization if signing up for someone else.")
         can_submit = bool(email.strip()) and bool(pw.strip()) and consent
-        submitted = st.form_submit_button("Sign in", type="primary", disabled=not can_submit, use_container_width=True)
+        submitted = st.form_submit_button("Sign in", type="primary", disabled=not can_submit)
         if submitted:
             st.session_state.is_authenticated = True
             st.success("Signed in.")
