@@ -1,6 +1,7 @@
 # Cost Planner · Liquidity (v2)
 from __future__ import annotations
 import streamlit as st
+from ui.state import mark_complete, set_completion
 
 # ---------------- Theme helpers (same pattern as Income) ----------------
 try:
@@ -42,14 +43,14 @@ except Exception:
             self.label, self.key, self.type, self.icon = label, key, type, icon
     def render_nav_buttons(buttons=None, prev=None, next=None):
         cols = st.columns(2)
+        result = {"prev": False, "next": False}
         if prev:
             with cols[0]:
-                if st.button(prev.label, key=prev.key, type="secondary", width="stretch"):
-                    st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
+                result["prev"] = st.button(prev.label, key=prev.key, type="secondary", width="stretch")
         if next:
             with cols[-1]:
-                if st.button(next.label, key=next.key, type="primary", width="stretch"):
-                    st.switch_page("app_pages/cost_planner_v2/cost_planner_home_mods_v2.py")
+                result["next"] = st.button(next.label, key=next.key, type="primary", width="stretch")
+        return result
 
 # ---------------- Small helpers (content preserved) ----------------
 def _cp() -> dict:
@@ -164,16 +165,19 @@ def render() -> None:
         with c1:
             if st.button("← Back to Modules", key="liq_back"):
                 _save_to_state(_vals())
+                set_completion("cp_liquidity", "in_progress")
                 st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
 
         with c2:
             if st.button("Save", key="liq_save"):
                 _save_to_state(_vals())
+                set_completion("cp_liquidity", "in_progress")
                 st.success("Liquidity saved.")
 
         with c3:
             if st.button("Save & Continue → Home Mods", key="liq_next"):
                 _save_to_state(_vals())
+                mark_complete("cp_liquidity")
                 st.switch_page("app_pages/cost_planner_v2/cost_planner_home_mods_v2.py")
 
 # ✅ Import-time execution under Streamlit

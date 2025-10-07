@@ -1,24 +1,26 @@
 from __future__ import annotations
+
 import streamlit as st
+
 from gcp_core import scoring as gcp_scoring
 from gcp_core.engine import build_conversational_summary, snapshot as build_snapshot
+from gcp_core.questions import BEHAVIOR_RISKS_OPTIONS
 from gcp_core.state import (
     ensure_session,
-    get_state,
-    medicaid_status,
-    get_ack_medicaid,
-    set_ack_medicaid,
+    get_answers,
+    get_medicaid_status,
+    get_medicaid_ack,
+    set_medicaid_ack,
     save_snapshot,
     set_section_complete,
 )
-from gcp_core.questions import BEHAVIOR_RISKS_OPTIONS
+from ui.state import mark_complete
 
 BEHAVIOR_RISK_LABELS = {token: label for token, label in BEHAVIOR_RISKS_OPTIONS}
 
 
-def _render_medicaid_notice_for_reco(answers: dict) -> None:
-    status = medicaid_status(answers)
-    if status not in ("yes", "unsure") or get_ack_medicaid():
+def _render_medicaid_notice_for_reco(status: str, acknowledged: bool) -> None:
+    if status not in {"yes", "unsure"} or acknowledged:
         return
 
     is_yes = status == "yes"
@@ -26,45 +28,41 @@ def _render_medicaid_notice_for_reco(answers: dict) -> None:
         st.subheader("Before you proceed")
         if is_yes:
             st.write(
-                "Because you indicated **Medicaid**, some advisor services may be limited. "
-                "You can still review these results and use every planning tool here."
+                "Because you’re using **Medicaid**, advisor options can be limited. "
+                "These results and planning tools are still yours to explore."
             )
         else:
             st.write(
-                "If you’re **unsure** about Medicaid, feel free to review these results. "
-                "We’ll flag items you may want to double-check as you go."
+                "If you’re unsure about Medicaid eligibility, review these results and note any follow-ups we flag."
             )
 
         col_link, col_ack = st.columns([1, 1])
         with col_link:
-            st.link_button(
-                "Learn about Medicaid",
-                "https://www.medicaid.gov/",
-                type="secondary",
-            )
+            st.link_button("Learn about Medicaid", "https://www.medicaid.gov/")
         with col_ack:
-            if st.button("I understand — continue", key="gcp_reco_medicaid_ack", type="secondary"):
-                set_ack_medicaid(True)
+            if st.button("I understand", type="primary"):
+                set_medicaid_ack(True)
                 st.rerun()
 
 
 ensure_session()
 
-state = get_state()
-answers = state["answers"]
-
-status = medicaid_status(answers)
-if status not in ("yes", "unsure"):
-    set_ack_medicaid(False)
+answers = get_answers()
+status = get_medicaid_status()
+acknowledged = get_medicaid_ack()
+if status not in {"yes", "unsure"} and acknowledged:
+    set_medicaid_ack(False)
+    acknowledged = False
 
 scoring = gcp_scoring.score_answers(answers)
 summary_bullets = build_conversational_summary(answers, scoring)
 snapshot_record = build_snapshot(answers, scoring)
 save_snapshot(snapshot_record)
 set_section_complete("context")
-state["progress"]["done"] = True
+set_section_complete("done")
+mark_complete("gcp")
 
-_render_medicaid_notice_for_reco(answers)
+_render_medicaid_notice_for_reco(status, acknowledged)
 
 st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
 st.markdown("## Your care recommendation")
@@ -114,8 +112,7 @@ if active_flags:
     chip_line = "".join(f"<span class='gcp-chip'>{flag.replace('_',' ').title()}</span>" for flag in active_flags)
     st.markdown(chip_line, unsafe_allow_html=True)
 
-is_medicaid_yes = status == "yes"
-if not is_medicaid_yes:
+if status != "yes":
     col1, col2 = st.columns([1, 1])
     with col1:
         if st.button("Continue to Cost Planner", type="primary", width="stretch", key="reco_to_cost_planner"):

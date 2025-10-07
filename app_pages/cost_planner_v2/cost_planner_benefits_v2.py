@@ -1,6 +1,8 @@
 # Cost Planner · Benefits (v2)
 from __future__ import annotations
 import streamlit as st
+from cost_planner_v2.cp_nav import goto
+from ui.state import mark_complete
 
 # ---------------- Theme helpers ----------------
 try:
@@ -38,14 +40,14 @@ except Exception:
             self.label, self.key, self.type, self.icon = label, key, type, icon
     def render_nav_buttons(buttons=None, prev=None, next=None):
         cols = st.columns(2)
+        result = {"prev": False, "next": False}
         if prev:
             with cols[0]:
-                if st.button(prev.label, key=prev.key, type="secondary", width="stretch"):
-                    st.switch_page("app_pages/cost_planner_v2/cost_planner_expenses_v2.py")
+                result["prev"] = st.button(prev.label, key=prev.key, type="secondary", width="stretch")
         if next:
             with cols[-1]:
-                if st.button(next.label, key=next.key, type="primary", width="stretch"):
-                    st.switch_page("app_pages/cost_planner_v2/cost_planner_home_v2.py")
+                result["next"] = st.button(next.label, key=next.key, type="primary", width="stretch")
+        return result
 
 # ---------------- Page content ----------------
 def render() -> None:
@@ -67,10 +69,16 @@ def render() -> None:
         # Example metric placeholder if you compute a total later:
         # st.metric("Estimated Monthly Benefit Offset", f"${benefits_total:,.0f}")
 
-        render_nav_buttons(
+        nav_clicks = render_nav_buttons(
             prev=NavButton("← Back to Expenses", "benefits_back"),
             next=NavButton("Save & Continue → Home", "benefits_next", type="primary"),
         )
+        if isinstance(nav_clicks, dict):
+            if nav_clicks.get("prev"):
+                goto("app_pages/cost_planner_v2/cost_planner_expenses_v2.py")
+            if nav_clicks.get("next"):
+                mark_complete("cp_benefits")
+                goto("app_pages/cost_planner_v2/cost_planner_home_v2.py")
 
 # ✅ Import-time execution under Streamlit
 render()

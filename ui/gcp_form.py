@@ -1,11 +1,19 @@
 from __future__ import annotations
+
+import re
 from typing import Dict, List
 
 import streamlit as st
 
-import gcp_core.state as gcp_state
 from gcp_core.questions import BEHAVIOR_RISKS_LABEL, load_questions
-from gcp_core.state import ensure_session, get_state, get_answer, set_answer, set_ack_medicaid
+from gcp_core.state import (
+    ensure_session,
+    get_answers,
+    get_answer,
+    set_answer,
+    set_medicaid_ack,
+    clear_answer,
+)
 
 try:
     from streamlit import segmented_control as _has_segmented_control  # type: ignore[attr-defined]
@@ -43,21 +51,41 @@ _QUESTION_INDEX = _question_index()
 COGNITION_QID = "cognition"
 BEHAVIOR_QID = "behavior_risks"
 BEHAVIOR_MULTI_LABEL = BEHAVIOR_RISKS_LABEL
-
-SEVERE_COG_VALUES = {
-    "serious_confusion",
-    "advanced_dementia",
-    "frequent_memory_issues",
-    "serious confusion",
-    "Serious confusion",
-    "Advanced dementia",
-    "advanced dementia",
-    "Frequent memory issues",
-    "frequent memory issues",
+_RAW_SEVERE_COG_CHOICES = {
     "severe",
-    "Severe",
-    "Severe memory issues",
+    "severe memory issues",
+    "advanced",
+    "advanced dementia",
+    "advanced_dementia",
+    "advanced alzheimers",
+    "advanced alzheimer's",
+    "needs constant supervision",
+    "needs_constant_supervision",
+    "significant memory loss",
+    "significant_memory_loss",
+    "late-stage dementia",
+    "late_stage_dementia",
+    "late stage dementia",
+    "late stage alzheimers",
+    "late stage alzheimer's",
+    "alzheimers advanced",
+    "alzheimers_advanced",
+    "serious_confusion",
+    "serious confusion",
+    "frequent_memory_issues",
+    "frequent memory issues",
 }
+
+
+def _normalize_literal(value: object) -> str:
+    text = "" if value is None else str(value)
+    lowered = text.lower()
+    stripped = lowered.replace("_", " ").replace("-", " ")
+    cleaned = re.sub(r"[^0-9a-z\s]", " ", stripped)
+    return " ".join(cleaned.split())
+
+
+_SEVERE_COG_MATCHES = {_normalize_literal(choice) for choice in _RAW_SEVERE_COG_CHOICES}
 
 
 def _bundle_visible(question: Dict, answers: Dict) -> bool:
@@ -123,33 +151,33 @@ def render_pill_choice(
     return token_by_label.get(picked_label)
 
 
-def _is_severe_cognition(answers: Dict) -> bool:
-    raw = (answers.get(COGNITION_QID) or "").strip()
-    if not raw:
+def _is_severe_cognition(value: object | None) -> bool:
+    normalized = _normalize_literal(value)
+    if not normalized:
         return False
-    if raw in SEVERE_COG_VALUES:
+    if normalized in _SEVERE_COG_MATCHES:
         return True
-    lowered = raw.lower().replace(" ", "_")
-    if lowered in SEVERE_COG_VALUES:
+    if "severe" in normalized and ("memory" in normalized or "dementia" in normalized):
         return True
-    try:
-        normed = (gcp_state.norm(raw) or "").strip()
-    except Exception:
-        normed = lowered
-    return normed in SEVERE_COG_VALUES
+    if "advanced" in normalized and ("dementia" in normalized or "alzheim" in normalized):
+        return True
+    if "needs" in normalized and "supervision" in normalized:
+        return True
+    return False
 
 
 def _should_render(question: Dict, answers: Dict) -> bool:
     qid = question.get("id", "")
-    if qid == BEHAVIOR_QID and not _is_severe_cognition(answers):
-        return False
+    if qid == BEHAVIOR_QID:
+        cognition_value = answers.get(COGNITION_QID)
+        if not _is_severe_cognition(cognition_value):
+            return False
     return _bundle_visible(question, answers)
 
 
 def render_question(question: Dict) -> None:
     ensure_session()
-    state = get_state()
-    answers = state["answers"]
+    answers = get_answers()
     qid = question["id"]
     question = {
         **(_QUESTION_INDEX.get(qid, {})),
@@ -157,9 +185,8 @@ def render_question(question: Dict) -> None:
     }
 
     if not _should_render(question, answers):
-        if answers.get(qid) is not None:
-            set_answer(qid, None)
-            answers.pop(qid, None)
+        if qid in answers:
+            clear_answer(qid)
         return
 
     label = question.get("label") or "Question"
@@ -181,27 +208,36 @@ def render_question(question: Dict) -> None:
         option_labels = [choice["label"] for choice in choices]
         token_by_label = {choice["label"]: choice["id"] for choice in choices}
         label_by_token = {choice["id"]: choice["label"] for choice in choices}
+        normalizer = {}
+        for token, lbl in label_by_token.items():
+            normalizer[_normalize_literal(token)] = token
+            normalizer[_normalize_literal(lbl)] = token
+
+        stored_value = get_answer(qid)
+        current_token = None
+        if isinstance(stored_value, str):
+            current_token = normalizer.get(_normalize_literal(stored_value))
+            if current_token is None and stored_value in label_by_token:
+                current_token = stored_value
 
         picked_token = render_pill_choice(
             qid=qid,
             label=label,
             options=option_labels,
-            current_token=get_answer(qid),
+            current_token=current_token,
             token_by_label=token_by_label,
             label_by_token=label_by_token,
             key=f"gcp_{qid}_pill",
         )
 
         if picked_token is None:
-            answers.pop(qid, None)
-            set_answer(qid, None)
+            clear_answer(qid)
             if qid == "medicaid_status":
-                set_ack_medicaid(False)
+                set_medicaid_ack(False)
         else:
-            answers[qid] = picked_token
             set_answer(qid, picked_token)
             if qid == "medicaid_status" and picked_token == "no":
-                set_ack_medicaid(False)
+                set_medicaid_ack(False)
 
     elif qtype == "multi":
         if qid == BEHAVIOR_QID:
@@ -227,7 +263,10 @@ def render_question(question: Dict) -> None:
         if qid == BEHAVIOR_QID:
             st.markdown("</div>", unsafe_allow_html=True)
 
-        set_answer(qid, picked_tokens if picked_tokens else None)
+        if picked_tokens:
+            set_answer(qid, picked_tokens)
+        else:
+            clear_answer(qid)
 
     elif qtype == "text":
         current_value = get_answer(qid, "")

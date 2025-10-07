@@ -80,6 +80,7 @@ INTENDED = [
     ("app_pages/SeniorNav_welcome_self.py", "Welcome · For You", "🙂", False),
     ("app_pages/SeniorNav_welcome_someone_else.py", "Welcome · Someone Else", "👥", False),
     ("app_pages/SeniorNav_welcome_professional.py", "Welcome · Professional", "🩺", False),
+    ("app_pages/about_us.py", "More About Us", "📘", False),
     ("app_pages/professional_mode.py", "Professional Mode", "🧑", False),
 
     # Concierge Care Hub

@@ -10,6 +10,19 @@ THEME_CSS = r"""
 
   /* Disabled token that still keeps contrast on white text */
   --brand-600-disabled:#96B8F5;
+
+  /* Card primitives */
+  --card-bg:#FFFFFF;
+  --card-border:rgba(2,6,23,.08);
+  --card-shadow:0 8px 24px rgba(0,0,0,.06);
+
+  /* Chip palette */
+  --chip-bg:#f1f5f9;
+  --chip-fg:#0f172a;
+  --chip-info-bg:#eef4ff;
+  --chip-info-fg:#0B5CD8;
+  --chip-ok-bg:#e9f7ef;
+  --chip-ok-fg:#0c6b3f;
 }
 
 /* ===== Primary Buttons — cover ALL Streamlit variants with high specificity ===== */
@@ -168,6 +181,168 @@ THEME_CSS = r"""
   outline-offset: 2px !important;
 }
 
+/* ===== Module cards ===== */
+.sn-module-grid{
+  width:100%;
+  display:block;
+}
+
+.sn-module-grid > div[data-testid="column"]{
+  display:flex;
+}
+
+.sn-module-grid > div[data-testid="column"] > div{
+  display:flex;
+  flex-direction:column;
+  gap:1rem;
+  width:100%;
+}
+
+@media (max-width: 900px){
+  .sn-module-grid[data-cols="3"] > div[data-testid="column"],
+  .sn-module-grid[data-cols="2"] > div[data-testid="column"]{
+    width:100% !important;
+    flex:1 1 100%;
+  }
+}
+
+.sn-card{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:0.75rem;
+  padding:1.1rem clamp(1.1rem, 1.6vw, 1.4rem);
+  border-radius:18px;
+  border:1px solid var(--card-border);
+  background:var(--card-bg);
+  box-shadow:var(--card-shadow);
+  transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+
+.sn-card:hover{
+  transform:translateY(-1px);
+  box-shadow:0 12px 28px rgba(0,0,0,.08);
+}
+
+.sn-card:focus-within{
+  outline:3px solid var(--brand-ring);
+  outline-offset:2px;
+}
+
+.sn-card.is-disabled{
+  opacity:.6;
+}
+
+.sn-card.is-disabled .sn-card-actions button,
+.sn-card.is-disabled .sn-card-actions [data-testid="baseButton-primary"],
+.sn-card.is-disabled .sn-card-actions [data-testid="baseButton-secondary"]{
+  pointer-events:none;
+}
+
+.sn-card-header{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:0.75rem;
+}
+
+.sn-card-heading{
+  display:flex;
+  align-items:center;
+  gap:0.75rem;
+}
+
+.sn-card-icon{
+  width:40px;
+  height:40px;
+  border-radius:9999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.25rem;
+  background:var(--chip-bg);
+  color:var(--chip-fg);
+}
+
+.sn-card-icon.image{
+  padding:6px;
+}
+
+.sn-card-icon img{
+  width:28px;
+  height:28px;
+  object-fit:contain;
+  border-radius:8px;
+}
+
+.sn-card-title{
+  margin:0;
+  font-size:1.05rem;
+  font-weight:600;
+  line-height:1.35;
+}
+
+.sn-card-body p{
+  margin:0;
+  color:var(--chip-fg);
+  font-size:.95rem;
+  line-height:1.5;
+}
+
+.sn-card-caption{
+  color:rgba(15,23,42,.72);
+  font-size:.85rem;
+  margin-top:.35rem;
+}
+
+.sn-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:.35rem;
+  padding:.3rem .75rem;
+  border-radius:9999px;
+  background:var(--chip-bg);
+  color:var(--chip-fg);
+  font-size:.85rem;
+  font-weight:600;
+  white-space:nowrap;
+}
+
+.sn-chip.info{
+  background:var(--chip-info-bg);
+  color:var(--chip-info-fg);
+}
+
+.sn-chip.ok{
+  background:var(--chip-ok-bg);
+  color:var(--chip-ok-fg);
+}
+
+.sn-chip-icon{
+  font-size:.95rem;
+}
+
+.sn-card-actions{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  gap:.5rem;
+}
+
+.sn-card-actions > div{
+  flex:1 1 180px;
+  min-width:150px;
+}
+
+@media (max-width: 900px){
+  .sn-card-actions{
+    justify-content:stretch;
+  }
+  .sn-card-actions > div{
+    flex:1 1 100%;
+    min-width:0;
+  }
+}
 
 """
 

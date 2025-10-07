@@ -50,9 +50,13 @@ def get_state() -> dict:
     return st.session_state.gcp
 
 
+def get_answers() -> dict:
+    """Return the live answers dictionary stored in session state."""
+    return get_state()["answers"]
+
+
 def get_answer(key: str, default=None):
-    ensure_session()
-    answers = st.session_state.gcp["answers"]
+    answers = get_answers()
     if key == BEHAVIOR_RISKS_QID:
         normalized = _normalize_behavior_risks(answers.get(key))
         if normalized:
@@ -64,8 +68,7 @@ def get_answer(key: str, default=None):
 
 
 def set_answer(key: str, value) -> None:
-    ensure_session()
-    answers = st.session_state.gcp["answers"]
+    answers = get_answers()
     if key == BEHAVIOR_RISKS_QID:
         normalized = _normalize_behavior_risks(value)
         if not normalized:
@@ -82,8 +85,8 @@ def set_answer(key: str, value) -> None:
         return
     if isinstance(value, list):
         value = _normalize_multi(value)
-    _bundle_set_answer(key, value)
-    answers[key] = value
+        _bundle_set_answer(key, value)
+        answers[key] = value
     if key == "medicaid_status" and value == "no":
         # Clearing any lingering acknowledgement flag keeps the landing notice honest.
         answers.pop("medicaid_ack", None)
@@ -140,12 +143,17 @@ def medicaid_status(answers: dict) -> str:
     return norm(answers.get("medicaid_status"))
 
 
-def set_ack_medicaid(flag: bool) -> None:
+def get_medicaid_status() -> str:
+    """Return the normalized Medicaid status from the active answers."""
+    return medicaid_status(get_answers())
+
+
+def set_medicaid_ack(flag: bool) -> None:
     import streamlit as st
     st.session_state["gcp_ack_medicaid_notice"] = bool(flag)
 
 
-def get_ack_medicaid() -> bool:
+def get_medicaid_ack() -> bool:
     import streamlit as st
     return bool(st.session_state.get("gcp_ack_medicaid_notice"))
 
@@ -181,3 +189,13 @@ def _normalize_behavior_risks(value: object) -> List[str]:
 def behavior_risks() -> List[str]:
     """Return the normalized behavior risk selections."""
     return get_answer(BEHAVIOR_RISKS_QID, [])
+
+
+def clear_answer(key: str) -> None:
+    """Remove a stored answer both locally and in the bundle."""
+    set_answer(key, None)
+
+
+# Backwards compatibility exports for older imports
+set_ack_medicaid = set_medicaid_ack
+get_ack_medicaid = get_medicaid_ack
