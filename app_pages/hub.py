@@ -48,8 +48,9 @@ def render_hub() -> None:
     cost_planner_status = get_completion("cost_planner")
     pfma_status = get_completion("pfma")
 
-    begin_path = "app_pages/gcp_v2/gcp_landing_v2.py"
-    resume_path = gcp_path or begin_path
+    # Prefer V3 always; if an old V2 resume path is present, start V3 fresh at the intro.
+    begin_path = "app_pages/gcp_v3/gcp_intro_v3.py"
+    resume_path = gcp_path if (isinstance(gcp_path, str) and "app_pages/gcp_v3/" in gcp_path) else begin_path
 
     with ModuleGrid(cols=3, gap="large") as cols:
         with cols[0]:
@@ -60,7 +61,7 @@ def render_hub() -> None:
                 primary_label="Begin",
                 on_primary=lambda: _goto(
                     begin_path,
-                    fail_msg="Navigation failed. Verify app_pages/gcp_v2/gcp_landing_v2.py is registered in app.py.",
+                    fail_msg="Navigation failed. Verify app_pages/gcp_v3/gcp_intro_v3.py is registered in app.py.",
                 ),
                 secondary_label="Resume" if gcp_status == "in_progress" else None,
                 on_secondary=(lambda: _goto(resume_path)) if gcp_status == "in_progress" else None,

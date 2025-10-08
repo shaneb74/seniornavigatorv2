@@ -1,6 +1,6 @@
 # Cost Planner v2 · Landing
 from __future__ import annotations
-
+import re
 import streamlit as st
 
 # ---------------- Theme helpers (match Income pattern) ----------------
@@ -11,12 +11,13 @@ try:
         render_app_header,
         render_wizard_hero,
         render_wizard_help,
+        render_nav_buttons,
+        Metric, NavButton,
     )
 except Exception:
     # graceful fallbacks
     def apply_cost_planner_theme():
-        st.markdown(
-            """
+        st.markdown("""
         <style>
           :root{--brand:#0B5CD8;--surface:#f6f8fa;--ink:#111418}
           .sn-card{
@@ -26,22 +27,13 @@ except Exception:
             padding:clamp(1rem,2vw,1.5rem);
           }
         </style>
-        """,
-            unsafe_allow_html=True,
-        )
-
+        """, unsafe_allow_html=True)
     from contextlib import contextmanager
-
     @contextmanager
-    def cost_planner_page_container():
-        yield
-
-    def render_app_header():
-        st.markdown("### Cost Planner")
-
+    def cost_planner_page_container(): yield
+    def render_app_header(): st.markdown("### Cost Planner")
     def render_wizard_hero(title: str, subtitle: str = ""):
         st.markdown(f"## {title}")
-<<<<<<< Updated upstream
         if subtitle: st.caption(subtitle)
     def render_wizard_help(text: str): st.info(text)
     class Metric:
@@ -53,179 +45,22 @@ except Exception:
         cols = st.columns(2)
         if prev:
             with cols[0]:
-                if st.button(prev.label, key=prev.key, type="secondary", width="stretch"):
-                    st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
+                if st.button(prev.label, key=prev.key, type="secondary", use_container_width=True):
+                    _goto("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
         if next:
             with cols[-1]:
-                if st.button(next.label, key=next.key, type="primary", width="stretch"):
-                    st.switch_page("app_pages/cost_planner_v2/cost_planner_timeline_v2.py")
-=======
-        if subtitle:
-            st.caption(subtitle)
->>>>>>> Stashed changes
+                if st.button(next.label, key=next.key, type="primary", use_container_width=True):
+                    _goto("app_pages/cost_planner_v2/cost_planner_timeline_v2.py")
 
-    def render_wizard_help(text: str):
-        st.info(text)
-
-
-_ESTIMATE_BY_SETTING = {
-    "In-home care": 3800,
-    "Assisted Living": 5200,
-    "Memory Care": 6800,
-    "Memory Care (High Acuity)": 8200,
-}
-
-_ALLOWED = set(_ESTIMATE_BY_SETTING.keys())
-
-_ALIASES = {
-    "aging in place": "In-home care",
-    "in home": "In-home care",
-    "in-home": "In-home care",
-    "home with help": "In-home care",
-    "home care": "In-home care",
-    "al": "Assisted Living",
-    "assisted": "Assisted Living",
-    "assisted living": "Assisted Living",
-    "memory": "Memory Care",
-    "memory care": "Memory Care",
-    "mc": "Memory Care",
-    "memory care (high acuity)": "Memory Care (High Acuity)",
-    "high acuity memory": "Memory Care (High Acuity)",
-    "high-acuity memory": "Memory Care (High Acuity)",
-    "mc high": "Memory Care (High Acuity)",
-}
-
-_SELECT_CHOICES = [
-    "In-home care",
-    "Assisted Living",
-    "Memory Care",
-    "Memory Care (High Acuity)",
-]
-
-_SHOW_EXPLORER_KEY = "cpv2_cost_explorer_open"
-_SELECT_STATE_KEY = "cpv2_cost_explorer_choice"
-_ESTIMATE_FOOTNOTE = (
-    "Estimates are illustrative and vary by location and provider. "
-    "Sign in to add your income, benefits, housing, and assets."
-)
-
-
-def _normalize_setting(label: str | None) -> str | None:
-    if not label:
-        return None
-    s = label.strip().lower()
-
-    for k in _ALLOWED:
-        if s == k.lower():
-            return k
-
-    if s in _ALIASES:
-        return _ALIASES[s]
-
-    if "home" in s or "aging" in s or "place" in s:
-        return "In-home care"
-    if "assist" in s:
-        return "Assisted Living"
-    if "memory" in s and ("high" in s or "acuity" in s or "complex" in s):
-        return "Memory Care (High Acuity)"
-    if "memory" in s:
-        return "Memory Care"
-
-    if "snf" in s or "skilled" in s or "nursing" in s:
-        return None
-
-    return None
-
-
-def _estimate_monthly_cost(setting_label: str | None) -> int | None:
-    s = _normalize_setting(setting_label or "")
-    return _ESTIMATE_BY_SETTING.get(s) if s else None
-
-
-def _get_gcp_setting_from_snapshot() -> str | None:
-    gcp_state = st.session_state.get("gcp")
-    if isinstance(gcp_state, dict):
-        raw = gcp_state.get("recommended_setting")
-        if isinstance(raw, str):
-            return raw
-    return None
-
-
-def _format_currency(value: int | None) -> str:
-    if value is None:
-        return "—"
-    return f"${value:,.0f}"
-
-
-def _safe_switch_page(target: str) -> None:
+# ---------------- Small nav helper ----------------
+def _goto(path: str) -> None:
     try:
-        st.switch_page(target)  # type: ignore[attr-defined]
+        st.switch_page(path)  # type: ignore[attr-defined]
     except Exception:
-        st.warning(f"Navigation failed. Verify {target} is registered in app.py.")
+        st.session_state["_target_page"] = path
+        st.rerun()
 
-
-def _render_action_cards() -> str | None:
-    authed = bool(st.session_state.get("is_authenticated", False))
-    col1, col2 = st.columns(2, gap="large")
-
-    with col1:
-        with st.container(border=True):
-            st.subheader("Start Planning")
-            st.caption(
-                "Sign in to update your income, benefits, housing, and assets for a full Cost Planner view."
-            )
-            if st.button(
-                "Start Planning",
-                type="primary",
-                disabled=not authed,
-                help=None if authed else "Sign in required",
-                key="cpv2_start_planning",
-                use_container_width=True,
-            ):
-                _safe_switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
-
-    with col2:
-        with st.container(border=True):
-            st.subheader("Explore my care costs")
-            st.caption(
-                "Preview monthly care costs using the Guided Care Plan recommendation or pick a setting."
-            )
-            if st.button(
-                "Explore my care costs",
-                type="secondary",
-                key="cpv2_explore_costs",
-                use_container_width=True,
-            ):
-                st.session_state[_SHOW_EXPLORER_KEY] = True
-
-    return _normalize_setting(_get_gcp_setting_from_snapshot())
-
-
-def _render_cost_explorer(recommendation: str | None) -> None:
-    recommendation = recommendation if recommendation in _ALLOWED else None
-
-    with st.container(border=True):
-        if recommendation:
-            st.subheader(f"Based on your Guided Care Plan recommendation: {recommendation}.")
-            estimate = _estimate_monthly_cost(recommendation)
-        else:
-            st.subheader("Choose a care setting to preview costs.")
-            choice = st.selectbox(
-                "Care setting",
-                _SELECT_CHOICES,
-                key=_SELECT_STATE_KEY,
-            )
-            estimate = _estimate_monthly_cost(choice)
-
-        if recommendation is None and estimate is None:
-            st.caption("Select a care setting to see an estimated monthly cost.")
-            return
-
-        st.metric("Estimated monthly cost", _format_currency(estimate))
-        st.caption(_ESTIMATE_FOOTNOTE)
-
-
-# ---------------- Page content ----------------
+# ---------------- Page content (with pre-start intake) ----------------
 def render() -> None:
     apply_cost_planner_theme()
 
@@ -233,37 +68,114 @@ def render() -> None:
     with cost_planner_page_container():
         render_wizard_hero(
             "Cost Planner",
-            "Estimate care costs quickly or dig into detailed planning when you sign in.",
+            "A simple, conversational way to estimate care costs or plan your budget in detail."
         )
-        render_wizard_help("Get a quick estimate now, then add more detail when you're ready.")
+        render_wizard_help("You can start light and add more later.")
 
-        recommendation = _render_action_cards()
-
-        if recommendation not in _ALLOWED:
+        # Medicaid informational note (does not block planning)
+        if st.session_state.get("medicaid_status") == "yes":
             st.info(
-                "No recommendation found yet. You can still preview by choosing a care setting below, "
-                "or complete the Guided Care Plan for a more tailored estimate."
+                "Note: Our placement service can’t assist with Medicaid-based placement. "
+                "You can still complete the Cost Planner and explore budgets."
             )
-            recommendation = None
 
-        show_explorer = st.session_state.get(_SHOW_EXPLORER_KEY, bool(recommendation))
-        if recommendation and _SHOW_EXPLORER_KEY not in st.session_state:
-            st.session_state[_SHOW_EXPLORER_KEY] = True
+        # First info card
+        with st.container(border=True):
+            st.subheader("Cost Planner")
+            st.caption(
+                "A simple, conversational way to estimate care costs or plan your budget in detail. "
+                "You can start light and add more later."
+            )
 
-        if show_explorer:
-            _render_cost_explorer(recommendation)
+        # How to start
+        with st.container(border=True):
+            st.subheader("How do you want to start?")
+            st.markdown(
+                "- **Estimate** — quick monthly care cost using a few inputs "
+                "(pulls from Guided Care Plan if available).\n"
+                "- **Plan** — detailed modules (income, expenses, benefits, home, assets) "
+                "to see your runway."
+            )
 
-<<<<<<< Updated upstream
-        # Actions
-        col1, col2 = st.columns([1, 1])
-        with col1:
-            if st.button("Start planning", type="primary", width="stretch"):
-                st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
-        with col2:
-            if st.button("Jump to Timeline (dev)", width="stretch"):
-                st.switch_page("app_pages/cost_planner_v2/cost_planner_timeline_v2.py")
-=======
->>>>>>> Stashed changes
+        # ---- Inline "pre-start" intake ----
+        # If they haven't clicked Start yet, show the buttons. After click, show a short form.
+        st.session_state.setdefault("cpv2_collecting_prestart", False)
+
+        if not st.session_state["cpv2_collecting_prestart"]:
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                if st.button("Start planning", type="primary", use_container_width=True):
+                    st.session_state["cpv2_collecting_prestart"] = True
+                    st.rerun()
+            with col2:
+                if st.button("Jump to Timeline (dev)", use_container_width=True):
+                    _goto("app_pages/cost_planner_v2/cost_planner_timeline_v2.py")
+
+        else:
+            # Pre-start intake form: ZIP, veteran, home ownership
+            with st.container(border=True):
+                st.subheader("Before you begin")
+                st.caption("These details help us personalize costs and benefits.")
+
+                # Defaults
+                zip_default = st.session_state.get("cost_context.zip", "")
+                vet_default = st.session_state.get("cost_context.veteran", None)
+                home_default = st.session_state.get("cost_context.home_owner", None)
+
+                with st.form("cpv2_prestart_form", clear_on_submit=False):
+                    zip_val = st.text_input(
+                        "ZIP code (5 digits)",
+                        value=zip_default,
+                        help="Used only for regionalized cost estimates."
+                    )
+
+                    colA, colB = st.columns(2)
+                    with colA:
+                        vet = st.selectbox(
+                            "Are you a U.S. veteran (or spouse/surviving spouse)?",
+                            ["Select one…", "Yes", "No"],
+                            index=(0 if vet_default is None else (1 if vet_default else 2))
+                        )
+                    with colB:
+                        home = st.selectbox(
+                            "Do you (or the person you’re planning for) own a home?",
+                            ["Select one…", "Yes", "No"],
+                            index=(0 if home_default is None else (1 if home_default else 2))
+                        )
+
+                    submitted = st.form_submit_button("Continue", type="primary", use_container_width=True)
+
+                # Validate and persist
+                if submitted:
+                    # ZIP: must be 5 digits
+                    if not re.fullmatch(r"\d{5}", zip_val or ""):
+                        st.error("Please enter a valid 5-digit ZIP code.")
+                        return
+
+                    # Map selects to booleans
+                    vet_bool = True if vet == "Yes" else False if vet == "No" else None
+                    home_bool = True if home == "Yes" else False if home == "No" else None
+
+                    if vet_bool is None or home_bool is None:
+                        st.error("Please answer all questions to continue.")
+                        return
+
+                    # Save to session
+                    st.session_state["cost_context.zip"] = zip_val
+                    st.session_state["cost_context.veteran"] = vet_bool
+                    st.session_state["cost_context.home_owner"] = home_bool
+
+                    # Done collecting
+                    st.session_state["cpv2_collecting_prestart"] = False
+
+                    # Proceed to the next page (Modules Hub)
+                    _goto("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
+
+            # Optional secondary action while the form is visible
+            with st.container():
+                if st.button("Cancel", type="secondary"):
+                    st.session_state["cpv2_collecting_prestart"] = False
+                    st.rerun()
 
 # ✅ Import-time execution under Streamlit
 render()
