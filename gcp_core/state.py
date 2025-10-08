@@ -1,201 +1,138 @@
+# Guided Care Plan state helpers
 from __future__ import annotations
 
-from typing import List
+from typing import Any, Dict, Iterable, MutableMapping
 
 import streamlit as st
-from gcp_pr_tool_bundle.guided_care_plan.state import *  # noqa: F401,F403
-from gcp_pr_tool_bundle.guided_care_plan.state import (
-    get_answers as _bundle_get_answers,
-    set_answer as _bundle_set_answer,
-    normalize_multi as _normalize_multi,
-)  # noqa: F401
 
-from .questions import BEHAVIOR_RISKS_OPTIONS
-
-BEHAVIOR_RISKS_QID = "behavior_risks"
-_BEHAVIOR_RISK_ORDER = [token for token, _ in BEHAVIOR_RISKS_OPTIONS]
-_BEHAVIOR_RISK_TOKENS = set(_BEHAVIOR_RISK_ORDER)
-_BEHAVIOR_RISK_INDEX = {token: index for index, token in enumerate(_BEHAVIOR_RISK_ORDER)}
-
-
-SECTION_PATHS = {
-    "landing": "app_pages/gcp_v2/gcp_landing_v2.py",
-    "daily": "app_pages/gcp_v2/gcp_daily_life_v2.py",
-    "safety": "app_pages/gcp_v2/gcp_health_safety_v2.py",
-    "context": "app_pages/gcp_v2/gcp_context_prefs_v2.py",
-    "recommendation": "app_pages/gcp_v2/gcp_recommendation_v2.py",
+_DEFAULT_PROGRESS: Dict[str, int] = {
+    "landing": 0,
+    "daily_life": 0,
+    "health_safety": 0,
+    "context_prefs": 0,
+    "done": 0,
 }
 
-PROGRESS_KEYS = ("landing", "daily", "safety", "context", "done")
+_DEFAULT_RESUME_PATH = "app_pages/gcp_v2/gcp_landing_v2.py"
+_MEDICAID_FIELD = "medicaid_status"
+
+_YES_TOKENS = {"yes", "y", "enrolled", "on_medicaid", "medicaid_yes"}
+_NO_TOKENS = {"no", "n", "not_enrolled", "private_pay", "medicaid_no"}
+_UNSURE_TOKENS = {"unsure", "not_sure", "maybe", "unknown", "question"}
 
 
-def ensure_session() -> None:
-    answers = _bundle_get_answers()
+def ensure_session() -> MutableMapping[str, Any]:
+    """Ensure the GCP session object exists with default structure."""
     gcp = st.session_state.get("gcp")
     if not isinstance(gcp, dict):
-        st.session_state.gcp = {
-            "answers": answers,
-            "progress": {key: False for key in PROGRESS_KEYS},
-            "snapshots": [],
-        }
+        gcp = {}
+        st.session_state["gcp"] = gcp
+
+    gcp.setdefault("answers", {})
+    if not isinstance(gcp["answers"], dict):
+        gcp["answers"] = {}
+
+    progress = gcp.setdefault("progress", {})
+    if not isinstance(progress, dict):
+        progress = {}
+        gcp["progress"] = progress
+    for key, value in _DEFAULT_PROGRESS.items():
+        progress.setdefault(key, int(value))
+
+    gcp.setdefault("medicaid_ack", False)
+    gcp.setdefault("resume_target", _DEFAULT_RESUME_PATH)
+    gcp.setdefault("_last_medicaid_status", "unknown")
+    return gcp
+
+
+def get_answers() -> Dict[str, Any]:
+    """Return the current answers dict (mutable)."""
+    return ensure_session()["answers"]
+
+
+def set_answer(qid: str, value: Any) -> None:
+    """Persist a normalized answer; clear when value is falsy."""
+    gcp = ensure_session()
+    answers = gcp["answers"]
+    previous_status = get_medicaid_status(answers)
+
+    if value is None:
+        answers.pop(qid, None)
+    elif isinstance(value, str):
+        stripped = value.strip()
+        if stripped:
+            answers[qid] = stripped
+        else:
+            answers.pop(qid, None)
+    elif isinstance(value, (list, tuple, set)):
+        cleaned = [str(item).strip() for item in value if str(item).strip()]
+        if cleaned:
+            answers[qid] = cleaned
+        else:
+            answers.pop(qid, None)
     else:
-        gcp.setdefault("answers", answers)
-        gcp.setdefault("progress", {key: False for key in PROGRESS_KEYS})
-        gcp.setdefault("snapshots", [])
-        gcp["answers"] = answers
+        answers[qid] = value
+
+    if qid == _MEDICAID_FIELD:
+        current_status = get_medicaid_status(answers)
+        if current_status != previous_status:
+            gcp["medicaid_ack"] = False
+            gcp["_last_medicaid_status"] = current_status
 
 
-def get_state() -> dict:
-    ensure_session()
-    return st.session_state.gcp
+def clear_answer(qid: str) -> None:
+    """Remove a question answer entirely."""
+    set_answer(qid, None)
 
 
-def get_answers() -> dict:
-    """Return the live answers dictionary stored in session state."""
-    return get_state()["answers"]
+def get_medicaid_status(answers: Dict[str, Any] | None = None) -> str:
+    """Return the normalized Medicaid status token."""
+    if answers is None:
+        answers = get_answers()
 
+    raw = answers.get(_MEDICAID_FIELD)
+    token: str = ""
+    if isinstance(raw, (list, tuple)):
+        token = str(raw[0]) if raw else ""
+    else:
+        token = str(raw or "")
 
-def get_answer(key: str, default=None):
-    answers = get_answers()
-    if key == BEHAVIOR_RISKS_QID:
-        normalized = _normalize_behavior_risks(answers.get(key))
-        if normalized:
-            answers[key] = normalized
-            return list(normalized)
-        answers.pop(key, None)
-        return []
-    return answers.get(key, default)
-
-
-def set_answer(key: str, value) -> None:
-    answers = get_answers()
-    if key == BEHAVIOR_RISKS_QID:
-        normalized = _normalize_behavior_risks(value)
-        if not normalized:
-            answers.pop(key, None)
-            _bundle_set_answer(key, None)
-            return
-        _bundle_set_answer(key, normalized)
-        answers[key] = list(normalized)
-        return
-
-    if value is None or (isinstance(value, str) and not value.strip()):
-        answers.pop(key, None)
-        _bundle_set_answer(key, None)
-        return
-    if isinstance(value, list):
-        value = _normalize_multi(value)
-        _bundle_set_answer(key, value)
-        answers[key] = value
-    if key == "medicaid_status" and value == "no":
-        # Clearing any lingering acknowledgement flag keeps the landing notice honest.
-        answers.pop("medicaid_ack", None)
-        st.session_state.pop("gcp_ack_medicaid_notice", None)
-
-
-def set_section_complete(name: str) -> None:
-    ensure_session()
-    if name in st.session_state.gcp["progress"]:
-        st.session_state.gcp["progress"][name] = True
-
-
-def latest_snapshot() -> dict | None:
-    ensure_session()
-    snapshots = st.session_state.gcp["snapshots"]
-    return snapshots[-1] if snapshots else None
-
-
-def save_snapshot(snapshot: dict) -> None:
-    ensure_session()
-    snapshots = st.session_state.gcp["snapshots"]
-    if snapshots:
-        last = snapshots[-1]
-        if (
-            last.get("version") == snapshot.get("version")
-            and last.get("answers") == snapshot.get("answers")
-        ):
-            snapshots[-1] = snapshot
-            return
-    snapshots.append(snapshot)
-
-
-def resume_target() -> str:
-    ensure_session()
-    progress = st.session_state.gcp["progress"]
-    order = [
-        ("landing", SECTION_PATHS["landing"]),
-        ("daily", SECTION_PATHS["daily"]),
-        ("safety", SECTION_PATHS["safety"]),
-        ("context", SECTION_PATHS["context"]),
-    ]
-    for key, path in order:
-        if not progress.get(key):
-            return path
-    return SECTION_PATHS["recommendation"]
-
-
-# ---- Medicaid helpers (session-scoped ack) ----
-def norm(val: str | None) -> str:
-    return (val or "").strip().lower()
-
-
-def medicaid_status(answers: dict) -> str:
-    return norm(answers.get("medicaid_status"))
-
-
-def get_medicaid_status() -> str:
-    """Return the normalized Medicaid status from the active answers."""
-    return medicaid_status(get_answers())
+    normalized = token.strip().lower().replace("-", "_").replace(" ", "_")
+    if normalized in _YES_TOKENS:
+        return "yes"
+    if normalized in _NO_TOKENS:
+        return "no"
+    if normalized in _UNSURE_TOKENS:
+        return "unsure"
+    return "unknown"
 
 
 def set_medicaid_ack(flag: bool) -> None:
-    import streamlit as st
-    st.session_state["gcp_ack_medicaid_notice"] = bool(flag)
+    ensure_session()["medicaid_ack"] = bool(flag)
 
 
 def get_medicaid_ack() -> bool:
-    import streamlit as st
-    return bool(st.session_state.get("gcp_ack_medicaid_notice"))
+    return bool(ensure_session().get("medicaid_ack"))
 
 
-def _normalize_behavior_risks(value: object) -> List[str]:
-    if value is None:
-        return []
-    if isinstance(value, str):
-        value = [value]
-    elif isinstance(value, set):
-        value = list(value)
-    elif isinstance(value, tuple):
-        value = list(value)
-
-    if not isinstance(value, list):
-        return []
-
-    seen = set()
-    cleaned = []
-    for token in value:
-        if not isinstance(token, str):
-            continue
-        token = token.strip()
-        if not token or token not in _BEHAVIOR_RISK_TOKENS or token in seen:
-            continue
-        seen.add(token)
-        cleaned.append(token)
-
-    cleaned.sort(key=lambda token: _BEHAVIOR_RISK_INDEX.get(token, len(_BEHAVIOR_RISK_ORDER)))
-    return cleaned
+def set_progress(section: str, pct: int) -> None:
+    """Clamp and store section progress (0-100)."""
+    gcp = ensure_session()
+    if section not in gcp["progress"]:
+        gcp["progress"][section] = 0
+    gcp["progress"][section] = max(0, min(int(pct), 100))
 
 
-def behavior_risks() -> List[str]:
-    """Return the normalized behavior risk selections."""
-    return get_answer(BEHAVIOR_RISKS_QID, [])
+def resume_target() -> str:
+    return str(ensure_session().get("resume_target", _DEFAULT_RESUME_PATH))
 
 
-def clear_answer(key: str) -> None:
-    """Remove a stored answer both locally and in the bundle."""
-    set_answer(key, None)
+def set_resume_target(path: str) -> None:
+    if not isinstance(path, str) or not path:
+        return
+    ensure_session()["resume_target"] = path
 
 
-# Backwards compatibility exports for older imports
-set_ack_medicaid = set_medicaid_ack
-get_ack_medicaid = get_medicaid_ack
+def get_progress(section: str) -> int:
+    """Return progress for a section (0-100)."""
+    return int(ensure_session().get("progress", {}).get(section, 0))

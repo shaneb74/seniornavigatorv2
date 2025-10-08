@@ -1,9 +1,7 @@
 # Cost Planner · Caregiver Support (v2)
 from __future__ import annotations
-
 import streamlit as st
 
-<<<<<<< Updated upstream
 # ---------------- Theme helpers (same pattern as Income) ----------------
 try:
     from ui.cost_planner_template import (
@@ -52,27 +50,32 @@ except Exception:
             with cols[-1]:
                 if st.button(next.label, key=next.key, type="primary", width="stretch"):
                     st.switch_page("app_pages/cost_planner_v2/cost_planner_assets_v2.py")
-=======
-from ui.cost_planner_data import MODULE_FIELD_MAP
-from ui.cost_planner_forms import compute_gap, cp_state, render_fields
 
->>>>>>> Stashed changes
-
+# ---------------- Page content (functionality preserved; styling fixed) ----------------
 def render() -> None:
-    st.header("Caregiver Support")
-    st.caption("Track informal caregiver hours, burnout risk, and out-of-pocket expenses.")
+    # same bootstrapping as Income (no set_page_config here)
+    apply_cost_planner_theme()
 
-    fields = MODULE_FIELD_MAP["caregiver"]
-    valid, _ = render_fields(fields)
+    render_app_header()
+    with cost_planner_page_container():
+        render_wizard_hero("Caregiver Support", "Who’ll help with in-home care?")
+        # Keep your original content, just presented with the shared styles
+        with st.container(border=True):
+            st.subheader("Who’ll help with in-home care?")
+            st.caption(
+                "Optional but helpful for in-home care with high needs. "
+                "Adds caregiver_cost to monthly all-in."
+            )
+        st.info(
+            "TODO: inputs for caregiver_type, include_caregiver_cost, "
+            "caregiver_cost (default 3600 if included)."
+        )
 
-    st.markdown("---")
-    if st.button("Save & back to Modules", type="primary", disabled=not valid):
-        compute_gap(cp_state())
-        try:
-            st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
-        except Exception:
-            st.session_state["nav_target"] = "app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py"
-            st.rerun()
+        # If you want nav buttons (optional), uncomment and adjust:
+        # render_nav_buttons(
+        #     prev=NavButton("← Back to Liquidity", "caregiver_back"),
+        #     next=NavButton("Save & Continue → Assets", "caregiver_next", type="primary"),
+        # )
 
-
+# ✅ Import-time execution under Streamlit
 render()

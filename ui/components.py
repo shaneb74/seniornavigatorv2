@@ -6,18 +6,19 @@ import mimetypes
 import re
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Callable, Iterable, Literal
+from typing import Callable, Iterable, Literal, Optional, Sequence
 from uuid import uuid4
 
 import streamlit as st
 from streamlit.delta_generator import DeltaGenerator
 
 StatusValue = Literal["not_started", "in_progress", "complete"]
+ModuleStatus = Literal["locked", "in_progress", "complete"]
 
 _STATUS_MAP: dict[StatusValue, dict[str, str]] = {
-    "not_started": {"label": "Not started", "classes": "sn-chip"},
-    "in_progress": {"label": "In progress", "classes": "sn-chip info"},
-    "complete": {"label": "Complete", "classes": "sn-chip ok", "icon": "✓"},
+    "not_started": {"label": "Not started", "classes": "sn-chip sn-chip--muted"},
+    "in_progress": {"label": "In progress", "classes": "sn-chip sn-chip--info"},
+    "complete": {"label": "Complete", "classes": "sn-chip sn-chip--success", "icon": "✓"},
 }
 
 
@@ -42,14 +43,14 @@ def _icon_markup(icon: str | None) -> str:
             mime = mimetypes.guess_type(path.name)[0] or "image/png"
             data = base64.b64encode(path.read_bytes()).decode("ascii")
             return (
-                "<span class='sn-card-icon image'>"
+                "<span class='sn-icon sn-icon--image' aria-hidden='true'>"
                 f"<img src='data:{mime};base64,{data}' alt='' role='presentation' />"
                 "</span>"
             )
         except Exception:
             pass
 
-    return f"<span class='sn-card-icon emoji'>{html.escape(icon)}</span>"
+    return f"<span class='sn-icon sn-icon--emoji' aria-hidden='true'>{html.escape(icon)}</span>"
 
 
 @contextmanager
@@ -69,7 +70,7 @@ def ModuleGrid(cols: int = 3, *, gap: str = "large") -> Iterable[DeltaGenerator]
             st.markdown("</div>", unsafe_allow_html=True)
 
 
-def ModuleCard(
+def _legacy_module_card(
     *,
     title: str,
     body: str,
@@ -110,9 +111,11 @@ def ModuleCard(
 
     card_header = (
         f"<div class='sn-card-header'>"
-        f"  <div class='sn-card-heading'>"
+        f"  <div class='sn-card-header-left'>"
         f"    {_icon_markup(icon)}"
-        f"    <h3 id='{title_id}' class='sn-card-title'>{html.escape(title)}</h3>"
+        f"    <div class='sn-card-heading'>"
+        f"      <h3 id='{title_id}' class='sn-card-title'>{html.escape(title)}</h3>"
+        f"    </div>"
         f"  </div>"
         f"  <span class='{status_classes}' aria-label='{status_aria}'>"
         f"    {status_icon_markup}{html.escape(status_label)}"
@@ -141,7 +144,7 @@ def ModuleCard(
     secondary_disabled = disabled or on_secondary is None
 
     if primary_label:
-        primary_help = f"{primary_label} {title}"
+        primary_help = f"{primary_label} {title} Module"
         with st.container():
             clicked = st.button(
                 primary_label,
@@ -155,7 +158,7 @@ def ModuleCard(
                 on_primary()
 
     if secondary_label:
-        secondary_help = f"{secondary_label} {title}"
+        secondary_help = f"{secondary_label} {title} Module"
         with st.container():
             clicked_secondary = st.button(
                 secondary_label,
@@ -169,6 +172,149 @@ def ModuleCard(
                 on_secondary()
 
     st.markdown("</div>", unsafe_allow_html=True)
+
+
+def ModuleCard(
+    *,
+    title: str,
+    subtitle: Optional[str] = None,
+    bullets: Optional[Sequence[str]] = None,
+    icon: Optional[str] = None,
+    cta_label: Optional[str] = None,
+    cta_target: Optional[str] = None,
+    status: ModuleStatus | StatusValue = "in_progress",
+    progress: Optional[float] = None,
+    result_summary: Optional[str] = None,
+    disabled: bool = False,
+    body: Optional[str] = None,
+    primary_label: Optional[str] = None,
+    on_primary: Optional[Callable[[], None]] = None,
+    secondary_label: Optional[str] = None,
+    on_secondary: Optional[Callable[[], None]] = None,
+    caption: Optional[str] = None,
+    testid: Optional[str] = None,
+) -> None:
+    """
+    New module card API with backwards compatibility for legacy hub tiles.
+    """
+    if cta_label and cta_target:
+        render_module_card(
+            title=title,
+            subtitle=subtitle,
+            bullets=bullets,
+            icon=icon,
+            cta_label=cta_label,
+            cta_target=cta_target,
+            status=status if status in ("locked", "in_progress", "complete") else "in_progress",
+            progress=progress,
+            result_summary=result_summary,
+            disabled=disabled,
+        )
+    else:
+        _legacy_module_card(
+            title=title,
+            body=body or "",
+            icon=icon,
+            primary_label=primary_label or (cta_label or "Open"),
+            on_primary=on_primary,
+            secondary_label=secondary_label,
+            on_secondary=on_secondary,
+            status=status if status in ("not_started", "in_progress", "complete") else "not_started",
+            caption=caption,
+            disabled=disabled,
+            testid=testid,
+        )
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
+def render_module_card(
+    *,
+    title: str,
+    subtitle: Optional[str] = None,
+    bullets: Optional[Sequence[str]] = None,
+    icon: Optional[str] = None,
+    cta_label: str,
+    cta_target: str,
+    status: ModuleStatus = "in_progress",
+    progress: Optional[float] = None,
+    result_summary: Optional[str] = None,
+    disabled: bool = False,
+) -> None:
+    """
+    New-style module card used by Cost Planner and other dashboards.
+    """
+    status_map: dict[ModuleStatus, dict[str, str]] = {
+        "locked": {"label": "Locked", "classes": "sn-chip sn-chip--muted"},
+        "in_progress": {"label": "In Progress", "classes": "sn-chip sn-chip--info"},
+        "complete": {"label": "✓ Complete", "classes": "sn-chip sn-chip--success"},
+    }
+    meta = status_map.get(status, status_map["in_progress"])
+    title_id = f"module-card-{uuid4().hex}"
+
+    icon_markup = ""
+    if icon:
+        icon_markup = (
+            f"<span class='sn-icon sn-icon--emoji' role='img' aria-label='{html.escape(title)} icon'>"
+            f"{html.escape(icon.strip())}</span>"
+        )
+
+    subtitle_html = f"<p class='sn-card-caption'>{html.escape(subtitle)}</p>" if subtitle else ""
+
+    bullet_html = ""
+    if bullets:
+        items = "".join(f"<li>{html.escape(b)}</li>" for b in bullets[:4])
+        bullet_html = f"<ul class='sn-card-list'>{items}</ul>"
+
+    progress_bar = ""
+    if progress is not None and status != "complete":
+        pct = max(0.0, min(float(progress), 100.0))
+        progress_bar = (
+            "<div class='sn-card-progress'>"
+            f"  <div class='sn-card-progress-bar' style='width:{pct:.0f}%;'></div>"
+            "</div>"
+        )
+
+    summary_block = ""
+    if status == "complete" and result_summary:
+        summary_block = f"<div class='sn-card-summary'>{html.escape(result_summary)}</div>"
+
+    st.markdown(
+        f"""
+        <div class="sn-card sn-module-card" role="group" aria-labelledby="{title_id}">
+          <div class="sn-card-header">
+            <div class="sn-card-header-left">
+              {icon_markup}
+              <div class="sn-card-heading">
+                <h3 id="{title_id}" class="sn-card-title">{html.escape(title)}</h3>
+                {subtitle_html}
+              </div>
+            </div>
+            <span class="{meta['classes']}">{meta['label']}</span>
+          </div>
+          <div class="sn-card-body">
+            {bullet_html}
+            {progress_bar}
+            {summary_block}
+          </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    button_disabled = disabled or status == "locked"
+    button_key = f"{_slugify(title)}_cta"
+    if st.button(
+        cta_label,
+        key=button_key,
+        type="primary",
+        use_container_width=True,
+        disabled=button_disabled,
+    ):
+        try:
+            st.switch_page(cta_target)  # type: ignore[attr-defined]
+        except Exception:
+            st.session_state["nav_target"] = cta_target
+            st.rerun()
+
     st.markdown("</div>", unsafe_allow_html=True)
 
 @contextmanager

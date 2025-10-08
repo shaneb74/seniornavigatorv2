@@ -1,289 +1,222 @@
 from __future__ import annotations
 
-import re
-from typing import Dict, List
+from typing import Dict, List, Optional, Sequence, Tuple
 
 import streamlit as st
 
-from gcp_core.questions import BEHAVIOR_RISKS_LABEL, load_questions
-from gcp_core.state import (
-    ensure_session,
-    get_answers,
-    get_answer,
-    set_answer,
-    set_medicaid_ack,
-    clear_answer,
-)
+from gcp_core import clear_answer, ensure_session, get_answers, set_answer
 
-try:
-    from streamlit import segmented_control as _has_segmented_control  # type: ignore[attr-defined]
-    _SEGMENTED_AVAILABLE = True
-except Exception:  # pragma: no cover
-    _SEGMENTED_AVAILABLE = False
-
-
-def _question_index() -> Dict[str, Dict]:
-    index: Dict[str, Dict] = {}
-    for row in load_questions():
-        qid = row["id"]
-        entry = index.setdefault(
-            qid,
-            {
-                "label": (row.get("label") or "").strip(),
-                "type": (row.get("type") or "single").strip(),
-                "choices": [],
-                "conditional_show": (row.get("conditional_show") or "").strip(),
-            },
-        )
-        cid = row.get("choice_id")
-        if cid:
-            entry["choices"].append(
-                {
-                    "id": cid,
-                    "label": (row.get("choice_label") or "").strip(),
-                }
-            )
-    return index
-
-
-_QUESTION_INDEX = _question_index()
-
-COGNITION_QID = "cognition"
+COGNITION_QID = "cognition_level"
 BEHAVIOR_QID = "behavior_risks"
-BEHAVIOR_MULTI_LABEL = BEHAVIOR_RISKS_LABEL
-_RAW_SEVERE_COG_CHOICES = {
-    "severe",
-    "severe memory issues",
-    "advanced",
-    "advanced dementia",
+SEVERE_TOKENS = {
+    "major_decline",
     "advanced_dementia",
-    "advanced alzheimers",
-    "advanced alzheimer's",
-    "needs constant supervision",
+    "advanced",
+    "severe",
+    "needs_supervision",
     "needs_constant_supervision",
-    "significant memory loss",
-    "significant_memory_loss",
-    "late-stage dementia",
-    "late_stage_dementia",
-    "late stage dementia",
-    "late stage alzheimers",
-    "late stage alzheimer's",
-    "alzheimers advanced",
-    "alzheimers_advanced",
-    "serious_confusion",
-    "serious confusion",
-    "frequent_memory_issues",
-    "frequent memory issues",
+    "late_stage",
 }
 
-
-def _normalize_literal(value: object) -> str:
-    text = "" if value is None else str(value)
-    lowered = text.lower()
-    stripped = lowered.replace("_", " ").replace("-", " ")
-    cleaned = re.sub(r"[^0-9a-z\s]", " ", stripped)
-    return " ".join(cleaned.split())
-
-
-_SEVERE_COG_MATCHES = {_normalize_literal(choice) for choice in _RAW_SEVERE_COG_CHOICES}
-
-
-def _bundle_visible(question: Dict, answers: Dict) -> bool:
-    expr = (question.get("conditional_show") or "").strip()
-    if not expr:
-        return True
-    lowered = expr.lower()
-    if not lowered.startswith("show when"):
-        return True
-    clause = expr[len("SHOW when") :].strip()
-    for op in ("!=", "=="):
-        if op in clause:
-            left, right = clause.split(op, 1)
-            key = left.strip()
-            value = right.strip().strip("'\"")
-            current = answers.get(key)
-            if isinstance(current, list):
-                current = ",".join(current)
-            return (current != value) if op == "!=" else (current == value)
-    return True
+BEHAVIOR_CHOICES: List[Dict[str, str]] = [
+    {"value": "wandering", "label": "Wandering"},
+    {"value": "aggression", "label": "Aggression"},
+    {"value": "elopement", "label": "Elopement (trying to leave)"},
+    {"value": "exit_seeking", "label": "Exit-seeking"},
+    {"value": "confusion", "label": "Confusion or disorientation"},
+    {"value": "sundowning", "label": "Sundowning (night agitation)"},
+    {"value": "repetitive_questioning", "label": "Repetitive questioning"},
+    {"value": "poor_judgment", "label": "Poor judgment (unsafe decisions)"},
+    {"value": "hoarding", "label": "Hoarding"},
+    {"value": "sleep_disturbances", "label": "Sleep disturbances"},
+]
 
 
-def _normalize_choices(question: Dict) -> List[Dict]:
-    choices = question.get("choices") or _QUESTION_INDEX.get(question["id"], {}).get("choices") or []
-    return choices
-
-
-def render_pill_choice(
-    qid: str,
-    label: str,
-    options: List[str],
-    *,
-    current_token: str | None,
-    token_by_label: Dict[str, str],
-    label_by_token: Dict[str, str],
-    key: str,
-    disabled: bool = False,
-) -> str | None:
-    placeholder = "Select an option"
-    display_options = [placeholder] + [opt for opt in options if opt != placeholder]
-    current_label = label_by_token.get((current_token or ""), placeholder)
-
-    if _SEGMENTED_AVAILABLE:
-        picked_label = st.segmented_control(  # type: ignore[attr-defined]
-            label,
-            options=display_options,
-            default=current_label if current_label in display_options else placeholder,
-            key=key,
-            disabled=disabled,
-        )
-    else:
-        picked_label = st.radio(
-            label,
-            options=display_options,
-            index=display_options.index(current_label) if current_label in display_options else 0,
-            key=key,
-            horizontal=True,
-            disabled=disabled,
-        )
-
-    if picked_label == placeholder:
+def normalize_single(value: Optional[str], choices: Sequence[Dict[str, str]]) -> Optional[str]:
+    """Normalize a label or token to the canonical token."""
+    if value is None:
         return None
-    return token_by_label.get(picked_label)
+    text = str(value).strip().lower()
+    if not text:
+        return None
+    for choice in choices:
+        token = choice.get("value", "")
+        label = choice.get("label", "")
+        if text == str(token).strip().lower():
+            return token
+        if text == str(label).strip().lower():
+            return token
+    return None
 
 
-def _is_severe_cognition(value: object | None) -> bool:
-    normalized = _normalize_literal(value)
-    if not normalized:
-        return False
-    if normalized in _SEVERE_COG_MATCHES:
+def _is_severe_cognition(answers: Dict[str, object]) -> bool:
+    token = normalize_single(answers.get(COGNITION_QID), [{"label": "", "value": t} for t in SEVERE_TOKENS])
+    if token and token in SEVERE_TOKENS:
         return True
-    if "severe" in normalized and ("memory" in normalized or "dementia" in normalized):
-        return True
-    if "advanced" in normalized and ("dementia" in normalized or "alzheim" in normalized):
-        return True
-    if "needs" in normalized and "supervision" in normalized:
+    raw = str(answers.get(COGNITION_QID) or "").lower()
+    if any(word in raw for word in ("advanced", "severe", "needs supervision", "late-stage", "late stage")):
         return True
     return False
 
 
-def _should_render(question: Dict, answers: Dict) -> bool:
-    qid = question.get("id", "")
-    if qid == BEHAVIOR_QID:
-        cognition_value = answers.get(COGNITION_QID)
-        if not _is_severe_cognition(cognition_value):
-            return False
-    return _bundle_visible(question, answers)
+def _render_radio(
+    qid: str,
+    label: str,
+    choices: Sequence[Dict[str, str]],
+    help_text: Optional[str],
+) -> Tuple[bool, bool]:
+    answers = get_answers()
+    current = normalize_single(answers.get(qid), choices)
+    placeholder = "-- Select one --"
+    labels = [placeholder] + [choice["label"] for choice in choices]
+    default_index = 0
+    if current:
+        for idx, choice in enumerate(choices):
+            if choice["value"] == current:
+                default_index = idx + 1
+                break
+    picked_label = st.radio(
+        label,
+        labels,
+        index=default_index,
+        horizontal=True,
+        help=help_text,
+        key=f"{qid}_radio",
+    )
+    if picked_label == placeholder:
+        picked_token = None
+    else:
+        picked_token = normalize_single(picked_label, choices)
+    changed = picked_token != current
+    if picked_token is None:
+        clear_answer(qid)
+    elif changed:
+        set_answer(qid, picked_token)
+    return True, changed
 
 
-def render_question(question: Dict) -> None:
+def _render_multiselect(
+    qid: str,
+    label: str,
+    choices: Sequence[Dict[str, str]],
+    help_text: Optional[str],
+) -> Tuple[bool, bool]:
+    answers = get_answers()
+    existing = answers.get(qid)
+    if not isinstance(existing, list):
+        existing = []
+    label_by_token = {choice["value"]: choice["label"] for choice in choices}
+    default_labels = [label_by_token[token] for token in existing if token in label_by_token]
+    picked_labels = st.multiselect(
+        label,
+        list(label_by_token.values()),
+        default=default_labels,
+        help=help_text,
+        key=f"{qid}_multiselect",
+    )
+    picked_tokens = [
+        choice["value"]
+        for choice in choices
+        if choice["label"] in picked_labels
+    ]
+    changed = picked_tokens != existing
+    if picked_tokens:
+        if changed:
+            set_answer(qid, picked_tokens)
+    else:
+        if existing:
+            clear_answer(qid)
+            changed = True
+    return True, changed
+
+
+def _render_slider(
+    qid: str,
+    label: str,
+    help_text: Optional[str],
+    **opts,
+) -> Tuple[bool, bool]:
+    answers = get_answers()
+    default = answers.get(qid)
+    opts = dict(opts)
+    min_value = int(opts.pop("min_value", 0))
+    max_value = int(opts.pop("max_value", 100))
+    step = int(opts.pop("step", 1))
+    default_value = opts.pop("value", default if isinstance(default, (int, float)) else 0)
+    slider_value = st.slider(
+        label,
+        min_value=min_value,
+        max_value=max_value,
+        step=step,
+        value=int(default if isinstance(default, (int, float)) else default_value),
+        help=help_text,
+        key=f"{qid}_slider",
+        **opts,
+    )
+    changed = slider_value != default
+    if changed:
+        set_answer(qid, slider_value)
+    return True, changed
+
+
+def _render_text(
+    qid: str,
+    label: str,
+    help_text: Optional[str],
+    textarea: bool = False,
+) -> Tuple[bool, bool]:
+    answers = get_answers()
+    current = str(answers.get(qid) or "")
+    if textarea:
+        new_value = st.text_area(label, value=current, help=help_text, key=f"{qid}_textarea")
+    else:
+        new_value = st.text_input(label, value=current, help=help_text, key=f"{qid}_text")
+    new_trimmed = new_value.strip()
+    if new_trimmed:
+        changed = new_trimmed != current
+        if changed:
+            set_answer(qid, new_trimmed)
+    else:
+        changed = bool(current)
+        if changed:
+            clear_answer(qid)
+    return True, changed
+
+
+def render_question(
+    qid: str,
+    label: str,
+    qtype: str,
+    *,
+    choices: Optional[Sequence[Dict[str, str]]] = None,
+    help: Optional[str] = None,
+    **kwargs,
+) -> Tuple[bool, bool]:
+    """
+    Render a question widget and persist the answer.
+    Returns (was_shown, value_changed).
+    """
     ensure_session()
     answers = get_answers()
-    qid = question["id"]
-    question = {
-        **(_QUESTION_INDEX.get(qid, {})),
-        **question,
-    }
 
-    if not _should_render(question, answers):
-        if qid in answers:
+    if qid == BEHAVIOR_QID and not _is_severe_cognition(answers):
+        if answers.get(qid):
             clear_answer(qid)
-        return
+            return False, True
+        return False, False
 
-    label = question.get("label") or "Question"
-    helper = (question.get("helper") or question.get("help") or "").strip()
-    qtype = question.get("type", "single")
-    choices = _normalize_choices(question)
+    qtype = qtype.lower()
+    if qtype == "radio":
+        assert choices, "Radio question requires choices."
+        return _render_radio(qid, label, choices, help)
+    if qtype == "multiselect":
+        assert choices, "Multiselect question requires choices."
+        return _render_multiselect(qid, label, choices, help)
+    if qtype == "slider":
+        return _render_slider(qid, label, help, **kwargs)
+    if qtype == "textarea":
+        return _render_text(qid, label, help, textarea=True)
+    if qtype == "text":
+        return _render_text(qid, label, help)
 
-    st.markdown('<div class="gcp-question card section">', unsafe_allow_html=True)
-    st.markdown(f"**{label}**")
-    if helper:
-        st.caption(helper)
-
-    if qtype in {"single", "multi"} and not choices:
-        st.warning(f"No choices configured for: {qid}")
-        st.markdown("</div>", unsafe_allow_html=True)
-        return
-
-    if qtype == "single":
-        option_labels = [choice["label"] for choice in choices]
-        token_by_label = {choice["label"]: choice["id"] for choice in choices}
-        label_by_token = {choice["id"]: choice["label"] for choice in choices}
-        normalizer = {}
-        for token, lbl in label_by_token.items():
-            normalizer[_normalize_literal(token)] = token
-            normalizer[_normalize_literal(lbl)] = token
-
-        stored_value = get_answer(qid)
-        current_token = None
-        if isinstance(stored_value, str):
-            current_token = normalizer.get(_normalize_literal(stored_value))
-            if current_token is None and stored_value in label_by_token:
-                current_token = stored_value
-
-        picked_token = render_pill_choice(
-            qid=qid,
-            label=label,
-            options=option_labels,
-            current_token=current_token,
-            token_by_label=token_by_label,
-            label_by_token=label_by_token,
-            key=f"gcp_{qid}_pill",
-        )
-
-        if picked_token is None:
-            clear_answer(qid)
-            if qid == "medicaid_status":
-                set_medicaid_ack(False)
-        else:
-            set_answer(qid, picked_token)
-            if qid == "medicaid_status" and picked_token == "no":
-                set_medicaid_ack(False)
-
-    elif qtype == "multi":
-        if qid == BEHAVIOR_QID:
-            label = BEHAVIOR_MULTI_LABEL
-        token_label = {choice["id"]: choice["label"] for choice in choices}
-        option_tokens = [choice["id"] for choice in choices]
-        current_ids = get_answer(qid, [])
-        default_tokens = [token for token in option_tokens if token in (current_ids or [])]
-
-        if qid == BEHAVIOR_QID:
-            st.markdown('<div class="gcp-pill-multi">', unsafe_allow_html=True)
-
-        picked_tokens = st.multiselect(
-            label,
-            option_tokens,
-            default=default_tokens,
-            key=f"gcp_{qid}_multi",
-            format_func=lambda token: token_label.get(token, token.replace("_", " ").title()),
-            placeholder="Select all that apply",
-            label_visibility="visible",
-        )
-
-        if qid == BEHAVIOR_QID:
-            st.markdown("</div>", unsafe_allow_html=True)
-
-        if picked_tokens:
-            set_answer(qid, picked_tokens)
-        else:
-            clear_answer(qid)
-
-    elif qtype == "text":
-        current_value = get_answer(qid, "")
-        value = st.text_input(
-            label,
-            value=current_value,
-            key=qid,
-            label_visibility="visible",
-        )
-        set_answer(qid, value)
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-
-def render_section(section_name: str, questions: List[Dict]) -> None:
-    ensure_session()
-    st.markdown('<div class="gcp-section">', unsafe_allow_html=True)
-    for question in questions:
-        render_question(question)
-    st.markdown("</div>", unsafe_allow_html=True)
+    raise ValueError(f"Unsupported question type: {qtype}")
