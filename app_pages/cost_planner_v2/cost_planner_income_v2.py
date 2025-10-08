@@ -1,6 +1,8 @@
 # Cost Planner · Income (v2)
 from __future__ import annotations
 import streamlit as st
+from cost_planner_v2.cp_nav import goto
+from ui.state import mark_complete
 
 # ---------------- Theme helpers ----------------
 try:
@@ -38,16 +40,14 @@ except Exception:
             self.label, self.key, self.type, self.icon = label, key, type, icon
     def render_nav_buttons(buttons=None, prev=None, next=None):
         cols = st.columns(2)
+        result = {"prev": False, "next": False}
         if prev:
             with cols[0]:
-                if st.button(prev.label, key=prev.key, type="secondary", use_container_width=True):
-                    # 🔁 updated path for programmatic-nav setup
-                    st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
+                result["prev"] = st.button(prev.label, key=prev.key, type="secondary", width="stretch")
         if next:
             with cols[-1]:
-                if st.button(next.label, key=next.key, type="primary", use_container_width=True):
-                    # 🔁 updated path for programmatic-nav setup
-                    st.switch_page("app_pages/cost_planner_v2/cost_planner_expenses_v2.py")
+                result["next"] = st.button(next.label, key=next.key, type="primary", width="stretch")
+        return result
 
 # ---------------- State helpers ----------------
 def _cp_get() -> dict:
@@ -133,10 +133,16 @@ def render() -> None:
         st.markdown("### ")
         st.metric("Total Monthly Income", f"${total:,.0f}")
 
-        render_nav_buttons(
+        nav_clicks = render_nav_buttons(
             prev=NavButton("← Back to Modules", "income_back"),
             next=NavButton("Save & Continue → Expenses", "income_next", type="primary"),
         )
+        if isinstance(nav_clicks, dict):
+            if nav_clicks.get("prev"):
+                goto("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
+            if nav_clicks.get("next"):
+                mark_complete("cp_income")
+                goto("app_pages/cost_planner_v2/cost_planner_expenses_v2.py")
 
 # ✅ Import-time execution under Streamlit
 render()

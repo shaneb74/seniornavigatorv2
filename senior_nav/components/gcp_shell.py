@@ -38,9 +38,9 @@ def primary_secondary(
 ):
     cols = st.columns([1, 1])
     with cols[0]:
-        if st.button(primary_label, type="primary", use_container_width=True, disabled=disabled):
+        if st.button(primary_label, type="primary", width="stretch", disabled=disabled):
             on_primary()
     if secondary_label and on_secondary:
         with cols[1]:
-            if st.button(secondary_label, use_container_width=True):
+            if st.button(secondary_label, width="stretch"):
                 on_secondary()

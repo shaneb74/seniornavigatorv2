@@ -1,0 +1,23 @@
+Guided Care Plan V3 — Final Summary Blurb Rule
+=================================================
+Version: V3.3
+Exported: 2025-10-08 10:04:33
+
+Purpose: Ensure the final recommendation summary is balanced, personalized, and not overly focused on ADLs/IADLs, even with multiple high scores, by representing all relevant domains equally.
+
+Rule for Generating Final Summary Blurb:
+1. Identify the highest-scoring answer option within each domain from the scoring matrix (gcp_v3_scoring_matrix.csv):
+   - ADL/IADL Burden (Q3, Q4, Q5): Select the single highest score across the overall burden and any BADL/IADL sub-items.
+   - Support Network (Q6, Q7): Select the highest score from hours/day or primary provider.
+   - Cognitive Function (Q8, Q9): Select the highest score from memory changes or triggered behaviors.
+   - Medication Complexity (Q10): Select the highest score.
+   - Mobility & Falls (Q11, Q12): Select the highest score from mobility or fall history.
+   - Health & Chronic Conditions (Q13, Q14): Select the highest score from conditions (sum capped at 3) or management.
+   - Geographic Isolation (Q16): Select the highest score.
+2. For each domain’s highest-scoring answer, retrieve the warm-but-direct blurb (BlurbVariant3) from gcp_v3_conversational_blurbs.csv.
+3. Construct the summary by combining one sentence per domain (max one per domain), then add a single wrap‑up sentence recommending the care level based on the final tier.
+4. Omit domains with no score; avoid repeating ADL/IADL; prefer safety‑critical items if there are ties.
+
+Notes:
+- Wrap‑up sentence mirrors the final tier (Independent / In‑Home Care / Assisted Living / Memory Care / High‑Acuity Memory Care) after applying overrides/modifiers from gcp_v3_scoring.csv.
+- If multiple high scores within one domain, prioritize: Toileting > Medication > Mobility > Managing finances > others.

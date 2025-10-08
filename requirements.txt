@@ -1,5 +1,4 @@
 streamlit>=1.40,<1.41
-pandas>=2.1
-numpy>=1.25
-requests>=2.31
-# add anything else you import (e.g., python-dateutil, pydantic, etc.)
+pandas==2.1
+numpy==1.25
+requests==2.31

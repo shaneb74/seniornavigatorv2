@@ -4,6 +4,7 @@ import os
 import sys
 from pathlib import Path
 import streamlit as st
+from ui.theme import inject_theme
 
 # ✅ Always set page config first
 st.set_page_config(page_title="Senior Navigator", layout="wide")
@@ -24,6 +25,8 @@ def _ensure_navigation_api() -> None:
     st.stop()
 
 _ensure_navigation_api()
+
+inject_theme()
 
 # OPTIONAL: your CSS/theme injector can stay as-is, but run it later on each page.
 
@@ -77,18 +80,19 @@ INTENDED = [
     ("app_pages/SeniorNav_welcome_self.py", "Welcome · For You", "🙂", False),
     ("app_pages/SeniorNav_welcome_someone_else.py", "Welcome · Someone Else", "👥", False),
     ("app_pages/SeniorNav_welcome_professional.py", "Welcome · Professional", "🩺", False),
+    ("app_pages/about_us.py", "More About Us", "📘", False),
     ("app_pages/professional_mode.py", "Professional Mode", "🧑", False),
 
     # Concierge Care Hub
     ("app_pages/hub.py", "Your Concierge Care Hub", "🏠", False),
     ("app_pages/SeniorNav_professional_hub.py", "Professional Hub", "🧰", False),
 
-    # Guided Care Plan
-    ("app_pages/gcp_v2/gcp_landing_v2.py", "Guided Care Plan · Start", "🗺️", False),
-    ("app_pages/gcp_v2/gcp_daily_life_v2.py", "GCP · Daily Life & Support", "🧭", False),
-    ("app_pages/gcp_v2/gcp_health_safety_v2.py", "GCP · Health & Safety", "🩺", False),
-    ("app_pages/gcp_v2/gcp_context_prefs_v2.py", "GCP · Context & Preferences", "🎯", False),
-    ("app_pages/gcp_v2/gcp_recommendation_v2.py", "GCP · Recommendation", "✅", False),
+    # Guided Care Plan (V3)
+    ("app_pages/gcp_v3/gcp_intro_v3.py", "Guided Care Plan · Start (V3)", "🗺️", False),
+    ("app_pages/gcp_v3/gcp_eligibility_v3.py", "GCP · Eligibility (V3)", "✅", False),
+    ("app_pages/gcp_v3/gcp_daily_life_v3.py", "GCP · Daily Life & Support (V3)", "🧭", False),
+    ("app_pages/gcp_v3/gcp_health_safety_v3.py", "GCP · Health & Safety (V3)", "🩺", False),
+    ("app_pages/gcp_v3/gcp_results_v3.py", "GCP · Results (V3)", "📊", False),
 
     # Cost Planner
     ("app_pages/cost_planner_v2/cost_planner_landing_v2.py", "Cost Planner v2 · Landing", "💰", False),

@@ -1,6 +1,8 @@
 # Cost Planner · Home Modifications (v2)
 from __future__ import annotations
 import streamlit as st
+from cost_planner_v2.cp_nav import goto
+from ui.state import mark_complete, set_completion
 
 # ---------------- Theme helpers (same pattern as Income) ----------------
 try:
@@ -44,11 +46,11 @@ except Exception:
         cols = st.columns(2)
         if prev:
             with cols[0]:
-                if st.button(prev.label, key=prev.key, type="secondary", use_container_width=True):
+                if st.button(prev.label, key=prev.key, type="secondary", width="stretch"):
                     st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
         if next:
             with cols[-1]:
-                if st.button(next.label, key=next.key, type="primary", use_container_width=True):
+                if st.button(next.label, key=next.key, type="primary", width="stretch"):
                     st.switch_page("app_pages/cost_planner_v2/cost_planner_assets_v2.py")
 
 # ---------------- Page content (content preserved) ----------------
@@ -138,17 +140,21 @@ def render() -> None:
     c1, c2, c3 = st.columns([1, 1, 1])
     with c1:
         if st.button("◀︎ Back to Modules", key="hm_back"):
-            st.switch_page("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
+            _save_to_state()
+            set_completion("cp_home_mods", "in_progress")
+            goto("app_pages/cost_planner_v2/cost_planner_modules_hub_v2.py")
 
     with c2:
         if st.button("Save", key="hm_save"):
             _save_to_state()
+            set_completion("cp_home_mods", "in_progress")
             st.success("Home modification choices saved.")
 
     with c3:
         if st.button("Save & Continue → Assets", key="hm_next"):
             _save_to_state()
-            st.switch_page("app_pages/cost_planner_v2/cost_planner_assets_v2.py")
+            mark_complete("cp_home_mods")
+            goto("app_pages/cost_planner_v2/cost_planner_assets_v2.py")
 
 # ✅ Import-time execution under Streamlit (no __main__ guard)
 render()

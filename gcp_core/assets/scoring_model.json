@@ -1,0 +1,148 @@
+{
+  "version": "gcp-scoring-v2.0",
+  "outcomes": [
+    "none",
+    "In-Home Care",
+    "Assisted Living",
+    "Memory Care"
+  ],
+  "encodings": {
+    "cognition": {
+      "normal": 0.0,
+      "mild": 0.5,
+      "moderate": 1.0,
+      "severe": 1.5
+    },
+    "adl": {
+      "0-1": 0.0,
+      "2-3": 0.25,
+      "4-5": 0.6,
+      "6+": 1.0
+    },
+    "meds": {
+      "simple": 0.0,
+      "several": 0.4,
+      "complex": 0.9
+    },
+    "falls": {
+      "none": 0.0,
+      "one": 0.4,
+      "recurrent": 0.9
+    },
+    "home": {
+      "safe": 0.0,
+      "some_risks": 0.5,
+      "unsafe": 1.0
+    },
+    "mobility": {
+      "no_issues": 0.0,
+      "cane_or_walker": 0.4,
+      "wheelchair": 0.9
+    },
+    "supervision_inv": {
+      "always": 0.0,
+      "sometimes": 0.3,
+      "rarely": 0.7,
+      "never": 1.0
+    },
+    "isolation": {
+      "daily_or_often": 0.0,
+      "weekly": 0.3,
+      "rarely": 0.6,
+      "almost_never": 1.0
+    },
+    "access": {
+      "easy": 0.0,
+      "moderate": 0.25,
+      "difficult": 0.6,
+      "very_difficult": 0.9
+    },
+    "support_gain": {
+      "24_7": 0.5,
+      "most_days": 0.3,
+      "few_days_week": 0.1,
+      "none": 0.0
+    },
+    "support_penalty": {
+      "24_7": -0.4,
+      "most_days": -0.2,
+      "few_days_week": 0.2,
+      "none": 0.6
+    },
+    "behav": {
+      "none": 0.0,
+      "agitation": 0.4,
+      "wandering": 1.0,
+      "exit_seeking": 1.2
+    },
+    "supervision_bias_HC": {
+      "always": 0.15,
+      "sometimes": 0.08,
+      "rarely": 0.0,
+      "never": -0.05
+    }
+  },
+  "hc_component_maps": {
+    "adl_map": {
+      "0-1": 0.0,
+      "2-3": 0.4,
+      "4-5": 0.9,
+      "6+": 1.2
+    },
+    "cog_map": {
+      "normal": 0.0,
+      "mild": 0.3,
+      "moderate": 0.8,
+      "severe": 1.2
+    },
+    "meds_map": {
+      "simple": 0.0,
+      "several": 0.3,
+      "complex": 0.7
+    },
+    "home_gain": {
+      "safe": 0.4,
+      "some_risks": 0.0,
+      "unsafe": -0.8
+    },
+    "fall_sub": {
+      "none": 0.0,
+      "one": 0.2,
+      "recurrent": 0.6
+    },
+    "iso_sub": {
+      "daily_or_often": 0.0,
+      "weekly": 0.1,
+      "rarely": 0.3,
+      "almost_never": 0.5
+    },
+    "access_sub": {
+      "easy": 0.0,
+      "moderate": 0.1,
+      "difficult": 0.3,
+      "very_difficult": 0.5
+    },
+    "mob_sub": {
+      "no_issues": 0.0,
+      "cane_or_walker": 0.2,
+      "wheelchair": 0.5
+    }
+  },
+  "scores": {
+    "MC": "0.45*cognition + 0.20*adl + 0.15*meds + 0.10*home + 0.07*falls + 0.03*max(0, support_penalty) + 0.10*min(behav, 1.2)",
+    "AL": "0.35*adl + 0.20*isolation + 0.15*max(0, -support_penalty) + 0.15*home + 0.10*mobility + 0.05*min(cognition,0.6) + 0.05*access",
+    "HC_raw": "1.5 - adl_map - cog_map - meds_map + support_gain + home_gain - fall_sub - iso_sub - access_sub - mob_sub",
+    "HC_norm": "clamp01((HC_raw + 1.0)/3.0) + supervision_bias_HC (then clamp01)"
+  },
+  "bias_rules": [
+    "If home == 'unsafe' OR (falls in {'one','recurrent'} AND caregiver_support in {'few_days_week','none'}) → AL += 0.25 (clamp 1.0)",
+    "If isolation in {'rarely','almost_never'} AND caregiver_support in {'few_days_week','none'} → AL += 0.15 (clamp 1.0)"
+  ],
+  "hard_stop": "If cognition=='severe' AND (adl in {'4-5','6+'} OR meds=='complex' OR home=='unsafe' OR behav in {'wandering','exit_seeking'}) → Memory Care unless (supervision in {'always','sometimes'} AND home!='unsafe')",
+  "final_decision": [
+    "If hard stop OR MC >= 0.85 → Memory Care",
+    "Else choose max(HC, AL). If |HC-AL| <= 0.10: prefer AL if any AL bias fired; else HC",
+    "Else if (HC<0.2 and AL<0.2 and MC<0.2): outcome='none'"
+  ],
+  "rounding": "Round outbound scores to 2 decimals."
+}

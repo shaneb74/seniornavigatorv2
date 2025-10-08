@@ -1,0 +1,199 @@
+Guided Care Plan V3 — Questions and Answers
+=================================================
+Version: V3.2
+Exported: 2025-10-08 09:49:33
+
+This document contains the canonical list of questions and answers for the Guided Care Plan (GCP) used in Senior Navigator.
+It reflects all approved structural and content updates as of October 2025, including removal of zip code, Medicaid as first question with clarified gating, removal of financial confidence, restored geographic isolation, and a rephrased emotional well-being question.
+
+-------------------------------------------------
+PAGE 1 — INTRODUCTION
+-------------------------------------------------
+Purpose: Explain the importance of accurate responses to improve care recommendations.
+
+Title:
+  "Find the Right Senior Care"
+
+Body Copy:
+  "These questions help us match you to senior living options based on needs like daily assistance, memory, safety, or location. First, we’ll check eligibility to ensure we can assist. It takes just a few minutes."
+
+CTA:
+  Start → Eligibility Section
+
+-------------------------------------------------
+SECTION 1 — ELIGIBILITY
+-------------------------------------------------
+Purpose: Gate eligibility based on Medicaid status.
+
+1. Are you currently on Medicaid (state long-term care assistance, not Medicare)?
+   Options:
+     - Yes
+     - No
+   Note:
+     If Yes → Show message: "Medicaid covers long-term care, unlike Medicare which covers medical services. Unfortunately, our service cannot assist with Medicaid-based care. Contact your state Medicaid office for options." → Exit to external resources.
+     If No → Proceed to Daily Life & Support section.
+
+-------------------------------------------------
+SECTION 2 — DAILY LIFE & SUPPORT
+-------------------------------------------------
+Purpose: Assess independence and level of assistance.
+
+2. How much help does [name] need with daily activities overall?
+   Options:
+     - None – fully independent
+     - Occasional – some help with a few tasks
+     - Regular – needs daily assistance
+     - Extensive – needs full-time support
+   Conditional:
+     If "None" → Skip questions 3 and 4.
+
+3. Which basic daily activities require help? (BADLs)
+   Multi-select Options:
+     - Bathing/Showering
+     - Dressing
+     - Eating
+     - Toileting
+     - Transferring (e.g., bed to chair)
+     - Personal Hygiene
+     - Mobility
+
+4. Which household or community tasks require help? (IADLs)
+   Multi-select Options:
+     - Meal preparation
+     - Housekeeping
+     - Managing finances
+     - Medication management
+     - Transportation
+     - Shopping
+     - Communication
+
+5. How many hours per day of assistance does [name] typically receive?
+   Options:
+     - Less than 1 hour
+     - 1–3 hours
+     - 4–8 hours
+     - 24-hour support
+
+6. Who provides most of the support right now?
+   Options:
+     - Family/friends
+     - Paid caregiver
+     - Community or agency
+     - No regular support
+
+-------------------------------------------------
+SECTION 3 — HEALTH & SAFETY
+-------------------------------------------------
+Purpose: Capture cognitive, mobility, medication, chronic, emotional, and environmental safety factors.
+
+7. Cognitive health or memory changes:
+   Options:
+     - No concerns
+     - Occasional forgetfulness
+     - Moderate memory or thinking issues
+     - Severe memory issues or diagnosis (like dementia or Alzheimer’s)
+   Conditional:
+     If "moderate" or "severe" → Show question 8.
+
+8. Have there been any of these behaviors or concerns?
+   Multi-select Options:
+     - Wandering
+     - Aggression
+     - Elopement / Exit-seeking
+     - Confusion or disorientation
+     - Sundowning
+     - Repetitive questioning
+     - Poor judgment
+     - Hoarding
+     - Sleep disturbances
+
+9. Medication profile:
+    Options:
+      - None
+      - Simple – a few meds, easy to manage
+      - Moderate – daily meds, some complexity
+      - Complex – many meds or caregiver-managed
+
+10. Mobility level:
+    Options:
+      - Walks independently
+      - Uses cane or walker
+      - Uses wheelchair or scooter
+      - Bed-bound or limited mobility
+
+11. Fall history:
+    Options:
+      - No falls in past 6 months
+      - One fall
+      - Multiple falls
+
+12. Chronic conditions (select all that apply):
+    Multi-select Options:
+      - Diabetes
+      - Congestive heart failure (CHF)
+      - COPD / Respiratory disease
+      - Hypertension
+      - Arthritis
+      - Stroke or neurological condition
+      - Parkinson’s disease
+      - Cancer
+      - Other (free-text)
+    Conditional:
+      If 2 or more selected → Show question 13.
+
+13. How well are these conditions being managed overall?
+    Options:
+      - Very well
+      - Mostly managed
+      - Somewhat unstable
+      - Poorly managed
+
+14. Overall, how would you describe [name]’s mood these days?
+    Options:
+      - Great – always positive
+      - Mostly good
+      - Okay – ups and downs
+      - Low – feeling down a lot
+    Conditional:
+      If "Low – feeling down a lot" → Flag for advisor follow-up with message: "It might help to discuss emotional well-being with a professional to ensure the best care plan."
+
+15. Is [name]’s home located far from family, care providers, or essential services?
+    Options:
+      - No – easily accessible
+      - Somewhat isolated
+      - Very isolated
+    Note:
+      Used to assess feasibility of in-home care vs. assisted living, especially for borderline cases.
+
+-------------------------------------------------
+SECTION 4 — RESULTS
+-------------------------------------------------
+Purpose: Summarize the findings and provide personalized insights.
+
+Title:
+  "Your Guided Care Plan Summary"
+
+Narrative:
+  "Based on your answers, it looks like daily assistance and medication support are becoming important.
+  Assisted living or structured home-care support may be a good next step."
+
+Summary Bullets:
+  - Independence snapshot (ADL/IADL level)
+  - Safety or cognitive notes
+  - Medication complexity or chronic conditions
+  - Emotional well-being (if flagged)
+  - Caregiver load (hours/day)
+  - Location-based service availability (based on isolation)
+
+CTAs:
+  - Continue to Cost Planner
+  - Return to Care Hub
+  - Talk to an Advisor (shown if risk/complexity or emotional well-being flagged)
+
+-------------------------------------------------
+SUMMARY COUNTS
+-------------------------------------------------
+Sections: 3 functional + intro + results
+Typical question count: 11–13
+Maximum question count: 17
+Conditional questions: 4 (ADL/IADL, behaviors, chronic mgmt, emotional well-being)
