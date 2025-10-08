@@ -246,12 +246,19 @@ THEME_CSS = r"""
   gap:0.75rem;
 }
 
-.sn-card-heading{
+.sn-card-header-left{
   display:flex;
   align-items:center;
-  gap:0.75rem;
+  gap:0.85rem;
 }
 
+.sn-card-heading{
+  display:flex;
+  flex-direction:column;
+  gap:0.25rem;
+}
+
+.sn-icon,
 .sn-card-icon{
   width:40px;
   height:40px;
@@ -264,10 +271,17 @@ THEME_CSS = r"""
   color:var(--chip-fg);
 }
 
+.sn-icon{
+  font-size:1.4rem;
+  line-height:1;
+}
+
+.sn-icon--image,
 .sn-card-icon.image{
   padding:6px;
 }
 
+.sn-icon img,
 .sn-card-icon img{
   width:28px;
   height:28px;
@@ -289,10 +303,46 @@ THEME_CSS = r"""
   line-height:1.5;
 }
 
+.sn-card-list{
+  margin:.2rem 0 .8rem 1.1rem;
+  padding:0;
+  color:var(--chip-fg);
+  font-size:.9rem;
+  line-height:1.45;
+}
+
 .sn-card-caption{
   color:rgba(15,23,42,.72);
   font-size:.85rem;
   margin-top:.35rem;
+}
+
+.sn-card-progress{
+  position:relative;
+  width:100%;
+  height:6px;
+  border-radius:999px;
+  background:rgba(11,92,216,.12);
+  overflow:hidden;
+  margin:.4rem 0 .6rem;
+}
+
+.sn-card-progress-bar{
+  position:absolute;
+  top:0;
+  left:0;
+  bottom:0;
+  border-radius:999px;
+  background:var(--brand-600);
+}
+
+.sn-card-summary{
+  margin:.6rem 0 0;
+  padding:.6rem .8rem;
+  border-radius:12px;
+  background:rgba(12,107,63,.08);
+  color:rgba(12,107,63,.95);
+  font-size:.9rem;
 }
 
 .sn-chip{
@@ -308,14 +358,21 @@ THEME_CSS = r"""
   white-space:nowrap;
 }
 
-.sn-chip.info{
+.sn-chip.info,
+.sn-chip.sn-chip--info{
   background:var(--chip-info-bg);
   color:var(--chip-info-fg);
 }
 
-.sn-chip.ok{
+.sn-chip.ok,
+.sn-chip.sn-chip--success{
   background:var(--chip-ok-bg);
   color:var(--chip-ok-fg);
+}
+
+.sn-chip.sn-chip--muted{
+  background:var(--chip-bg);
+  color:var(--chip-fg);
 }
 
 .sn-chip-icon{
@@ -324,24 +381,13 @@ THEME_CSS = r"""
 
 .sn-card-actions{
   display:flex;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-  gap:.5rem;
+  flex-direction:column;
+  gap:.65rem;
+  width:100%;
 }
 
 .sn-card-actions > div{
-  flex:1 1 180px;
-  min-width:150px;
-}
-
-@media (max-width: 900px){
-  .sn-card-actions{
-    justify-content:stretch;
-  }
-  .sn-card-actions > div{
-    flex:1 1 100%;
-    min-width:0;
-  }
+  width:100%;
 }
 
 """

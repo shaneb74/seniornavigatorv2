@@ -1,93 +1,111 @@
+# Guided Care Plan · Landing
 from __future__ import annotations
 
 import streamlit as st
 
-from gcp_core import scoring as gcp_scoring
-from gcp_core.engine import questions_for_section, snapshot as build_snapshot
-from gcp_core.state import (
+from gcp_core import (
     ensure_session,
     get_answers,
-    get_medicaid_status,
     get_medicaid_ack,
+    get_medicaid_status,
     set_medicaid_ack,
-    save_snapshot,
-    set_section_complete,
+    set_progress,
+    set_resume_target,
 )
-from ui.gcp_form import render_section
+from ui.gcp_form import render_question
+
+MEDICAID_CHOICES = [
+    {"label": "Yes", "value": "yes"},
+    {"label": "No", "value": "no"},
+    {"label": "Not sure", "value": "unsure"},
+]
+
+FUNDING_CHOICES = [
+    {"label": "Confident about funding without Medicaid", "value": "confident"},
+    {"label": "Need guidance on paying for care", "value": "needs_help"},
+    {"label": "Still deciding", "value": "deciding"},
+]
 
 
-def _render_medicaid_notice_for_landing(status: str, acknowledged: bool) -> None:
+def _medicaid_notice(status: str, acknowledged: bool) -> None:
     if status not in {"yes", "unsure"} or acknowledged:
         return
-
-    is_yes = status == "yes"
     with st.container(border=True):
-        st.subheader("A quick note about Medicaid" if is_yes else "Not sure about Medicaid?")
-        if is_yes:
-            st.write(
-                "We offer limited advisor services when someone is on **Medicaid** or state long-term care assistance. "
-                "You can keep going—we’ll still prepare recommendations and planning tools for you."
-            )
-        else:
-            st.write(
-                "If you’re unsure about Medicaid eligibility, keep going. We’ll still guide you and highlight next steps, "
-                "even if Medicaid ultimately applies."
-            )
-
-        col_link, col_ack = st.columns([1, 1])
-        with col_link:
-            st.link_button(
-                "Learn about Medicaid",
-                "https://www.medicaid.gov/",
-            )
+        st.subheader("About Medicaid")
+        st.write(
+            "We provide limited services for families using **Medicaid** or state long-term care assistance. "
+            "You’re welcome to continue the Guided Care Plan to receive a personalized recommendation. "
+            "You can also explore Medicaid resources to understand coverage and next steps."
+        )
+        col_left, col_right = st.columns([1, 1])
+        with col_left:
+            st.link_button("Learn more about Medicaid", "https://www.medicaid.gov/")
             st.caption("Opens in a new tab.")
-        with col_ack:
-            if st.button("I understand", type="primary"):
+        with col_right:
+            if st.button("I understand — continue", type="primary"):
                 set_medicaid_ack(True)
-                st.rerun()
+                st.experimental_rerun()
 
 
-def _can_continue_on_landing(ans: dict, status: str, acknowledged: bool) -> bool:
+def _landing_progress_ready(status: str, acknowledged: bool, answers: dict) -> bool:
     if status == "no":
-        value = ans.get("funding_confidence")
-        if isinstance(value, str):
-            return bool(value.strip())
-        return value is not None
+        return bool(answers.get("funding_confidence"))
     if status in {"yes", "unsure"}:
         return acknowledged
     return False
-ensure_session()
 
-answers = get_answers()
-status = get_medicaid_status()
-acknowledged = get_medicaid_ack()
-if status not in {"yes", "unsure"} and acknowledged:
-    set_medicaid_ack(False)
-    acknowledged = False
 
-st.markdown('<div class="sn-scope dashboard">', unsafe_allow_html=True)
-st.markdown("## Guided Care Plan · Start")
-st.caption("We’ll begin with financial eligibility, then daily life, health & safety, and preferences.")
+def render() -> None:
+    ensure_session()
+    answers = get_answers()
 
-render_section("financial", questions_for_section("financial"))
+    st.title("Guided Care Plan")
+    st.write("Let’s begin with funding basics, then we’ll cover daily life, health & safety, and preferences.")
 
-_render_medicaid_notice_for_landing(status, acknowledged)
+    render_question(
+        "medicaid_status",
+        "Does the person currently have Medicaid coverage?",
+        "radio",
+        choices=MEDICAID_CHOICES,
+    )
 
-can_continue = _can_continue_on_landing(answers, status, acknowledged)
-if not can_continue:
-    if status == "no":
-        st.caption("Select your Medicaid status and share how confident you are about private funding to continue.")
-    elif status in {"yes", "unsure"}:
-        st.caption("Acknowledge the Medicaid note above to keep going.")
-    else:
-        st.caption("Tell us about Medicaid to continue.")
+    medicaid_status = get_medicaid_status(answers)
+    acknowledged = get_medicaid_ack()
 
-if st.button("Continue", type="primary", width="stretch", disabled=not can_continue):
-    scoring = gcp_scoring.score_answers(answers)
-    snapshot_record = build_snapshot(answers, scoring)
-    save_snapshot(snapshot_record)
-    set_section_complete("landing")
-    st.switch_page("app_pages/gcp_v2/gcp_daily_life_v2.py")
+    if medicaid_status not in {"yes", "unsure"} and acknowledged:
+        set_medicaid_ack(False)
+        acknowledged = False
 
-if st.button("Save & exit to Hub", type="secondary", width="stretch"):
-    st.switch_page("app_pages/hub.py")
+    if medicaid_status == "no":
+        render_question(
+            "funding_confidence",
+            "How confident are you about covering care without Medicaid?",
+            "radio",
+            choices=FUNDING_CHOICES,
+        )
+
+    _medicaid_notice(medicaid_status, acknowledged)
+
+    ready_to_continue = _landing_progress_ready(medicaid_status, acknowledged, answers)
+    if not ready_to_continue:
+        if medicaid_status == "no":
+            st.caption("Select your Medicaid status and share how confident you feel about non-Medicaid funding to continue.")
+        elif medicaid_status in {"yes", "unsure"}:
+            st.caption("Please acknowledge the Medicaid notice above to keep going.")
+        else:
+            st.caption("Let us know about Medicaid coverage to continue.")
+
+    col_continue, col_save = st.columns([3, 1])
+    with col_continue:
+        if st.button("Continue", type="primary", use_container_width=True, disabled=not ready_to_continue):
+            set_progress("landing", 100)
+            set_resume_target("app_pages/gcp_v2/gcp_daily_life_v2.py")
+            st.switch_page("app_pages/gcp_v2/gcp_daily_life_v2.py")
+    with col_save:
+        if st.button("Save & exit", type="secondary", use_container_width=True):
+            set_progress("landing", max(40, int(ready_to_continue) * 60))
+            set_resume_target("app_pages/gcp_v2/gcp_landing_v2.py")
+            st.switch_page("app_pages/hub.py")
+
+
+render()
